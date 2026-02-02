@@ -1,0 +1,105 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aurora-monitor"
+version = "1.0.0"
+description = "Sistema de Monitoramento, Embargo e Correção em Tempo Real para Prevenção de Crashes"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "OpenClaw Aurora Team", email = "aurora@openclaw.dev"}
+]
+maintainers = [
+    {name = "OpenClaw Aurora Team", email = "aurora@openclaw.dev"}
+]
+keywords = [
+    "monitoring",
+    "observability",
+    "circuit-breaker",
+    "rate-limiter",
+    "auto-healing",
+    "crash-prevention",
+    "anomaly-detection",
+    "watchdog"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: System :: Monitoring",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
+]
+requires-python = ">=3.8"
+dependencies = []
+
+[project.optional-dependencies]
+full = [
+    "psutil>=5.9.0",
+]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-asyncio>=0.21.0",
+    "mypy>=1.0.0",
+    "ruff>=0.1.0",
+]
+all = [
+    "aurora-monitor[full,dev]",
+]
+
+[project.urls]
+Homepage = "https://github.com/openclaw/aurora-monitor"
+Documentation = "https://github.com/openclaw/aurora-monitor#readme"
+Repository = "https://github.com/openclaw/aurora-monitor.git"
+Issues = "https://github.com/openclaw/aurora-monitor/issues"
+
+[project.scripts]
+aurora-dashboard = "aurora_monitor.dashboard.server:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["aurora_monitor*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+asyncio_mode = "auto"
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+ignore_missing_imports = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py38"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "C4"]
+ignore = ["E501"]
+
+[tool.coverage.run]
+source = ["aurora_monitor"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+]

@@ -1,0 +1,93 @@
+{
+  "app_name": "aurora-app",
+  "environment": "development",
+  "log_level": "INFO",
+  "log_file": null,
+
+  "metrics": {
+    "enabled": true,
+    "collection_interval": 5.0,
+    "cpu_threshold": 85.0,
+    "memory_threshold": 85.0,
+    "disk_threshold": 90.0,
+    "network_error_threshold": 100,
+    "include_process_metrics": true,
+    "history_size": 1000
+  },
+
+  "anomaly": {
+    "enabled": true,
+    "sensitivity": 2.0,
+    "min_samples": 30,
+    "detection_window": 60,
+    "spike_threshold": 3.0,
+    "trend_window": 300
+  },
+
+  "circuit_breaker": {
+    "enabled": true,
+    "failure_threshold": 5,
+    "success_threshold": 3,
+    "timeout": 30.0,
+    "half_open_max_calls": 3
+  },
+
+  "rate_limiter": {
+    "enabled": true,
+    "requests_per_second": 100.0,
+    "burst_size": 150,
+    "per_client_limit": true,
+    "client_requests_per_second": 10.0,
+    "client_burst_size": 20
+  },
+
+  "auto_healer": {
+    "enabled": true,
+    "max_heal_attempts": 3,
+    "heal_cooldown": 60.0,
+    "gc_on_memory_pressure": true,
+    "gc_threshold": 80.0,
+    "restart_on_critical": false,
+    "connection_pool_reset": true,
+    "cache_clear_on_memory": true
+  },
+
+  "watchdog": {
+    "enabled": true,
+    "check_interval": 10.0,
+    "heartbeat_timeout": 30.0,
+    "max_restarts": 3,
+    "restart_delay": 5.0,
+    "monitor_threads": true,
+    "deadlock_detection": true
+  },
+
+  "alerts": {
+    "enabled": true,
+    "email_enabled": false,
+    "slack_enabled": false,
+    "webhook_enabled": false,
+    "email_recipients": [],
+    "slack_webhook_url": "",
+    "custom_webhook_url": "",
+    "alert_cooldown": 300.0,
+    "aggregate_alerts": true,
+    "aggregation_window": 60.0
+  },
+
+  "health_check": {
+    "enabled": true,
+    "check_interval": 30.0,
+    "timeout": 10.0,
+    "include_dependencies": true
+  },
+
+  "dashboard": {
+    "enabled": false,
+    "host": "0.0.0.0",
+    "port": 8080,
+    "auth_enabled": true,
+    "auth_token": "",
+    "refresh_interval": 5.0
+  }
+}
