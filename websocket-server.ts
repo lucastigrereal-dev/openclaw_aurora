@@ -363,7 +363,6 @@ export class DashboardWebSocketServer {
           data: {
             system: {
               status: 'online',
-              uptime: systemStatus.uptime,
               ...systemStatus,
             },
             executor: executorStats,
