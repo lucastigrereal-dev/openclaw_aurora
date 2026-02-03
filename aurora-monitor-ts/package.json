@@ -27,6 +27,8 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.72.1",
+    "openai": "^6.17.0",
     "ws": "^8.16.0"
   },
   "devDependencies": {
@@ -36,7 +38,7 @@
     "vitest": "^1.2.0"
   },
   "peerDependencies": {
-    "grammy": "^1.0.0"
+    "grammy": "^1.39.3"
   },
   "peerDependenciesMeta": {
     "grammy": {
