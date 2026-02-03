@@ -1,0 +1,61 @@
+{
+  "name": "aurora-monitor",
+  "version": "1.0.0",
+  "description": "Sistema de monitoramento, embargo e correção em tempo real para OpenClaw",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest",
+    "lint": "eslint src/",
+    "clean": "rm -rf dist/",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "monitoring",
+    "circuit-breaker",
+    "rate-limiter",
+    "auto-healing",
+    "anomaly-detection",
+    "openclaw",
+    "crash-prevention"
+  ],
+  "author": "OpenClaw Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "ws": "^8.16.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/ws": "^8.5.10",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.0"
+  },
+  "peerDependencies": {
+    "grammy": "^1.0.0"
+  },
+  "peerDependenciesMeta": {
+    "grammy": {
+      "optional": true
+    }
+  },
+  "files": [
+    "dist/",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./openclaw": {
+      "import": "./dist/integrations/openclaw.js",
+      "types": "./dist/integrations/openclaw.d.ts"
+    }
+  }
+}
