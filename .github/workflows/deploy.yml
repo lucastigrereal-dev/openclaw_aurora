@@ -1,0 +1,65 @@
+name: Deploy OpenClaw Aurora
+
+on:
+  push:
+    branches:
+      - main
+      - claude/monitoring-crash-prevention-Qx84d
+  workflow_dispatch:
+
+jobs:
+  # Deploy Backend to Railway
+  deploy-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy to Railway
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          railway link --environment production 2>/dev/null || true
+          railway up --detach
+
+  # Deploy Dashboard to Vercel
+  deploy-dashboard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
+      - name: Install Dashboard Dependencies
+        working-directory: ./dashboard
+        run: pnpm install
+
+      - name: Build Dashboard
+        working-directory: ./dashboard
+        run: pnpm build
+        env:
+          VITE_WEBSOCKET_URL: ${{ secrets.WEBSOCKET_URL }}
+
+      - name: Deploy to Vercel
+        working-directory: ./dashboard
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: vercel --prod --yes --token $VERCEL_TOKEN
