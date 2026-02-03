@@ -1,26 +1,30 @@
 {
-  "name": "openclaw_aurora",
-  "version": "1.0.0",
-  "description": "**Sistema de Monitoramento, Embargo e Correção em Tempo Real para Prevenção de Crashes**",
-  "main": "start-aurora.js",
-  "directories": {
-    "example": "examples",
-    "test": "tests"
-  },
+  "name": "openclaw-aurora",
+  "version": "2.0.0",
+  "description": "Sistema de Skills com Monitoramento e Proteção contra Crashes",
+  "main": "dist/main.js",
+  "types": "dist/main.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "start": "node dist/main.js",
+    "dev": "ts-node main.ts",
+    "test": "ts-node test-skills.ts",
+    "skills:list": "ts-node -e \"require('./skills').registerAllSkills().listAll().forEach(s => console.log(s.name, '-', s.description))\""
   },
-  "repository": {
-    "type": "git",
-    "url": "http://local_proxy@127.0.0.1:34467/git/lucastigrereal-dev/openclaw_aurora"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": ["openclaw", "aurora", "skills", "telegram", "ai", "monitoring"],
+  "author": "Lucas Tigre",
+  "license": "MIT",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.72.1",
     "dotenv": "^17.2.3",
     "grammy": "^1.39.3",
-    "openai": "^6.17.0"
+    "openai": "^6.17.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/ws": "^8.5.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.0"
   }
 }
