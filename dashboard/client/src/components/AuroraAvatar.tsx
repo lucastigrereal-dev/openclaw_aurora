@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, X, Send, Mic, MicOff, Sparkles, Bot, Cpu, Brain } from 'lucide-react';
+import { MessageCircle, X, Send, Mic, MicOff, Sparkles } from 'lucide-react';
 import { getOpenClawWebSocket } from '@/services/openclawWebSocket';
 
 interface Message {
@@ -8,23 +8,14 @@ interface Message {
   text: string;
   sender: 'user' | 'aurora';
   timestamp: Date;
-  model?: string;
 }
-
-type AIModel = 'ollama' | 'claude' | 'gpt';
-
-const modelConfig: Record<AIModel, { name: string; icon: any; color: string }> = {
-  ollama: { name: 'Ollama (Local)', icon: Cpu, color: 'from-green-500 to-emerald-500' },
-  claude: { name: 'Claude', icon: Brain, color: 'from-purple-500 to-violet-500' },
-  gpt: { name: 'GPT-4', icon: Bot, color: 'from-blue-500 to-cyan-500' },
-};
 
 const proactiveMessages = [
   "💡 Dica: Você sabia que pode arrastar os cards para reorganizar o dashboard?",
-  "📊 Relatório: Skills executando normalmente.",
-  "🔔 Alerta: Sistema KRONOS online e aguardando comandos.",
-  "⚡ Performance: Latência média dentro do esperado.",
-  "🎯 Sugestão: Experimente conversar comigo! Posso executar skills e mais.",
+  "📊 Relatório: 47 skills executadas na última hora com 100% de sucesso.",
+  "🔔 Alerta: Nova integração disponível com o Notion.",
+  "⚡ Performance: Latência média de 42ms - dentro do esperado.",
+  "🎯 Sugestão: Que tal configurar uma automação para o Telegram?",
 ];
 
 export function AuroraAvatar() {
@@ -35,63 +26,27 @@ export function AuroraAvatar() {
   const [isListening, setIsListening] = useState(false);
   const [showProactive, setShowProactive] = useState(false);
   const [proactiveMessage, setProactiveMessage] = useState('');
-  const [selectedModel, setSelectedModel] = useState<AIModel>('ollama');
-  const [showModelSelector, setShowModelSelector] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
-  const pendingMessageRef = useRef<string | null>(null);
-
   const ws = getOpenClawWebSocket();
 
-  // WebSocket connection and message handling
+  // WebSocket connection
   useEffect(() => {
-    const handleConnection = (connected: boolean) => {
-      setIsConnected(connected);
-    };
-
-    const handleMessage = (event: any) => {
-      console.log('Chat received event:', event);
-
-      // Handle chat responses
+    const unsubConnection = ws.onConnectionChange(setIsConnected);
+    const unsubMessage = ws.onMessage((event) => {
       if (event.type === 'notification' && event.metadata?.response) {
         setIsTyping(false);
-        const auroraMessage: Message = {
+        setMessages(prev => [...prev, {
           id: Date.now().toString(),
-          text: event.metadata.response,
+          text: event.metadata!.response,
           sender: 'aurora',
           timestamp: new Date(),
-          model: event.metadata.model,
-        };
-        setMessages(prev => [...prev, auroraMessage]);
+        }]);
       }
-
-      // Handle skill execution results
-      if (event.type === 'skill_execution' && event.metadata?.skill?.startsWith('ai.')) {
-        setIsTyping(false);
-        if (event.metadata?.output) {
-          const auroraMessage: Message = {
-            id: Date.now().toString(),
-            text: event.metadata.output,
-            sender: 'aurora',
-            timestamp: new Date(),
-            model: event.metadata.skill.replace('ai.', ''),
-          };
-          setMessages(prev => [...prev, auroraMessage]);
-        }
-      }
-    };
-
-    const unsubConnection = ws.onConnectionChange(handleConnection);
-    const unsubMessage = ws.onMessage(handleMessage);
-
-    // Check current connection status
+    });
     setIsConnected(ws.isConnected());
-
-    return () => {
-      unsubConnection();
-      unsubMessage();
-    };
+    return () => { unsubConnection(); unsubMessage(); };
   }, []);
 
   // Auto-scroll to bottom of chat
@@ -118,13 +73,13 @@ export function AuroraAvatar() {
       setTimeout(() => {
         setMessages([{
           id: '1',
-          text: `Olá! Sou KRONOS, sua IA do cockpit PROMETHEUS. Estou ${isConnected ? 'conectada ao OpenClaw Aurora' : 'aguardando conexão'}. Como posso ajudar?`,
+          text: "Olá! Sou a Aurora, sua assistente de IA do cockpit PROMETHEUS. Como posso ajudar você hoje?",
           sender: 'aurora',
           timestamp: new Date(),
         }]);
       }, 500);
     }
-  }, [isOpen, messages.length, isConnected]);
+  }, [isOpen, messages.length]);
 
   const handleSend = () => {
     if (!inputValue.trim()) return;
@@ -141,25 +96,19 @@ export function AuroraAvatar() {
     setInputValue('');
     setIsTyping(true);
 
-    // Send to WebSocket
+    // Send to WebSocket (OpenClaw Aurora backend)
     if (ws.isConnected()) {
-      ws.send({
-        type: 'chat',
-        id: Date.now().toString(),
-        message: messageText,
-        model: selectedModel,
-      } as any);
+      ws.send({ type: 'chat', id: Date.now().toString(), message: messageText, model: 'ollama' });
     } else {
       // Fallback if not connected
       setTimeout(() => {
         setIsTyping(false);
-        const auroraMessage: Message = {
+        setMessages(prev => [...prev, {
           id: (Date.now() + 1).toString(),
-          text: '⚠️ Não estou conectada ao OpenClaw Aurora. Verifique se o sistema está rodando em ws://localhost:18789',
+          text: '⚠️ Não conectada ao OpenClaw Aurora. Inicie o backend primeiro.',
           sender: 'aurora',
           timestamp: new Date(),
-        };
-        setMessages(prev => [...prev, auroraMessage]);
+        }]);
       }, 1000);
     }
   };
@@ -170,8 +119,6 @@ export function AuroraAvatar() {
       handleSend();
     }
   };
-
-  const ModelIcon = modelConfig[selectedModel].icon;
 
   return (
     <>
@@ -217,22 +164,16 @@ export function AuroraAvatar() {
           className="relative w-20 h-20 rounded-full overflow-hidden"
           style={{
             background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(34, 211, 238, 0.3) 100%)',
-            border: `2px solid ${isConnected ? 'rgba(34, 211, 238, 0.5)' : 'rgba(239, 68, 68, 0.5)'}`,
-            boxShadow: isConnected
-              ? '0 0 30px rgba(139, 92, 246, 0.4), 0 0 60px rgba(34, 211, 238, 0.2)'
-              : '0 0 30px rgba(239, 68, 68, 0.4)',
+            border: '2px solid rgba(139, 92, 246, 0.5)',
+            boxShadow: '0 0 30px rgba(139, 92, 246, 0.4), 0 0 60px rgba(34, 211, 238, 0.2)',
           }}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
           animate={{
-            boxShadow: isConnected ? [
+            boxShadow: [
               '0 0 30px rgba(139, 92, 246, 0.4), 0 0 60px rgba(34, 211, 238, 0.2)',
               '0 0 50px rgba(139, 92, 246, 0.6), 0 0 80px rgba(34, 211, 238, 0.4)',
               '0 0 30px rgba(139, 92, 246, 0.4), 0 0 60px rgba(34, 211, 238, 0.2)',
-            ] : [
-              '0 0 30px rgba(239, 68, 68, 0.4)',
-              '0 0 50px rgba(239, 68, 68, 0.6)',
-              '0 0 30px rgba(239, 68, 68, 0.4)',
             ],
           }}
           transition={{ duration: 3, repeat: Infinity }}
@@ -246,12 +187,12 @@ export function AuroraAvatar() {
             playsInline
             className="w-full h-full object-cover"
           />
-
+          
           {/* Glow ring */}
           <motion.div
             className="absolute inset-0 rounded-full"
             style={{
-              border: `2px solid ${isConnected ? 'rgba(139, 92, 246, 0.5)' : 'rgba(239, 68, 68, 0.5)'}`,
+              border: '2px solid rgba(139, 92, 246, 0.5)',
             }}
             animate={{
               scale: [1, 1.2, 1],
@@ -292,7 +233,7 @@ export function AuroraAvatar() {
             }}
           >
             {/* Header */}
-            <div
+            <div 
               className="p-4 flex items-center justify-between"
               style={{
                 background: 'linear-gradient(90deg, rgba(139, 92, 246, 0.15) 0%, rgba(34, 211, 238, 0.15) 100%)',
@@ -311,7 +252,7 @@ export function AuroraAvatar() {
                   />
                 </div>
                 <div>
-                  <h3 className="text-white font-semibold">KRONOS</h3>
+                  <h3 className="text-white font-semibold">Aurora</h3>
                   <div className="flex items-center gap-1">
                     <motion.div
                       className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-400' : 'bg-red-400'}`}
@@ -319,68 +260,19 @@ export function AuroraAvatar() {
                       transition={{ duration: 1.5, repeat: Infinity }}
                     />
                     <span className={`text-xs ${isConnected ? 'text-emerald-400' : 'text-red-400'}`}>
-                      {isConnected ? 'Conectado' : 'Desconectado'}
+                      {isConnected ? 'Conectada' : 'Desconectada'}
                     </span>
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                {/* Model Selector */}
-                <div className="relative">
-                  <motion.button
-                    onClick={() => setShowModelSelector(!showModelSelector)}
-                    className={`p-2 rounded-lg bg-gradient-to-r ${modelConfig[selectedModel].color} flex items-center gap-1`}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <ModelIcon size={16} className="text-white" />
-                    <span className="text-xs text-white font-medium">{selectedModel.toUpperCase()}</span>
-                  </motion.button>
-
-                  <AnimatePresence>
-                    {showModelSelector && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="absolute top-full right-0 mt-2 w-40 rounded-xl overflow-hidden"
-                        style={{
-                          background: 'rgba(20, 25, 50, 0.98)',
-                          border: '1px solid rgba(255, 255, 255, 0.1)',
-                        }}
-                      >
-                        {(Object.keys(modelConfig) as AIModel[]).map((model) => {
-                          const Icon = modelConfig[model].icon;
-                          return (
-                            <button
-                              key={model}
-                              onClick={() => {
-                                setSelectedModel(model);
-                                setShowModelSelector(false);
-                              }}
-                              className={`w-full p-3 flex items-center gap-2 hover:bg-white/10 transition-colors ${
-                                selectedModel === model ? 'bg-white/10' : ''
-                              }`}
-                            >
-                              <Icon size={16} className="text-white/70" />
-                              <span className="text-sm text-white/80">{modelConfig[model].name}</span>
-                            </button>
-                          );
-                        })}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-
-                <motion.button
-                  onClick={() => setIsOpen(false)}
-                  className="p-2 rounded-lg hover:bg-white/10"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  <X size={20} className="text-white/60" />
-                </motion.button>
-              </div>
+              <motion.button
+                onClick={() => setIsOpen(false)}
+                className="p-2 rounded-lg hover:bg-white/10"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <X size={20} className="text-white/60" />
+              </motion.button>
             </div>
 
             {/* Messages */}
@@ -403,19 +295,14 @@ export function AuroraAvatar() {
                       borderBottomLeftRadius: msg.sender === 'aurora' ? '4px' : '16px',
                     }}
                   >
-                    <p className="text-sm whitespace-pre-wrap">{msg.text}</p>
-                    <div className="flex items-center justify-between mt-1">
-                      <p className="text-[10px] text-white/40">
-                        {msg.timestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                      </p>
-                      {msg.model && (
-                        <span className="text-[10px] text-white/40 ml-2">via {msg.model}</span>
-                      )}
-                    </div>
+                    <p className="text-sm">{msg.text}</p>
+                    <p className="text-[10px] text-white/40 mt-1">
+                      {msg.timestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                    </p>
                   </div>
                 </motion.div>
               ))}
-
+              
               {isTyping && (
                 <motion.div
                   initial={{ opacity: 0 }}
@@ -432,18 +319,18 @@ export function AuroraAvatar() {
                       />
                     ))}
                   </div>
-                  <span className="text-xs">KRONOS está pensando...</span>
+                  <span className="text-xs">Aurora está digitando...</span>
                 </motion.div>
               )}
               <div ref={chatEndRef} />
             </div>
 
             {/* Input */}
-            <div
+            <div 
               className="p-4"
               style={{ borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}
             >
-              <div
+              <div 
                 className="flex items-center gap-2 p-2 rounded-2xl"
                 style={{
                   background: 'rgba(255, 255, 255, 0.05)',
@@ -462,33 +349,26 @@ export function AuroraAvatar() {
                     <Mic size={18} className="text-white/60" />
                   )}
                 </motion.button>
-
+                
                 <input
                   type="text"
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder={isConnected ? "Pergunte ao KRONOS..." : "Aguardando conexão..."}
-                  disabled={!isConnected}
-                  className="flex-1 bg-transparent text-white text-sm outline-none placeholder:text-white/30 disabled:opacity-50"
+                  placeholder="Digite sua mensagem..."
+                  className="flex-1 bg-transparent text-white text-sm outline-none placeholder:text-white/30"
                 />
-
+                
                 <motion.button
                   onClick={handleSend}
-                  className="p-2 rounded-xl bg-gradient-to-r from-purple-600 to-cyan-600 disabled:opacity-50"
+                  className="p-2 rounded-xl bg-gradient-to-r from-purple-600 to-cyan-600"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
-                  disabled={!inputValue.trim() || !isConnected}
+                  disabled={!inputValue.trim()}
                 >
                   <Send size={18} className="text-white" />
                 </motion.button>
               </div>
-
-              {!isConnected && (
-                <p className="text-[10px] text-red-400 mt-2 text-center">
-                  Conecte ao OpenClaw Aurora em ws://localhost:18789
-                </p>
-              )}
             </div>
           </motion.div>
         )}
