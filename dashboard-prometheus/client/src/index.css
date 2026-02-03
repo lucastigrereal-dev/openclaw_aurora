@@ -1,0 +1,522 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ========================================
+   KRONOS COCKPIT - ACTIVETHEORY DESIGN
+   Profundidade 3D | Vidro | Neon | Fluido
+   ======================================== */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  /* KRONOS Color System - Neon Palette */
+  --kronos-bg: oklch(0.08 0.02 260);
+  --kronos-bg-deep: oklch(0.04 0.015 260);
+  --kronos-cyan: oklch(0.75 0.18 195);
+  --kronos-purple: oklch(0.65 0.25 290);
+  --kronos-pink: oklch(0.7 0.22 350);
+  --kronos-green: oklch(0.72 0.2 155);
+  --kronos-orange: oklch(0.75 0.18 55);
+  --kronos-red: oklch(0.65 0.25 25);
+  
+  /* Glass Effect Variables */
+  --glass-bg: rgba(15, 20, 40, 0.6);
+  --glass-border: rgba(100, 200, 255, 0.15);
+  --glass-glow: rgba(34, 211, 238, 0.3);
+  
+  --radius: 1rem;
+  --primary: oklch(0.75 0.18 195);
+  --primary-foreground: oklch(0.98 0 0);
+  --sidebar-primary: oklch(0.75 0.18 195);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --chart-1: oklch(0.75 0.18 195);
+  --chart-2: oklch(0.65 0.25 290);
+  --chart-3: oklch(0.7 0.22 350);
+  --chart-4: oklch(0.72 0.2 155);
+  --chart-5: oklch(0.75 0.18 55);
+  --background: oklch(0.06 0.02 260);
+  --foreground: oklch(0.95 0.01 260);
+  --card: oklch(0.12 0.025 260);
+  --card-foreground: oklch(0.95 0.01 260);
+  --popover: oklch(0.1 0.02 260);
+  --popover-foreground: oklch(0.95 0.01 260);
+  --secondary: oklch(0.15 0.025 260);
+  --secondary-foreground: oklch(0.85 0.01 260);
+  --muted: oklch(0.18 0.02 260);
+  --muted-foreground: oklch(0.6 0.02 260);
+  --accent: oklch(0.2 0.03 260);
+  --accent-foreground: oklch(0.95 0.01 260);
+  --destructive: oklch(0.65 0.25 25);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.25 0.03 260);
+  --input: oklch(0.2 0.025 260);
+  --ring: oklch(0.75 0.18 195);
+  --sidebar: oklch(0.08 0.02 260);
+  --sidebar-foreground: oklch(0.85 0.01 260);
+  --sidebar-accent: oklch(0.15 0.025 260);
+  --sidebar-accent-foreground: oklch(0.95 0.01 260);
+  --sidebar-border: oklch(0.2 0.025 260);
+  --sidebar-ring: oklch(0.75 0.18 195);
+}
+
+/* ========================================
+   BASE STYLES
+   ======================================== */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--kronos-bg-deep);
+  color: var(--foreground);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* Deep space background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: 
+    radial-gradient(ellipse at 20% 20%, rgba(34, 211, 238, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(236, 72, 153, 0.05) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [type="button"]:not(:disabled),
+  [type="submit"]:not(:disabled),
+  [type="reset"]:not(:disabled),
+  a[href],
+  select:not(:disabled),
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled) {
+    @apply cursor-pointer;
+  }
+}
+
+/* ========================================
+   GLASS CARD SYSTEM - ACTIVETHEORY STYLE
+   ======================================== */
+
+.glass-card {
+  background: linear-gradient(
+    135deg,
+    rgba(20, 30, 60, 0.7) 0%,
+    rgba(10, 15, 35, 0.8) 100%
+  );
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(100, 200, 255, 0.12);
+  border-radius: 1.25rem;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    transparent 50%
+  );
+  pointer-events: none;
+}
+
+.glass-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+}
+
+.glass-card:hover {
+  border-color: rgba(34, 211, 238, 0.3);
+  box-shadow: 
+    0 0 40px rgba(34, 211, 238, 0.15),
+    0 20px 60px rgba(0, 0, 0, 0.4),
+    inset 0 0 60px rgba(34, 211, 238, 0.03);
+  transform: translateY(-4px) scale(1.01);
+}
+
+/* Deep glass variant */
+.glass-card-deep {
+  background: linear-gradient(
+    145deg,
+    rgba(8, 12, 30, 0.9) 0%,
+    rgba(4, 6, 20, 0.95) 100%
+  );
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(60, 140, 200, 0.1);
+  border-radius: 1.5rem;
+}
+
+/* Neon glow variants */
+.glow-cyan {
+  box-shadow: 
+    0 0 20px rgba(34, 211, 238, 0.2),
+    0 0 40px rgba(34, 211, 238, 0.1),
+    inset 0 0 20px rgba(34, 211, 238, 0.05);
+}
+
+.glow-purple {
+  box-shadow: 
+    0 0 20px rgba(139, 92, 246, 0.2),
+    0 0 40px rgba(139, 92, 246, 0.1),
+    inset 0 0 20px rgba(139, 92, 246, 0.05);
+}
+
+.glow-pink {
+  box-shadow: 
+    0 0 20px rgba(236, 72, 153, 0.2),
+    0 0 40px rgba(236, 72, 153, 0.1),
+    inset 0 0 20px rgba(236, 72, 153, 0.05);
+}
+
+.glow-green {
+  box-shadow: 
+    0 0 20px rgba(16, 185, 129, 0.2),
+    0 0 40px rgba(16, 185, 129, 0.1),
+    inset 0 0 20px rgba(16, 185, 129, 0.05);
+}
+
+/* ========================================
+   3D PERSPECTIVE SYSTEM
+   ======================================== */
+
+.perspective-container {
+  perspective: 2000px;
+  perspective-origin: center center;
+}
+
+.card-3d {
+  transform-style: preserve-3d;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+.card-3d:hover {
+  transform: translateZ(30px);
+}
+
+/* Floating animation */
+@keyframes float {
+  0%, 100% { transform: translateY(0) translateZ(0); }
+  50% { transform: translateY(-10px) translateZ(20px); }
+}
+
+.float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.float-delay-1 { animation-delay: -1s; }
+.float-delay-2 { animation-delay: -2s; }
+.float-delay-3 { animation-delay: -3s; }
+.float-delay-4 { animation-delay: -4s; }
+
+/* ========================================
+   NEON TEXT & BORDERS
+   ======================================== */
+
+.text-glow-cyan {
+  color: #22d3ee;
+  text-shadow: 
+    0 0 10px rgba(34, 211, 238, 0.8),
+    0 0 20px rgba(34, 211, 238, 0.5),
+    0 0 40px rgba(34, 211, 238, 0.3);
+}
+
+.text-glow-purple {
+  color: #8b5cf6;
+  text-shadow: 
+    0 0 10px rgba(139, 92, 246, 0.8),
+    0 0 20px rgba(139, 92, 246, 0.5),
+    0 0 40px rgba(139, 92, 246, 0.3);
+}
+
+.text-glow-pink {
+  color: #ec4899;
+  text-shadow: 
+    0 0 10px rgba(236, 72, 153, 0.8),
+    0 0 20px rgba(236, 72, 153, 0.5),
+    0 0 40px rgba(236, 72, 153, 0.3);
+}
+
+.text-glow-green {
+  color: #10b981;
+  text-shadow: 
+    0 0 10px rgba(16, 185, 129, 0.8),
+    0 0 20px rgba(16, 185, 129, 0.5),
+    0 0 40px rgba(16, 185, 129, 0.3);
+}
+
+.border-glow-cyan {
+  border-color: rgba(34, 211, 238, 0.5);
+  box-shadow: 
+    0 0 15px rgba(34, 211, 238, 0.3),
+    inset 0 0 15px rgba(34, 211, 238, 0.1);
+}
+
+/* ========================================
+   ANIMATED GRID BACKGROUND
+   ======================================== */
+
+.grid-bg {
+  position: fixed;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(34, 211, 238, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34, 211, 238, 0.03) 1px, transparent 1px);
+  background-size: 80px 80px;
+  mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ========================================
+   SCAN LINE EFFECT
+   ======================================== */
+
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+.scanline {
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(34, 211, 238, 0.5), transparent);
+  animation: scanline 4s linear infinite;
+  pointer-events: none;
+}
+
+/* ========================================
+   PULSE ANIMATIONS
+   ======================================== */
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.5; }
+}
+
+.pulse-dot {
+  animation: pulse-dot 1.5s ease-in-out infinite;
+}
+
+/* ========================================
+   METRIC VALUE ANIMATIONS
+   ======================================== */
+
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.metric-value {
+  animation: count-up 0.5s ease-out forwards;
+}
+
+/* ========================================
+   CORNER ACCENTS
+   ======================================== */
+
+.corner-accent {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+}
+
+.corner-accent-tl {
+  top: 0;
+  left: 0;
+  border-top: 2px solid rgba(34, 211, 238, 0.5);
+  border-left: 2px solid rgba(34, 211, 238, 0.5);
+  border-top-left-radius: 8px;
+}
+
+.corner-accent-tr {
+  top: 0;
+  right: 0;
+  border-top: 2px solid rgba(34, 211, 238, 0.5);
+  border-right: 2px solid rgba(34, 211, 238, 0.5);
+  border-top-right-radius: 8px;
+}
+
+.corner-accent-bl {
+  bottom: 0;
+  left: 0;
+  border-bottom: 2px solid rgba(34, 211, 238, 0.5);
+  border-left: 2px solid rgba(34, 211, 238, 0.5);
+  border-bottom-left-radius: 8px;
+}
+
+.corner-accent-br {
+  bottom: 0;
+  right: 0;
+  border-bottom: 2px solid rgba(34, 211, 238, 0.5);
+  border-right: 2px solid rgba(34, 211, 238, 0.5);
+  border-bottom-right-radius: 8px;
+}
+
+/* ========================================
+   SCROLLBAR STYLING
+   ======================================== */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(10, 15, 30, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(34, 211, 238, 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(34, 211, 238, 0.5);
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+
+@layer components {
+  .container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+
+  .flex {
+    min-height: 0;
+    min-width: 0;
+  }
+
+  @media (min-width: 1024px) {
+    .container {
+      padding-left: 2rem;
+      padding-right: 2rem;
+      max-width: 1600px;
+    }
+  }
+}
+
+/* Selection styling */
+::selection {
+  background: rgba(34, 211, 238, 0.3);
+  color: white;
+}
+
+/* Focus styling */
+:focus-visible {
+  outline: 2px solid rgba(34, 211, 238, 0.5);
+  outline-offset: 2px;
+}
+
+/* ========================================
+   RESPONSIVE ADJUSTMENTS
+   ======================================== */
+
+@media (max-width: 768px) {
+  .glass-card {
+    border-radius: 1rem;
+  }
+  
+  .text-glow-cyan,
+  .text-glow-purple,
+  .text-glow-pink,
+  .text-glow-green {
+    text-shadow: 
+      0 0 5px currentColor,
+      0 0 10px currentColor;
+  }
+}

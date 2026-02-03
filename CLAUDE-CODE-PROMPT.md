@@ -1,200 +1,156 @@
-# PROMPT PARA CLAUDE CODE - WINDOWS
+# PROMPT COMPLETO PARA CLAUDE CODE - WINDOWS
 
-Cole este prompt inteiro no Claude Code no seu PC Windows:
+Cole este prompt no Claude Code do seu Windows para deploy completo:
 
 ---
 
-## PROMPT INÍCIO (COPIE A PARTIR DAQUI)
+## PROMPT (COPIE TUDO ABAIXO)
 
 ```
-Preciso que você faça o deploy completo do OpenClaw Aurora no meu Windows. Siga EXATAMENTE estes passos:
+Faça o deploy completo do OpenClaw Aurora com Dashboard no meu Windows.
 
-## 1. VERIFICAR PRÉ-REQUISITOS
-
-Execute estes comandos para verificar se Node.js e Git estão instalados:
-
-```powershell
-node --version
-git --version
-```
-
-Se algum não estiver instalado, me avise.
-
-## 2. CRIAR PASTA E CLONAR REPOSITÓRIO
-
-```powershell
-cd $env:USERPROFILE
+## PASSO 1 - Clonar repositório principal
+cd C:\Users\lucas
 git clone https://github.com/lucastigrereal-dev/openclaw_aurora.git
 cd openclaw_aurora
 git checkout claude/monitoring-crash-prevention-Qx84d
-```
 
-## 3. INSTALAR DEPENDÊNCIAS
-
-```powershell
+## PASSO 2 - Instalar dependências do backend
 npm install
-```
 
-## 4. VERIFICAR/CRIAR ARQUIVO .ENV
+## PASSO 3 - Verificar arquivo .env
+O .env deve ter:
+- TELEGRAM_BOT_TOKEN
+- ANTHROPIC_API_KEY (opcional)
+- OPENAI_API_KEY (opcional)
+- OLLAMA_URL=http://172.28.240.1:11434
+- OLLAMA_ENABLED=true
 
-O arquivo .env deve conter:
+Se não existir, crie baseado no .env.example
 
-```env
-# Telegram Bot (já configurado no .env do repo)
-TELEGRAM_BOT_TOKEN=<usa_o_que_ja_tem_no_.env>
-TELEGRAM_CHAT_ID=<usa_o_que_ja_tem_no_.env>
+## PASSO 4 - Instalar dependências do dashboard
+cd dashboard-prometheus
+npm install -g pnpm
+pnpm install
+cd ..
 
-# Claude (Anthropic) - já configurado no .env do repo
-ANTHROPIC_API_KEY=<usa_o_que_ja_tem_no_.env>
+## PASSO 5 - Criar scripts de inicialização
 
-# OpenAI GPT - já configurado no .env do repo
-OPENAI_API_KEY=<usa_o_que_ja_tem_no_.env>
-
-# Ollama
-OLLAMA_URL=http://localhost:11434
-OLLAMA_ENABLED=false
-
-# Aurora Monitor
-AURORA_PORT=18790
-```
-
-## 5. CRIAR SCRIPTS DE INICIALIZAÇÃO
-
-Crie o arquivo START-AURORA.bat na pasta do projeto com:
-
-```batch
+Crie START-BACKEND.bat:
 @echo off
-cd /d "%USERPROFILE%\openclaw_aurora"
+cd /d "C:\Users\lucas\openclaw_aurora"
+echo Iniciando Backend OpenClaw Aurora...
+npx ts-node start-all.ts
+pause
+
+Crie START-DASHBOARD.bat:
+@echo off
+cd /d "C:\Users\lucas\openclaw_aurora\dashboard-prometheus"
+echo Iniciando Dashboard...
+pnpm dev
+pause
+
+Crie START-TUDO.bat:
+@echo off
+cd /d "C:\Users\lucas\openclaw_aurora"
 echo ========================================
-echo    OPENCLAW AURORA - INICIANDO
+echo    OPENCLAW AURORA - SISTEMA COMPLETO
 echo ========================================
+start "Backend" cmd /c "npx ts-node start-all.ts"
+timeout /t 5
+start "Dashboard" cmd /c "cd dashboard-prometheus && pnpm dev"
 echo.
+echo Backend: ws://localhost:18789
+echo Dashboard: http://localhost:5173
+echo.
+pause
+
+## PASSO 6 - Iniciar o sistema
+
+Opção A - Só backend (WebSocket + Skills + Telegram):
 npx ts-node start-all.ts
-pause
-```
 
-Crie o arquivo START-WEBSOCKET.bat:
-
-```batch
-@echo off
-cd /d "%USERPROFILE%\openclaw_aurora"
-echo Iniciando apenas WebSocket Server...
-npx ts-node main.ts
-pause
-```
-
-Crie o arquivo TEST-SKILLS.bat:
-
-```batch
-@echo off
-cd /d "%USERPROFILE%\openclaw_aurora"
-echo Testando Skills...
-npx ts-node test-skills.ts
-pause
-```
-
-## 6. INICIAR O SISTEMA
-
-```powershell
-cd $env:USERPROFILE\openclaw_aurora
-npx ts-node start-all.ts
-```
+Opção B - Backend + Dashboard:
+Execute START-TUDO.bat
 
 ## RESULTADO ESPERADO
 
-Após iniciar, você deve ver:
-- WebSocket Server rodando em ws://localhost:18789
-- Bot Telegram conectado
-- 17 Skills ativas
-- Circuit Breaker e Watchdog funcionando
+Backend rodando em:
+- WebSocket: ws://localhost:18789
+- Bot Telegram: conectado
+- 17 Skills: ativas
+- Aurora Monitor: Circuit Breaker + Rate Limiter
 
-## COMO CONECTAR O DASHBOARD
+Dashboard rodando em:
+- URL: http://localhost:5173
+- Chat com KRONOS disponível no canto inferior direito
 
-O Dashboard prometheus-cockpit-jarvis deve ser configurado para conectar em:
-ws://localhost:18789
+## COMO USAR O CHAT
 
-Mensagens que o dashboard pode enviar:
+1. Abra http://localhost:5173 no navegador
+2. Clique no avatar pulsante no canto inferior direito
+3. Selecione o modelo (Ollama, Claude, GPT)
+4. Digite sua mensagem e envie
 
-Chat com IA:
-{"type": "chat", "id": "1", "message": "Olá KRONOS!", "model": "claude"}
-
-Executar skill:
-{"type": "execute_skill", "id": "1", "skill": "ai.claude", "input": {"prompt": "teste"}}
-
-Listar skills:
-{"type": "command", "id": "1", "command": "list_skills"}
-
-Status:
-{"type": "command", "id": "1", "command": "get_status"}
-
-Execute todos os passos acima em sequência. Me avise quando terminar cada etapa.
-```
-
-## PROMPT FIM (COPIE ATÉ AQUI)
-
----
-
-# ALTERNATIVA: COMANDO ÚNICO
-
-Se preferir rodar tudo de uma vez no PowerShell (sem Claude Code):
-
-```powershell
-# Executa deploy completo
-cd $env:USERPROFILE; git clone https://github.com/lucastigrereal-dev/openclaw_aurora.git; cd openclaw_aurora; git checkout claude/monitoring-crash-prevention-Qx84d; npm install; npx ts-node start-all.ts
+Execute todos os passos e me avise quando terminar.
 ```
 
 ---
 
-# ESTRUTURA FINAL
-
-Após o deploy, você terá:
+## ESTRUTURA FINAL
 
 ```
-C:\Users\SeuUsuario\openclaw_aurora\
-├── .env                          # Configurações (já tem as chaves)
-├── START-AURORA.bat              # Clique duplo para iniciar
-├── START-WEBSOCKET.bat           # Só WebSocket
-├── TEST-SKILLS.bat               # Testar skills
-├── start-all.ts                  # Script principal
-├── websocket-server.ts           # WebSocket + Chat
-├── telegram-bot.ts               # Bot Telegram
-├── skill-executor.ts             # Executor de skills
-├── aurora-openclaw-integration.ts # Monitor de proteção
-└── skills/
-    ├── ai-claude.ts              # Skill Claude
-    ├── ai-gpt.ts                 # Skill GPT
-    ├── ai-ollama.ts              # Skill Ollama
-    ├── comm-telegram.ts          # Skill Telegram
-    ├── exec-bash.ts              # Skill Bash
-    ├── file-ops.ts               # Skills de arquivo
-    ├── web-fetch.ts              # Skills web
-    └── util-misc.ts              # Utilitários
+C:\Users\lucas\openclaw_aurora\
+├── .env                    # Configurações
+├── package.json            # Backend deps
+├── start-all.ts            # Inicia backend
+├── start-unified.ts        # Inicia backend + dashboard
+├── websocket-server.ts     # WebSocket + Chat
+├── telegram-bot.ts         # Bot Telegram
+├── skill-executor.ts       # Executor de skills
+├── aurora-openclaw-integration.ts  # Monitor
+├── skills/                 # 17 skills
+│   ├── ai-claude.ts
+│   ├── ai-gpt.ts
+│   ├── ai-ollama.ts
+│   └── ...
+├── dashboard-prometheus/   # Dashboard React
+│   ├── package.json
+│   ├── client/
+│   │   └── src/
+│   │       ├── components/
+│   │       │   └── AuroraAvatar.tsx  # Chat
+│   │       ├── services/
+│   │       │   └── openclawWebSocket.ts
+│   │       └── pages/
+│   └── ...
+├── START-BACKEND.bat       # Script backend
+├── START-DASHBOARD.bat     # Script dashboard
+└── START-TUDO.bat          # Script completo
 ```
 
 ---
 
-# PORTAS UTILIZADAS
+## PORTAS
 
 | Porta | Serviço |
 |-------|---------|
-| 18789 | WebSocket Server (Dashboard + Chat) |
-| 18790 | Aurora Monitor (interno) |
+| 18789 | WebSocket (Backend) |
+| 5173  | Dashboard (Vite) |
 
 ---
 
-# COMANDOS ÚTEIS
+## COMANDOS
 
 ```powershell
-# Iniciar sistema completo
-cd $env:USERPROFILE\openclaw_aurora
+# Só backend
+cd C:\Users\lucas\openclaw_aurora
 npx ts-node start-all.ts
 
-# Só WebSocket (sem Telegram)
-npx ts-node main.ts
+# Só dashboard
+cd C:\Users\lucas\openclaw_aurora\dashboard-prometheus
+pnpm dev
 
-# Testar skills
-npx ts-node test-skills.ts
-
-# Ver skills disponíveis
-npm run skills:list
+# Tudo junto
+START-TUDO.bat
 ```

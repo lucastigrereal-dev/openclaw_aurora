@@ -4,6 +4,7 @@
  */
 
 import { WebSocketServer, WebSocket } from 'ws';
+import { createServer, IncomingMessage } from 'http';
 import { getAuroraMonitor, AuroraMonitor } from './aurora-openclaw-integration';
 import { getSkillExecutor, SkillExecutor } from './skill-executor';
 
@@ -53,13 +54,30 @@ export class DashboardWebSocketServer {
   }
 
   start(port: number): void {
-    this.wss = new WebSocketServer({ port });
-    console.log(`[WebSocket] Server started on port ${port}`);
-    console.log(`[WebSocket] Chat and commands enabled`);
+    // Cria servidor HTTP para suportar paths
+    const server = createServer((req, res) => {
+      // Health check endpoint
+      if (req.url === '/health') {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ status: 'ok', timestamp: Date.now() }));
+      } else {
+        res.writeHead(404);
+        res.end();
+      }
+    });
 
-    this.wss.on('connection', (ws) => {
+    // WebSocket aceita conexões em / ou /api/v1/ws
+    this.wss = new WebSocketServer({ server });
+
+    server.listen(port, () => {
+      console.log(`[WebSocket] Server started on port ${port}`);
+      console.log(`[WebSocket] Accepts: ws://localhost:${port} or ws://localhost:${port}/api/v1/ws`);
+      console.log(`[WebSocket] Chat and commands enabled`);
+    });
+
+    this.wss.on('connection', (ws, req: IncomingMessage) => {
       this.clients.add(ws);
-      console.log(`[WebSocket] Client connected (${this.clients.size} total)`);
+      console.log(`[WebSocket] Client connected via path: ${req.url || '/'} (${this.clients.size} total)`);
 
       // Envia status inicial + lista de skills
       this.sendToClient(ws, {
@@ -237,8 +255,9 @@ export class DashboardWebSocketServer {
       timestamp: Date.now(),
     });
 
-    // Broadcast notificação de resposta
+    // Broadcast notificação de resposta (formato que AuroraAvatar espera)
     if (result.success) {
+      // Notificação para Activity Feed
       this.broadcast({
         type: 'notification',
         event: 'notification_sent',
@@ -247,6 +266,31 @@ export class DashboardWebSocketServer {
           message: result.data?.content?.slice(0, 100) + (result.data?.content?.length > 100 ? '...' : ''),
           priority: 'low',
           action: 'ai_response',
+          // Campos extras para o AuroraAvatar
+          response: result.data?.content,
+          model: model,
+        },
+        // metadata para AuroraAvatar
+        metadata: {
+          response: result.data?.content,
+          model: model,
+        },
+        timestamp: Date.now(),
+      });
+    } else {
+      // Notifica erro
+      this.broadcast({
+        type: 'notification',
+        event: 'notification_sent',
+        data: {
+          title: 'Erro KRONOS',
+          message: result.error || 'Erro desconhecido',
+          priority: 'high',
+          action: 'ai_error',
+        },
+        metadata: {
+          response: `Erro: ${result.error || 'Desconhecido'}`,
+          model: model,
         },
         timestamp: Date.now(),
       });
