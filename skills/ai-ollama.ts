@@ -64,7 +64,7 @@ export class AIOllamaSkill extends Skill {
         throw new Error(`Ollama error: ${response.status} - ${error}`);
       }
 
-      const data = await response.json();
+      const data: any = await response.json();
 
       return {
         success: true,
@@ -88,7 +88,7 @@ export class AIOllamaSkill extends Skill {
   async listModels(): Promise<string[]> {
     try {
       const response = await fetch(`${this.baseUrl}/api/tags`);
-      const data = await response.json();
+      const data: any = await response.json();
       return data.models?.map((m: any) => m.name) || [];
     } catch {
       return [];

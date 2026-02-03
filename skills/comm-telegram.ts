@@ -83,7 +83,7 @@ export class TelegramSendSkill extends Skill {
         body: JSON.stringify(body),
       });
 
-      const data = await response.json();
+      const data: any = await response.json();
 
       if (!data.ok) {
         throw new Error(data.description || 'Telegram API error');
@@ -147,7 +147,7 @@ export class TelegramGetUpdatesSkill extends Skill {
       }
 
       const response = await fetch(`${this.baseUrl}/getUpdates?${params}`);
-      const data = await response.json();
+      const data: any = await response.json();
 
       if (!data.ok) {
         throw new Error(data.description || 'Telegram API error');

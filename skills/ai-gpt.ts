@@ -71,15 +71,15 @@ export class AIGPTSkill extends Skill {
         throw new Error(`OpenAI API error: ${response.status} - ${error}`);
       }
 
-      const data = await response.json();
+      const data: any = await response.json();
 
       return {
         success: true,
         data: {
-          content: data.choices[0]?.message?.content || '',
+          content: data.choices?.[0]?.message?.content || '',
           model: data.model,
           usage: data.usage,
-          finishReason: data.choices[0]?.finish_reason,
+          finishReason: data.choices?.[0]?.finish_reason,
         },
       };
     } catch (error: any) {

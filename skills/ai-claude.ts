@@ -75,12 +75,12 @@ export class AIClaudeSkill extends Skill {
         throw new Error(`Claude API error: ${response.status} - ${error}`);
       }
 
-      const data = await response.json();
+      const data: any = await response.json();
 
       return {
         success: true,
         data: {
-          content: data.content[0]?.text || '',
+          content: data.content?.[0]?.text || '',
           model: data.model,
           usage: data.usage,
           stopReason: data.stop_reason,
