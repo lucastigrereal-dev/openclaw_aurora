@@ -121,16 +121,18 @@ export type {
 export { AuroraLogger } from './utils/logger';
 
 // Quick start helper
+import { OpenClawIntegration as OCI } from './integrations/openclaw';
+import { AuroraWebSocketServer as AWSS } from './integrations/websocket-server';
+
 export function quickStart(options?: {
   port?: number;
   enableDashboard?: boolean;
 }) {
-  const integration = createOpenClawIntegration();
+  const integration = new OCI();
   integration.start();
 
   if (options?.enableDashboard !== false) {
-    const { createMetricsServer } = require('./integrations/websocket-server');
-    const server = createMetricsServer(integration, {
+    const server = new AWSS(integration, {
       port: options?.port || 18790,
     });
     server.start();

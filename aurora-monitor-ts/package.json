@@ -4,7 +4,6 @@
   "description": "Sistema de monitoramento, embargo e correção em tempo real para OpenClaw",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "type": "module",
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
