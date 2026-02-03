@@ -151,3 +151,4 @@ config/local.json
 # Node.js
 node_modules/
 aurora-monitor-ts/dist/
+.env

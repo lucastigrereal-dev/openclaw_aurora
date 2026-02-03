@@ -23,7 +23,7 @@ require('dotenv').config();
 
 const {
   OpenClawIntegration,
-  WebSocketMetricsServer,
+  AuroraWebSocketServer,
   AlertLevel
 } = require('./aurora-monitor-ts/dist');
 
@@ -274,9 +274,8 @@ async function startAurora() {
     }
 
     console.log('[3/4] Iniciando servidor WebSocket...');
-    const wsServer = new WebSocketMetricsServer({
+    const wsServer = new AuroraWebSocketServer(integration, {
       port: config.port,
-      metricsInterval: 2000,
     });
     await wsServer.start();
     console.log(`  WebSocket ativo em: ws://localhost:${config.port}`);
