@@ -8,6 +8,8 @@
     "build": "tsc",
     "start": "node dist/main.js",
     "dev": "ts-node main.ts",
+    "bot": "ts-node telegram-bot.ts",
+    "all": "ts-node start-all.ts",
     "test": "ts-node test-skills.ts",
     "skills:list": "ts-node -e \"require('./skills').registerAllSkills().listAll().forEach(s => console.log(s.name, '-', s.description))\""
   },
