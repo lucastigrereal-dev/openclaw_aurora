@@ -22,6 +22,13 @@ export * from './browser-control';
 export * from './autopc-control';
 export * from './security-config';
 
+// NEW: Marketing Hub skills
+export * from './marketing-captacao';
+export * from './social-media';
+export * from './content-ia';
+export * from './reviews-reputation';
+export * from './analytics-roi';
+
 // Imports para registro
 import { getSkillRegistry, SkillRegistry } from './skill-base';
 import { ExecBashSkill } from './exec-bash';
@@ -38,6 +45,13 @@ import { execExtendedSkills } from './exec-extended';
 import { browserSkills } from './browser-control';
 import { autopcSkills } from './autopc-control';
 import { securityManager, isSkillAllowed } from './security-config';
+
+// NEW: Marketing Hub imports
+import { marketingSkills } from './marketing-captacao';
+import { socialSkills } from './social-media';
+import { contentSkills } from './content-ia';
+import { reviewsSkills } from './reviews-reputation';
+import { analyticsSkills } from './analytics-roi';
 
 /**
  * Registra todas as skills no registry
@@ -106,6 +120,16 @@ export function registerAllSkills(registry?: SkillRegistry): SkillRegistry {
     }
   });
 
+  // NEW: Marketing Hub Skills
+  console.log('[Skills] Registering marketing hub skills...');
+  [...marketingSkills, ...socialSkills, ...contentSkills, ...reviewsSkills, ...analyticsSkills].forEach(skill => {
+    if (isSkillAllowed(skill.name)) {
+      reg.register(skill as any);
+    } else {
+      console.log(`[Skills] Skipped (blocked): ${skill.name}`);
+    }
+  });
+
   console.log(`[Skills] Registered ${reg.getStats().total} skills`);
 
   return reg;
@@ -149,6 +173,13 @@ export function registerAllSkillsUnsafe(registry?: SkillRegistry): SkillRegistry
 
   // AutoPC skills
   autopcSkills.forEach(skill => reg.register(skill as any));
+
+  // Marketing Hub skills
+  marketingSkills.forEach(skill => reg.register(skill as any));
+  socialSkills.forEach(skill => reg.register(skill as any));
+  contentSkills.forEach(skill => reg.register(skill as any));
+  reviewsSkills.forEach(skill => reg.register(skill as any));
+  analyticsSkills.forEach(skill => reg.register(skill as any));
 
   console.log(`[Skills] ⚠️ Registered ${reg.getStats().total} skills (ALL ENABLED)`);
 
@@ -215,6 +246,36 @@ export const AVAILABLE_SKILLS = [
   { name: 'util.uuid', category: 'UTIL', description: 'Gera UUIDs', dangerous: false },
   { name: 'util.hash', category: 'UTIL', description: 'Calcula hashes', dangerous: false },
   { name: 'util.json', category: 'UTIL', description: 'Operações JSON', dangerous: false },
+
+  // MARKETING
+  { name: 'marketing.landing', category: 'MARKETING', description: 'Gera landing pages', dangerous: false },
+  { name: 'marketing.leads', category: 'MARKETING', description: 'CRM de leads', dangerous: false },
+  { name: 'marketing.funnel', category: 'MARKETING', description: 'Funil de vendas', dangerous: false },
+  { name: 'marketing.ads', category: 'MARKETING', description: 'Google/Meta Ads', dangerous: true },
+
+  // SOCIAL
+  { name: 'social.post', category: 'SOCIAL', description: 'Posta nas redes sociais', dangerous: true },
+  { name: 'social.schedule', category: 'SOCIAL', description: 'Agenda posts', dangerous: false },
+  { name: 'social.caption', category: 'SOCIAL', description: 'Gera legendas com IA', dangerous: false },
+  { name: 'social.reels', category: 'SOCIAL', description: 'Gera roteiros de Reels', dangerous: false },
+  { name: 'social.analytics', category: 'SOCIAL', description: 'Metricas de engajamento', dangerous: false },
+
+  // CONTENT
+  { name: 'content.blog', category: 'CONTENT', description: 'Gera artigos SEO', dangerous: false },
+  { name: 'content.image', category: 'CONTENT', description: 'Gera artes para social', dangerous: false },
+  { name: 'content.video', category: 'CONTENT', description: 'Gera roteiros de video', dangerous: false },
+  { name: 'content.email', category: 'CONTENT', description: 'Templates de email', dangerous: false },
+
+  // REVIEWS
+  { name: 'reviews.google', category: 'REVIEWS', description: 'Monitora reviews Google', dangerous: false },
+  { name: 'reviews.request', category: 'REVIEWS', description: 'Pede avaliacao pos-consulta', dangerous: false },
+  { name: 'reviews.report', category: 'REVIEWS', description: 'Relatorio de reputacao', dangerous: false },
+
+  // ANALYTICS
+  { name: 'analytics.dashboard', category: 'ANALYTICS', description: 'Dashboard de metricas', dangerous: false },
+  { name: 'analytics.roi', category: 'ANALYTICS', description: 'Calcula ROI por canal', dangerous: false },
+  { name: 'analytics.conversion', category: 'ANALYTICS', description: 'Taxa de conversao', dangerous: false },
+  { name: 'analytics.report', category: 'ANALYTICS', description: 'Relatorio mensal', dangerous: false },
 ] as const;
 
 /**
