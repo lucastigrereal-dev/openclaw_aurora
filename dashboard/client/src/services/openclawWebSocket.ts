@@ -14,6 +14,33 @@ export interface OpenClawEvent {
   metadata?: Record<string, any>;
 }
 
+/**
+ * Detecta o WebSocket URL automaticamente:
+ * - Em dev (localhost): ws://localhost:18789/api/v1/ws
+ * - Em producao (Vercel -> Railway): wss://openclawaurora-production.up.railway.app/api/v1/ws
+ * - Pode ser overridden via VITE_WS_URL
+ */
+function getDefaultWebSocketUrl(): string {
+  // 1. Environment variable tem prioridade
+  const envUrl = import.meta.env?.VITE_WS_URL;
+  if (envUrl) return envUrl;
+
+  // 2. Detecta automaticamente baseado no hostname
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
+
+    if (!isLocalhost) {
+      // Producao: conecta ao Railway backend via WSS
+      const railwayUrl = import.meta.env?.VITE_RAILWAY_URL || 'openclawaurora-production.up.railway.app';
+      return `wss://${railwayUrl}/api/v1/ws`;
+    }
+  }
+
+  // 3. Default: localhost
+  return 'ws://localhost:18789/api/v1/ws';
+}
+
 export class OpenClawWebSocketService {
   private ws: WebSocket | null = null;
   private url: string;
@@ -24,8 +51,8 @@ export class OpenClawWebSocketService {
   private messageHandlers: ((event: OpenClawEvent) => void)[] = [];
   private connectionHandlers: ((connected: boolean) => void)[] = [];
 
-  constructor(url: string = 'ws://localhost:18789/api/v1/ws') {
-    this.url = url;
+  constructor(url?: string) {
+    this.url = url || getDefaultWebSocketUrl();
   }
 
   connect(): Promise<void> {
