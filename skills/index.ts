@@ -29,6 +29,12 @@ export * from './content-ia';
 export * from './reviews-reputation';
 export * from './analytics-roi';
 
+// EVOLUTION: Phase 2 skills
+export * from './registry-v2';
+export * from './sandbox-runner';
+export * from './skill-scaffolder';
+export * from './intent-router';
+
 // Imports para registro
 import { getSkillRegistry, SkillRegistry } from './skill-base';
 import { ExecBashSkill } from './exec-bash';
@@ -52,6 +58,9 @@ import { socialSkills } from './social-media';
 import { contentSkills } from './content-ia';
 import { reviewsSkills } from './reviews-reputation';
 import { analyticsSkills } from './analytics-roi';
+
+// EVOLUTION: Phase 2 imports
+import { getSkillRegistryV2, buildSpecFromAvailable } from './registry-v2';
 
 /**
  * Registra todas as skills no registry
@@ -131,6 +140,13 @@ export function registerAllSkills(registry?: SkillRegistry): SkillRegistry {
   });
 
   console.log(`[Skills] Registered ${reg.getStats().total} skills`);
+
+  // Popula RegistryV2 com specs de todas as skills
+  const regV2 = getSkillRegistryV2();
+  for (const skill of AVAILABLE_SKILLS) {
+    regV2.register(buildSpecFromAvailable(skill));
+  }
+  console.log(`[RegistryV2] ${regV2.getStats().total} skill specs loaded`);
 
   return reg;
 }
