@@ -21,9 +21,10 @@ async function startAll() {
   monitor.startAll();
 
   // 2. Inicia WebSocket com Chat
-  console.log('[2/3] Iniciando WebSocket Server (Chat + Comandos)...');
+  const wsPort = parseInt(process.env.PORT || process.env.WEBSOCKET_PORT || '18789');
+  console.log(`[2/3] Iniciando WebSocket Server (Chat + Comandos) na porta ${wsPort}...`);
   const wsServer = getDashboardServer();
-  wsServer.start(18789);
+  wsServer.start(wsPort);
 
   // 3. Inicia Bot Telegram
   console.log('[3/3] Iniciando Bot Telegram...');
@@ -34,7 +35,7 @@ async function startAll() {
   console.log('\n╔══════════════════════════════════════════════════════════╗');
   console.log('║              TODOS OS SERVIÇOS ATIVOS                     ║');
   console.log('╠══════════════════════════════════════════════════════════╣');
-  console.log('║  ✅ WebSocket Server   - ws://localhost:18789            ║');
+  console.log(`║  ✅ WebSocket Server   - ws://localhost:${wsPort}            ║`);
   console.log('║  ✅ Chat IA            - Claude/GPT/Ollama               ║');
   console.log('║  ✅ Telegram Bot       - Conectado                        ║');
   console.log(`║  ✅ ${stats.skills.total} Skills          - Ativas                           ║`);
@@ -42,7 +43,7 @@ async function startAll() {
   console.log('║  ✅ Watchdog           - Monitorando processos            ║');
   console.log('╠══════════════════════════════════════════════════════════╣');
   console.log('║                                                            ║');
-  console.log('║  Dashboard: Conecte em ws://localhost:18789               ║');
+  console.log(`║  Dashboard: Conecte em ws://localhost:${wsPort}               ║`);
   console.log('║  Telegram:  Mande mensagem pro seu bot                    ║');
   console.log('║                                                            ║');
   console.log('╚══════════════════════════════════════════════════════════╝\n');
