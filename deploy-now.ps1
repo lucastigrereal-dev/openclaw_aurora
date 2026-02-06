@@ -4,9 +4,9 @@
 $ErrorActionPreference = "Stop"
 
 # ===== CONFIGURATION =====
-$VERCEL_TOKEN = "1xZDeGW1lg5RvNoUzOexBXas"
-$RAILWAY_TOKEN = "ad44146e-e0a2-4a56-886a-244b47c9aec6"
-$VERCEL_ORG_ID = "lucas-projects-ffa9a1fb"
+$VERCEL_TOKEN = $env:VERCEL_TOKEN
+$RAILWAY_TOKEN = $env:RAILWAY_TOKEN
+$VERCEL_ORG_ID = $env:VERCEL_ORG_ID
 $REPO_URL = "https://github.com/lucastigrereal-dev/openclaw_aurora.git"
 
 Write-Host "========================================" -ForegroundColor Cyan
