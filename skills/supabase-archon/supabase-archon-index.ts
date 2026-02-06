@@ -11,15 +11,18 @@ import { SkillStatus, SkillRiskLevel } from '../skill-spec';
 
 // Skills - P0 Segurança
 import { SupabaseSchemaSentinel } from './supabase-schema-sentinel';
-// import { SupabaseRLSAuditor } from './supabase-rls-auditor'; // TODO: Implementar Dia 3
-// import { SupabasePermissionDiff } from './supabase-permission-diff'; // TODO: Implementar Dia 4
-// import { SupabaseSecretsScanner } from './supabase-secrets-scanner'; // TODO: Implementar Dia 4
+import { SupabaseRLSAuditor } from './supabase-rls-auditor';
+import { SupabasePermissionDiff } from './supabase-permission-diff';
+import { SupabaseSecretsScanner } from './supabase-secrets-scanner';
 
 // Skills - P0 Banco
-// import { SupabaseMigrationPlanner } from './supabase-migration-planner'; // TODO: Implementar Dia 5
-// import { SupabaseSchemaDiffer } from './supabase-schema-differ'; // TODO: Implementar Dia 5
-// import { SupabaseQueryDoctor } from './supabase-query-doctor'; // TODO: Implementar Dia 6
-// import { SupabaseBackupDriller } from './supabase-backup-driller'; // TODO: Implementar Dia 6
+import { SupabaseMigrationPlanner } from './supabase-migration-planner';
+import { SupabaseSchemaDiffer } from './supabase-schema-differ';
+import { SupabaseQueryDoctor } from './supabase-query-doctor';
+import { SupabaseBackupDriller } from './supabase-backup-driller';
+
+// Skills - P1 Monitoramento
+import { SupabaseHealthDashboard } from './supabase-health-dashboard';
 
 // Config
 import { getVault } from './supabase-vault-config';
@@ -44,11 +47,103 @@ export function registerSupabaseArchonSkills(): void {
     tags: ['supabase', 'security', 'monitoring', 'schema'],
   });
 
-  // TODO: Registrar mais skills conforme forem implementadas
-  // Dias 3-4: RLS Auditor, Permission Diff, Secrets Scanner
-  // Dias 5-6: Migration Planner, Schema Differ, Query Doctor, Backup Driller
+  // S-02: RLS Auditor Pro
+  const rlsAuditor = new SupabaseRLSAuditor();
+  registry.register(rlsAuditor, {
+    name: 'supabase-rls-auditor',
+    version: '1.0.0',
+    status: SkillStatus.ACTIVE,
+    riskLevel: SkillRiskLevel.LOW,
+    category: 'UTIL',
+    description: 'Audits Row Level Security policies and detects weak configurations',
+    tags: ['supabase', 'security', 'rls', 'audit'],
+  });
 
-  console.log('[SupabaseArchon] ✓ 1 skill registered (29 more to come)');
+  // S-03: Permission Diff Engine
+  const permissionDiff = new SupabasePermissionDiff();
+  registry.register(permissionDiff, {
+    name: 'supabase-permission-diff',
+    version: '1.0.0',
+    status: SkillStatus.ACTIVE,
+    riskLevel: SkillRiskLevel.LOW,
+    category: 'UTIL',
+    description: 'Detects permission changes and escalations between baseline and current state',
+    tags: ['supabase', 'security', 'permissions', 'compliance'],
+  });
+
+  // S-04: Secrets Scanner
+  const secretsScanner = new SupabaseSecretsScanner();
+  registry.register(secretsScanner, {
+    name: 'supabase-secrets-scanner',
+    version: '1.0.0',
+    status: SkillStatus.ACTIVE,
+    riskLevel: SkillRiskLevel.LOW,
+    category: 'UTIL',
+    description: 'Scans code and configs for exposed credentials and secrets',
+    tags: ['supabase', 'security', 'secrets', 'credentials'],
+  });
+
+  // S-06: Migration Planner Pro
+  const migrationPlanner = new SupabaseMigrationPlanner();
+  registry.register(migrationPlanner, {
+    name: 'supabase-migration-planner',
+    version: '1.0.0',
+    status: SkillStatus.ACTIVE,
+    riskLevel: SkillRiskLevel.MEDIUM,
+    category: 'UTIL',
+    description: 'Plans and validates database migrations with rollback support',
+    tags: ['supabase', 'migrations', 'database', 'schema'],
+  });
+
+  // S-07: Schema Differ Genius
+  const schemaDiffer = new SupabaseSchemaDiffer();
+  registry.register(schemaDiffer, {
+    name: 'supabase-schema-differ',
+    version: '1.0.0',
+    status: SkillStatus.ACTIVE,
+    riskLevel: SkillRiskLevel.LOW,
+    category: 'UTIL',
+    description: 'Compares schemas and generates migration SQL automatically',
+    tags: ['supabase', 'schema', 'diff', 'migrations'],
+  });
+
+  // S-08: Query Doctor
+  const queryDoctor = new SupabaseQueryDoctor();
+  registry.register(queryDoctor, {
+    name: 'supabase-query-doctor',
+    version: '1.0.0',
+    status: SkillStatus.ACTIVE,
+    riskLevel: SkillRiskLevel.LOW,
+    category: 'UTIL',
+    description: 'Analyzes SQL queries for performance issues, missing indexes, and optimization opportunities',
+    tags: ['supabase', 'performance', 'query', 'optimization'],
+  });
+
+  // S-11: Backup Driller
+  const backupDriller = new SupabaseBackupDriller();
+  registry.register(backupDriller, {
+    name: 'supabase-backup-driller',
+    version: '1.0.0',
+    status: SkillStatus.ACTIVE,
+    riskLevel: SkillRiskLevel.MEDIUM,
+    category: 'UTIL',
+    description: 'Creates, validates and tests database backups with integrity checks',
+    tags: ['supabase', 'backup', 'recovery', 'disaster-recovery'],
+  });
+
+  // S-13: Health Dashboard Live
+  const healthDashboard = new SupabaseHealthDashboard();
+  registry.register(healthDashboard, {
+    name: 'supabase-health-dashboard',
+    version: '1.0.0',
+    status: SkillStatus.ACTIVE,
+    riskLevel: SkillRiskLevel.LOW,
+    category: 'UTIL',
+    description: 'Real-time health monitoring for Supabase: connections, query performance, disk usage, replication lag',
+    tags: ['supabase', 'monitoring', 'health', 'performance', 'real-time'],
+  });
+
+  console.log('[SupabaseArchon] ✓ 9 skills registered (21 more to come)');
 }
 
 /**
@@ -89,7 +184,46 @@ export async function runSchemaSentinel(params?: any) {
   });
 }
 
+/**
+ * Executar Query Doctor (atalho)
+ */
+export async function runQueryDoctor(query: string, params?: any) {
+  const registry = getSkillRegistryV2();
+  const vault = getVault();
+
+  return registry.execute('supabase-query-doctor', {
+    query,
+    supabaseUrl: vault.get('SUPABASE_URL'),
+    supabaseKey: vault.get('SUPABASE_KEY'),
+    ...params,
+  });
+}
+
+/**
+ * Executar Health Dashboard (atalho)
+ */
+export async function runHealthDashboard(params?: any) {
+  const registry = getSkillRegistryV2();
+  const vault = getVault();
+
+  return registry.execute('supabase-health-dashboard', {
+    supabaseUrl: vault.get('SUPABASE_URL'),
+    supabaseKey: vault.get('SUPABASE_KEY'),
+    includeMetrics: ['all'],
+    ...params,
+  });
+}
+
 // Exports
 export { SupabaseSchemaSentinel };
+export { SupabaseRLSAuditor };
+export { SupabasePermissionDiff };
+export { SupabaseSecretsScanner };
+export { SupabaseMigrationPlanner };
+export { SupabaseSchemaDiffer };
+export { SupabaseQueryDoctor };
+export { SupabaseBackupDriller };
+export { SupabaseHealthDashboard };
 export { createLogger } from './supabase-logger';
 export { getVault, VaultManager } from './supabase-vault-config';
+export { getApprovalSystem } from './supabase-approval-system';
