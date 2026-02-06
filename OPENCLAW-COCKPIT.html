@@ -840,6 +840,213 @@
     </div>
 
     <script>
+        // ============================================================================
+        // WebSocket Connection Management
+        // ============================================================================
+
+        let ws = null;
+        let messageQueue = [];
+        let isConnected = false;
+        let reconnectAttempts = 0;
+        const MAX_RECONNECT_ATTEMPTS = 5;
+        const RECONNECT_DELAY = 3000;
+
+        // Initialize WebSocket connection
+        function initWebSocket(wsUrl = 'ws://localhost:8080') {
+            try {
+                console.log(`[Cockpit] Attempting to connect to ${wsUrl}`);
+                ws = new WebSocket(wsUrl);
+
+                ws.onopen = () => {
+                    console.log('[Cockpit] Connected to WebSocket server');
+                    isConnected = true;
+                    reconnectAttempts = 0;
+                    updateStatus('online');
+                    addBotMessage('✅ Conectado ao servidor OpenClaw Aurora!', 'system-connect');
+
+                    // Send any queued messages
+                    if (messageQueue.length > 0) {
+                        console.log(`[Cockpit] Sending ${messageQueue.length} queued messages`);
+                        messageQueue.forEach(msg => {
+                            ws.send(msg);
+                        });
+                        messageQueue = [];
+                    }
+                };
+
+                ws.onmessage = (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        handleWebSocketMessage(data);
+                    } catch (error) {
+                        console.error('[Cockpit] Error parsing message:', error);
+                        addBotMessage(`❌ Erro ao processar mensagem: ${error.message}`, 'system-error');
+                    }
+                };
+
+                ws.onerror = (error) => {
+                    console.error('[Cockpit] WebSocket error:', error);
+                    updateStatus('error');
+                };
+
+                ws.onclose = () => {
+                    console.log('[Cockpit] Disconnected from WebSocket server');
+                    isConnected = false;
+                    updateStatus('offline');
+
+                    // Attempt reconnect
+                    if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+                        reconnectAttempts++;
+                        console.log(`[Cockpit] Reconnecting in ${RECONNECT_DELAY}ms (attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`);
+                        addBotMessage(`⚠️ Reconectando... (tentativa ${reconnectAttempts})`, 'system-reconnect');
+                        setTimeout(() => initWebSocket(wsUrl), RECONNECT_DELAY);
+                    } else {
+                        console.error('[Cockpit] Max reconnection attempts reached');
+                        addBotMessage('❌ Falha ao conectar ao servidor. Atualize a página para tentar novamente.', 'system-error');
+                    }
+                };
+            } catch (error) {
+                console.error('[Cockpit] Failed to initialize WebSocket:', error);
+                updateStatus('error');
+                addBotMessage(`❌ Erro ao conectar: ${error.message}`, 'system-error');
+            }
+        }
+
+        // ============================================================================
+        // WebSocket Message Handlers
+        // ============================================================================
+
+        function handleWebSocketMessage(data) {
+            console.log('[Cockpit] Received message:', data.type);
+
+            switch (data.type) {
+                case 'chat':
+                    handleChatResponse(data);
+                    break;
+
+                case 'execute_skill':
+                    handleSkillExecutionResponse(data);
+                    break;
+
+                case 'command':
+                    handleCommandResponse(data);
+                    break;
+
+                default:
+                    console.warn('[Cockpit] Unknown message type:', data.type);
+            }
+        }
+
+        function handleChatResponse(data) {
+            if (data.response) {
+                addBotMessage(data.response, data.id);
+            } else if (data.error) {
+                addBotMessage(`❌ Erro: ${data.error}`, data.id);
+            }
+        }
+
+        function handleSkillExecutionResponse(data) {
+            if (data.status === 'in-progress') {
+                const progress = Math.round((data.progress || 0) * 100);
+                addBotMessage(`🔄 ${data.currentStep} (${progress}%)`, data.id);
+            } else if (data.status === 'complete') {
+                if (data.result) {
+                    const resultStr = JSON.stringify(data.result, null, 2).substring(0, 500);
+                    addBotMessage(`✅ Execução concluída!\n\n\`\`\`\n${resultStr}\n\`\`\``, data.id);
+                } else {
+                    addBotMessage(`✅ Skill execution completo!`, data.id);
+                }
+            } else if (data.status === 'error') {
+                addBotMessage(`❌ Erro ao executar skill: ${data.error || 'Unknown error'}`, data.id);
+            }
+        }
+
+        function handleCommandResponse(data) {
+            if (data.command === 'list_skills') {
+                if (data.skills && Array.isArray(data.skills)) {
+                    const skillsList = data.skills
+                        .slice(0, 15) // Limit to first 15
+                        .map(s => `• <strong>${s.name}</strong>: ${s.description}`)
+                        .join('\n');
+                    addBotMessage(`📚 <strong>Skills Disponíveis:</strong>\n\n${skillsList}`, data.id);
+                }
+            } else if (data.command === 'get_status') {
+                if (data.status) {
+                    const status = data.status;
+                    const statusStr = `
+📊 <strong>Status do Sistema:</strong>
+• Uptime: ${formatUptime(status.uptime)}
+• Sessões Ativas: ${status.activeSessions}
+• Mensagens Processadas: ${status.messagesProcessed}
+• Skills Executados: ${status.skillsExecuted}
+• Memória: ${status.memoryUsage || 'N/A'}
+• CPU: ${status.cpuUsage || 'N/A'}`;
+                    addBotMessage(statusStr, data.id);
+                }
+            }
+        }
+
+        // ============================================================================
+        // Outbound Message Functions
+        // ============================================================================
+
+        function sendChatWebSocket(message) {
+            const messageData = {
+                type: 'chat',
+                id: `msg-${Date.now()}`,
+                message: message,
+                model: 'claude'
+            };
+
+            if (isConnected && ws) {
+                console.log('[Cockpit] Sending chat message:', message);
+                ws.send(JSON.stringify(messageData));
+            } else {
+                console.log('[Cockpit] Queueing message (not connected)');
+                messageQueue.push(JSON.stringify(messageData));
+                addBotMessage('⚠️ Mensagem enfileirada. Conectando ao servidor...', 'system-queue');
+            }
+        }
+
+        function executeSkill(skillName, input) {
+            const execData = {
+                type: 'execute_skill',
+                id: `exec-${Date.now()}`,
+                skill: skillName,
+                input: input
+            };
+
+            if (isConnected && ws) {
+                console.log('[Cockpit] Executing skill:', skillName);
+                ws.send(JSON.stringify(execData));
+                addBotMessage(`🚀 Executando: <strong>${skillName}</strong>`, `exec-${Date.now()}`);
+            } else {
+                console.log('[Cockpit] Queueing skill execution (not connected)');
+                messageQueue.push(JSON.stringify(execData));
+                addBotMessage('⚠️ Execução enfileirada. Conectando ao servidor...', 'system-queue');
+            }
+        }
+
+        function sendCommand(command) {
+            const cmdData = {
+                type: 'command',
+                id: `cmd-${Date.now()}`,
+                command: command
+            };
+
+            if (isConnected && ws) {
+                console.log('[Cockpit] Sending command:', command);
+                ws.send(JSON.stringify(cmdData));
+            } else {
+                console.log('[Cockpit] Cannot send command (not connected)');
+                addBotMessage(`❌ Não conectado ao servidor para executar comando: ${command}`, 'system-error');
+            }
+        }
+
+        // ============================================================================
+        // UI Interaction Functions
+        // ============================================================================
+
         function switchTab(tabName) {
             // Hide all tabs
             const tabs = document.querySelectorAll('.tab-content');
@@ -857,39 +1064,81 @@
 
             // Auto-scroll chat
             setTimeout(() => {
-                sendChat(`Switched to ${tabName} hub`);
+                addBotMessage(`✨ Switched to <strong>${tabName}</strong> hub`);
             }, 100);
         }
 
         function sendChat(message) {
             const input = document.getElementById('chatInput');
-            const messagesDiv = document.getElementById('chatMessages');
-
-            // Get message from input or parameter
             const text = message || input.value;
 
             if (!text.trim()) return;
 
-            // Add user message
-            const userMsg = document.createElement('div');
-            userMsg.className = 'message user';
-            userMsg.innerHTML = `<div class="message-content">${escapeHtml(text)}</div>`;
-            messagesDiv.appendChild(userMsg);
+            // Add user message to display
+            addUserMessage(text);
 
             // Clear input
             input.value = '';
 
             // Auto-scroll to bottom
+            const messagesDiv = document.getElementById('chatMessages');
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
-            // Simulate bot response
-            setTimeout(() => {
-                const botMsg = document.createElement('div');
-                botMsg.className = 'message bot';
-                botMsg.innerHTML = `<div class="message-content">✅ Processando: "${text.substring(0, 50)}..."<br>Este é um demo. Em produção, conectaremos com os skills reais!</div>`;
-                messagesDiv.appendChild(botMsg);
-                messagesDiv.scrollTop = messagesDiv.scrollHeight;
-            }, 500);
+            // Send via WebSocket
+            if (isConnected) {
+                sendChatWebSocket(text);
+            } else {
+                if (text.toLowerCase().includes('list')) {
+                    sendCommand('list_skills');
+                } else if (text.toLowerCase().includes('status')) {
+                    sendCommand('get_status');
+                } else {
+                    addBotMessage('⚠️ Não conectado ao servidor. Reconectando...', 'system-warning');
+                }
+            }
+        }
+
+        function executeHubSkill(persona, subskill) {
+            const input = {
+                subskill: subskill,
+                appName: `app_${persona}_${Date.now()}`
+            };
+
+            const skillName = `hub.enterprise.${persona}`;
+            addUserMessage(`Executando: ${skillName}/${subskill}`);
+            executeSkill(skillName, input);
+        }
+
+        // ============================================================================
+        // Message Display Utilities
+        // ============================================================================
+
+        function addUserMessage(text) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const userMsg = document.createElement('div');
+            userMsg.className = 'message user';
+            userMsg.innerHTML = `<div class="message-content">${escapeHtml(text)}</div>`;
+            messagesDiv.appendChild(userMsg);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function addBotMessage(text, id) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const botMsg = document.createElement('div');
+            botMsg.className = 'message bot';
+            botMsg.innerHTML = `<div class="message-content">${text}</div>`;
+            if (id) botMsg.id = id;
+            messagesDiv.appendChild(botMsg);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function updateStatus(status) {
+            const badge = document.querySelector('.status-badge');
+            if (badge) {
+                const statusClass = status === 'online' ? 'status-active' : status === 'error' ? 'status-error' : 'status-warning';
+                badge.className = `status-badge ${statusClass}`;
+                badge.textContent = status === 'online' ? '🟢 ONLINE' : status === 'error' ? '🔴 ERROR' : '🟡 OFFLINE';
+            }
         }
 
         function escapeHtml(text) {
@@ -898,9 +1147,110 @@
             return div.innerHTML;
         }
 
-        // Focus chat input on load
+        function formatUptime(ms) {
+            if (!ms) return 'N/A';
+            const seconds = Math.floor(ms / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+
+            if (days > 0) return `${days}d ${hours % 24}h`;
+            if (hours > 0) return `${hours}h ${minutes % 60}m`;
+            if (minutes > 0) return `${minutes}m`;
+            return `${seconds}s`;
+        }
+
+        // ============================================================================
+        // REST API Functions (for initial hub discovery)
+        // ============================================================================
+
+        function getHttpUrl() {
+            // Check URL query params: ?api=http://custom-host:8080
+            const params = new URLSearchParams(window.location.search);
+            const apiParam = params.get('api');
+            if (apiParam) return apiParam;
+
+            // Default to localhost
+            return 'http://localhost:8080';
+        }
+
+        async function fetchHubs() {
+            try {
+                const response = await fetch(`${getHttpUrl()}/api/hubs`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+                console.log('[Cockpit] Fetched hubs:', data);
+                return data.hubs || [];
+            } catch (error) {
+                console.error('[Cockpit] Failed to fetch hubs:', error);
+                return [];
+            }
+        }
+
+        async function fetchSkillsByHub(hubId) {
+            try {
+                const response = await fetch(`${getHttpUrl()}/api/hubs/${hubId}`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+                console.log(`[Cockpit] Fetched skills for ${hubId}:`, data);
+                return data.skills || [];
+            } catch (error) {
+                console.error(`[Cockpit] Failed to fetch skills for ${hubId}:`, error);
+                return [];
+            }
+        }
+
+        async function fetchSystemStatus() {
+            try {
+                const response = await fetch(`${getHttpUrl()}/api/status`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+                console.log('[Cockpit] Fetched system status:', data);
+                return data.status || {};
+            } catch (error) {
+                console.error('[Cockpit] Failed to fetch system status:', error);
+                return {};
+            }
+        }
+
+        // ============================================================================
+        // Initialization
+        // ============================================================================
+
+        // Try to get WebSocket URL from environment or query params
+        function getWebSocketUrl() {
+            // Check URL query params: ?ws=ws://custom-host:8080
+            const params = new URLSearchParams(window.location.search);
+            const wsParam = params.get('ws');
+            if (wsParam) return wsParam;
+
+            // Default to localhost
+            return 'ws://localhost:8080';
+        }
+
+        // Initialize on page load
         window.addEventListener('load', () => {
-            document.getElementById('chatInput').focus();
+            const wsUrl = getWebSocketUrl();
+            console.log(`[Cockpit] Initializing with WebSocket URL: ${wsUrl}`);
+
+            // Try to connect
+            initWebSocket(wsUrl);
+
+            // Focus chat input
+            const chatInput = document.getElementById('chatInput');
+            if (chatInput) chatInput.focus();
+
+            // Greet user
+            setTimeout(() => {
+                addBotMessage('👋 Bem-vindo ao OpenClaw Aurora Hub Central! Digite "list" para ver skills disponíveis ou "status" para ver métricas do sistema.');
+            }, 500);
+        });
+
+        // Handle page unload
+        window.addEventListener('beforeunload', () => {
+            if (ws && isConnected) {
+                ws.close();
+            }
         });
     </script>
 </body>

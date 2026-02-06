@@ -56,14 +56,112 @@ export class DashboardWebSocketServer {
   start(port: number): void {
     // Cria servidor HTTP para suportar paths
     const server = createServer((req, res) => {
+      // Enable CORS
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+      if (req.method === 'OPTIONS') {
+        res.writeHead(200);
+        res.end();
+        return;
+      }
+
       // Health check endpoint
       if (req.url === '/health') {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ status: 'ok', timestamp: Date.now() }));
-      } else {
-        res.writeHead(404);
-        res.end();
+        return;
       }
+
+      // List all hubs endpoint
+      if (req.url === '/api/hubs') {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        const hubs = [
+          { id: 'hub-enterprise', name: 'Hub Enterprise', description: 'Fábrica de aplicações com 9 personas', personas: 9 },
+          { id: 'social-hub', name: 'Social Hub', description: 'Geração de conteúdo para redes sociais', personas: 5 },
+          { id: 'supabase-archon', name: 'Supabase Archon', description: 'Gerenciamento de databases Supabase', personas: 3 },
+          { id: 'aurora-monitor', name: 'Aurora Monitor', description: 'Monitoramento e métricas do sistema', personas: 2 },
+          { id: 'guardrail', name: 'GuardrailSkill', description: 'Validação, segurança e proteção', personas: 1 }
+        ];
+        res.end(JSON.stringify({ success: true, hubs }));
+        return;
+      }
+
+      // List skills by hub endpoint
+      if (req.url && req.url.startsWith('/api/hubs/')) {
+        const hubId = req.url.split('/')[3];
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+
+        const skillsByHub: { [key: string]: any[] } = {
+          'hub-enterprise': [
+            { name: 'hub.enterprise.orchestrator', persona: 'orchestrator', description: 'Orquestrador principal' },
+            { name: 'hub.enterprise.produto', persona: 'produto', description: 'MVP definition, user stories, roadmap' },
+            { name: 'hub.enterprise.arquitetura', persona: 'arquitetura', description: 'Architecture design, tech stack selection' },
+            { name: 'hub.enterprise.engenharia', persona: 'engenharia', description: 'Code generation, scaffolding, CI/CD' },
+            { name: 'hub.enterprise.qa', persona: 'qa', description: 'Testing, coverage, security tests' },
+            { name: 'hub.enterprise.ops', persona: 'ops', description: 'Deployment, monitoring, infrastructure' },
+            { name: 'hub.enterprise.security', persona: 'security', description: 'Security audit, vulnerability scanning' },
+            { name: 'hub.enterprise.dados', persona: 'dados', description: 'Analytics, dashboards, data pipelines' },
+            { name: 'hub.enterprise.design', persona: 'design', description: 'UI/UX design, wireframes, prototypes' },
+            { name: 'hub.enterprise.performance', persona: 'performance', description: 'Performance optimization, load testing' }
+          ],
+          'social-hub': [
+            { name: 'social.hub.generator', description: 'Content generation for social media' },
+            { name: 'social.hub.scheduler', description: 'Content scheduling' },
+            { name: 'social.hub.analytics', description: 'Social media analytics' }
+          ],
+          'supabase-archon': [
+            { name: 'supabase.archon.s01', description: 'Table management' },
+            { name: 'supabase.archon.s02', description: 'Schema management' }
+          ],
+          'aurora-monitor': [
+            { name: 'aurora.monitor.metrics', description: 'System metrics' }
+          ],
+          'guardrail': [
+            { name: 'guardrail.skill', description: 'Security and validation' }
+          ]
+        };
+
+        const skills = skillsByHub[hubId] || [];
+        res.end(JSON.stringify({ success: true, hubId, skills }));
+        return;
+      }
+
+      // Get all available skills endpoint
+      if (req.url === '/api/skills') {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        const command: CommandMessage = {
+          type: 'command',
+          id: `api-cmd-${Date.now()}`,
+          command: 'list_skills'
+        };
+        // This would normally query from executor, for now return available skills
+        res.end(JSON.stringify({ success: true, message: 'Use WebSocket for real-time skill listing' }));
+        return;
+      }
+
+      // System status endpoint
+      if (req.url === '/api/status') {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          success: true,
+          status: {
+            uptime: process.uptime() * 1000,
+            activeSessions: this.clients.size,
+            messagesProcessed: 0,
+            skillsExecuted: 0,
+            memoryUsage: `${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)}mb`,
+            cpuUsage: 'N/A',
+            timestamp: Date.now()
+          }
+        }));
+        return;
+      }
+
+      // Default 404
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: false, error: 'Not found' }));
     });
 
     // WebSocket aceita conexões em / ou /api/v1/ws
