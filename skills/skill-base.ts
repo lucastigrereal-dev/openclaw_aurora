@@ -202,3 +202,68 @@ export function getSkillRegistry(): SkillRegistry {
   }
   return registryInstance;
 }
+
+// ============================================================================
+// COMPATIBILIDADE: SkillBase + SkillResult
+// Extended skills (exec-extended, browser-control, etc) usam este formato
+// ============================================================================
+
+/**
+ * Resultado de execução de skill (interface de compatibilidade)
+ * Usada por: exec-extended, browser-control, autopc-control, marketing-*, social-*, content-*, reviews-*, analytics-*
+ */
+export interface SkillResult {
+  success: boolean;
+  data?: any;
+  error?: string;
+  [key: string]: any;
+}
+
+/**
+ * Classe base alternativa para skills com interface simplificada
+ * Fornece métodos helper success() e error() para facilitar retornos
+ */
+export abstract class SkillBase {
+  /** Nome único da skill (ex: "exec.bash") */
+  name: string = '';
+  /** Descrição da skill */
+  description: string = '';
+  /** Categoria (exec, browser, file, etc) */
+  category: string = '';
+  /** Se a skill é perigosa e requer aprovação */
+  dangerous: boolean = false;
+  /** Schema dos parâmetros */
+  parameters: Record<string, { type: string; required?: boolean; description: string }> = {};
+
+  /**
+   * Executa a skill com os parâmetros fornecidos
+   */
+  abstract execute(params: any): Promise<SkillResult>;
+
+  /**
+   * Retorna um resultado de sucesso
+   */
+  protected success(data: any): SkillResult {
+    return { success: true, data };
+  }
+
+  /**
+   * Retorna um resultado de erro
+   */
+  protected error(message: string, data?: any): SkillResult {
+    return { success: false, error: message, ...data };
+  }
+
+  /**
+   * Obtém informações da skill
+   */
+  getInfo() {
+    return {
+      name: this.name,
+      description: this.description,
+      category: this.category,
+      dangerous: this.dangerous,
+      parameters: this.parameters,
+    };
+  }
+}

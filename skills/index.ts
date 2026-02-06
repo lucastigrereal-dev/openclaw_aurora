@@ -62,11 +62,38 @@ import { analyticsSkills } from './analytics-roi';
 // EVOLUTION: Phase 2 imports
 import { getSkillRegistryV2, buildSpecFromAvailable } from './registry-v2';
 
+// EVOLUTION: Health Check System
+import { getHealthChecker, quickHealthCheck } from './skill-health-check';
+export * from './skill-health-check';
+
 /**
  * Registra todas as skills no registry
  */
-export function registerAllSkills(registry?: SkillRegistry): SkillRegistry {
+export async function registerAllSkills(registry?: SkillRegistry): Promise<SkillRegistry> {
   const reg = registry || getSkillRegistry();
+
+  // EVOLUTION: Run health check BEFORE registration
+  console.log('[Skills] Running pre-registration health check...');
+  try {
+    const healthResult = await quickHealthCheck();
+    if (healthResult.status === 'critical') {
+      console.error('[Skills] CRITICAL ISSUES FOUND:');
+      healthResult.checks.filter(c => c.status === 'fail').forEach(c => {
+        console.error(`  ❌ ${c.name}: ${c.message}`);
+        if (c.fix) console.error(`     FIX: ${c.fix}`);
+      });
+      console.error('[Skills] Fix issues before continuing!');
+    } else if (healthResult.status === 'warning') {
+      console.warn('[Skills] Warnings found (non-blocking):');
+      healthResult.checks.filter(c => c.status === 'warn').forEach(c => {
+        console.warn(`  ⚠️ ${c.name}: ${c.message}`);
+      });
+    } else {
+      console.log('[Skills] ✅ Health check passed');
+    }
+  } catch (err) {
+    console.warn('[Skills] Health check failed (continuing anyway):', err);
+  }
 
   console.log('[Skills] Registering all skills...');
 
