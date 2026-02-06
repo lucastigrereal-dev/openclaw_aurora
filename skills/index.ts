@@ -35,6 +35,9 @@ export * from './sandbox-runner';
 export * from './skill-scaffolder';
 export * from './intent-router';
 
+// NEW: Guardrail (Security & Protection)
+export * from './guardrail';
+
 // NEW: Supabase Archon skills
 export * from './supabase-archon/supabase-archon-index';
 
