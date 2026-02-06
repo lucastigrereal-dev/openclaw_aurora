@@ -41,6 +41,9 @@ export * from './guardrail';
 // NEW: Supabase Archon skills
 export * from './supabase-archon/supabase-archon-index';
 
+// NEW: Hub Enterprise skills
+export * from './hub-enterprise/hub-enterprise-index';
+
 // Imports para registro
 import { getSkillRegistry, SkillRegistry } from './skill-base';
 import { ExecBashSkill } from './exec-bash';
@@ -70,6 +73,9 @@ import { getSkillRegistryV2, buildSpecFromAvailable } from './registry-v2';
 
 // NEW: Supabase Archon imports
 import { registerSupabaseArchonSkills } from './supabase-archon/supabase-archon-index';
+
+// NEW: Hub Enterprise imports
+import { registerHubEnterpriseSkills } from './hub-enterprise/hub-enterprise-index';
 
 /**
  * Registra todas as skills no registry
@@ -151,6 +157,10 @@ export function registerAllSkills(registry?: SkillRegistry): SkillRegistry {
   // NEW: Supabase Archon Skills
   console.log('[Skills] Registering supabase archon skills...');
   registerSupabaseArchonSkills();
+
+  // NEW: Hub Enterprise Skills
+  console.log('[Skills] Registering hub enterprise skills...');
+  registerHubEnterpriseSkills();
 
   console.log(`[Skills] Registered ${reg.getStats().total} skills`);
 
@@ -305,6 +315,18 @@ export const AVAILABLE_SKILLS = [
   { name: 'analytics.roi', category: 'ANALYTICS', description: 'Calcula ROI por canal', dangerous: false },
   { name: 'analytics.conversion', category: 'ANALYTICS', description: 'Taxa de conversao', dangerous: false },
   { name: 'analytics.report', category: 'ANALYTICS', description: 'Relatorio mensal', dangerous: false },
+
+  // HUBS
+  { name: 'hub.enterprise.orchestrator', category: 'HUB', description: 'Hub Enterprise - Fábrica de aplicações', dangerous: false },
+  { name: 'hub.enterprise.produto', category: 'HUB', description: 'Hub Enterprise - Persona Produto (MVP)', dangerous: false },
+  { name: 'hub.enterprise.arquitetura', category: 'HUB', description: 'Hub Enterprise - Persona Arquitetura', dangerous: false },
+  { name: 'hub.enterprise.engenharia', category: 'HUB', description: 'Hub Enterprise - Persona Engenharia', dangerous: false },
+  { name: 'hub.enterprise.qa', category: 'HUB', description: 'Hub Enterprise - Persona QA', dangerous: false },
+  { name: 'hub.enterprise.ops', category: 'HUB', description: 'Hub Enterprise - Persona Ops', dangerous: false },
+  { name: 'hub.enterprise.security', category: 'HUB', description: 'Hub Enterprise - Persona Security', dangerous: false },
+  { name: 'hub.enterprise.dados', category: 'HUB', description: 'Hub Enterprise - Persona Dados', dangerous: false },
+  { name: 'hub.enterprise.design', category: 'HUB', description: 'Hub Enterprise - Persona Design', dangerous: false },
+  { name: 'hub.enterprise.performance', category: 'HUB', description: 'Hub Enterprise - Persona Performance', dangerous: false },
 ] as const;
 
 /**
