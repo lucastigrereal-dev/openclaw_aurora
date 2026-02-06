@@ -35,6 +35,9 @@ export * from './sandbox-runner';
 export * from './skill-scaffolder';
 export * from './intent-router';
 
+// NEW: Supabase Archon skills
+export * from './supabase-archon/supabase-archon-index';
+
 // Imports para registro
 import { getSkillRegistry, SkillRegistry } from './skill-base';
 import { ExecBashSkill } from './exec-bash';
@@ -61,6 +64,9 @@ import { analyticsSkills } from './analytics-roi';
 
 // EVOLUTION: Phase 2 imports
 import { getSkillRegistryV2, buildSpecFromAvailable } from './registry-v2';
+
+// NEW: Supabase Archon imports
+import { registerSupabaseArchonSkills } from './supabase-archon/supabase-archon-index';
 
 /**
  * Registra todas as skills no registry
@@ -138,6 +144,10 @@ export function registerAllSkills(registry?: SkillRegistry): SkillRegistry {
       console.log(`[Skills] Skipped (blocked): ${skill.name}`);
     }
   });
+
+  // NEW: Supabase Archon Skills
+  console.log('[Skills] Registering supabase archon skills...');
+  registerSupabaseArchonSkills();
 
   console.log(`[Skills] Registered ${reg.getStats().total} skills`);
 
