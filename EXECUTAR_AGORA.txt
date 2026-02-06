@@ -1,0 +1,192 @@
+═══════════════════════════════════════════════════════════════════════
+                  OPENCLAW AURORA - PRÓXIMOS PASSOS
+                           EXECUTE JÁ!
+═══════════════════════════════════════════════════════════════════════
+
+STATUS: 6 de 10 fases completas ✅
+AGUARDANDO: 4 ações suas (Windows + GitHub)
+TEMPO: ~30 minutos
+
+═══════════════════════════════════════════════════════════════════════
+PASSO 1: PUSH (5 minutos)
+═══════════════════════════════════════════════════════════════════════
+
+Abra PowerShell Windows:
+
+    cd C:\Users\lucas\openclaw_aurora
+    git push origin main -u
+
+Esperado:
+    Branch 'main' set up to track 'origin/main'.
+    Everything up-to-date.
+
+Se pedir credenciais:
+    git credential-manager github login
+    (ou use GitHub CLI: gh auth login)
+
+═══════════════════════════════════════════════════════════════════════
+PASSO 2: GITHUB SECRETS (5 minutos)
+═══════════════════════════════════════════════════════════════════════
+
+URL: https://github.com/lucastigrereal-dev/openclaw_aurora/settings/secrets/actions
+
+Adicione 5 secrets:
+
+  1. RAILWAY_TOKEN
+     └─ Vá em: https://dashboard.railway.app
+     └─ Settings → API Tokens → Create New Token
+     └─ Copie e cole aqui
+
+  2. VERCEL_TOKEN
+     └─ Vá em: https://vercel.com/account/tokens
+     └─ Create Token
+     └─ Copie e cole aqui
+
+  3. VERCEL_ORG_ID
+     └─ Valor: lucas-projects-ffa9a1fb
+     └─ (não muda)
+
+  4. VERCEL_PROJECT_ID
+     └─ Vá em: https://vercel.com/dashboard
+     └─ Selecione: openclaw-aurora
+     └─ Settings → General → Project ID
+     └─ Copie e cole aqui
+
+  5. WEBSOCKET_URL
+     └─ Valor: wss://openclawaurora-production.up.railway.app/api/v1/ws
+     └─ (não muda)
+
+Checklist:
+  [ ] RAILWAY_TOKEN adicionado
+  [ ] VERCEL_TOKEN adicionado
+  [ ] VERCEL_ORG_ID adicionado
+  [ ] VERCEL_PROJECT_ID adicionado
+  [ ] WEBSOCKET_URL adicionado
+
+═══════════════════════════════════════════════════════════════════════
+PASSO 3: ARQUIVAR REPO ANTIGO (2 minutos - MANUAL)
+═══════════════════════════════════════════════════════════════════════
+
+URL: https://github.com/lucastigrereal-dev/OPencclaw_aurora_completo/settings
+
+  1. Scroll até "Danger Zone"
+  2. Clique: "Archive this repository"
+  3. Digite o nome do repo para confirmar
+  4. Pronto ✅
+
+═══════════════════════════════════════════════════════════════════════
+PASSO 4: REVOGAR TOKENS ANTIGOS (5 minutos)
+═══════════════════════════════════════════════════════════════════════
+
+⚠️ SÓ FAÇA DEPOIS DE ADICIONAR OS NOVOS SECRETS NO GITHUB!
+
+Railway:
+  1. https://dashboard.railway.app
+  2. Settings → API Tokens
+  3. Procure: ad44146e-e0a2-4a56-886a-244b47c9aec6
+  4. Delete (lixo)
+
+Vercel:
+  1. https://vercel.com/account/tokens
+  2. Procure: 1xZDeGW1lg5RvNoUzOexBXas
+  3. Delete
+
+═══════════════════════════════════════════════════════════════════════
+PASSO 5: DEFAULT BRANCH (2 minutos - MANUAL)
+═══════════════════════════════════════════════════════════════════════
+
+URL: https://github.com/lucastigrereal-dev/openclaw_aurora/settings
+
+  1. Procure: "Default branch"
+  2. Troque de: claude/monitoring-crash-prevention-Qx84d
+  3. Para: main
+  4. Click: "Update"
+
+═══════════════════════════════════════════════════════════════════════
+PASSO 6: TESTAR (5 minutos)
+═══════════════════════════════════════════════════════════════════════
+
+GitHub Actions:
+  1. https://github.com/lucastigrereal-dev/openclaw_aurora/actions
+  2. Clique: "Deploy OpenClaw Aurora"
+  3. Clique: "Run workflow" (botão azul)
+  4. Aguarde 2-3 minutos
+
+Resultado esperado:
+  ✅ deploy-backend (Railway) - SUCCESS
+  ✅ deploy-dashboard (Vercel) - SUCCESS
+
+Validar:
+  • Backend: curl https://openclawaurora-production.up.railway.app/health
+  • Dashboard: https://openclaw-aurora.vercel.app
+  • WebSocket: Abra dashboard, veja "Connected" ✅
+
+═══════════════════════════════════════════════════════════════════════
+ARQUIVOS DE REFERÊNCIA
+═══════════════════════════════════════════════════════════════════════
+
+Leia estes arquivos no repo:
+
+  • CANONICAL_MAP.md
+    └─ Mapa completo do sistema (componentes, URLs, estrutura)
+
+  • CONSOLIDACAO_CHECKLIST.md
+    └─ Checklist detalhado com screenshots e links
+
+  • README.md
+    └─ Overview geral do projeto
+
+═══════════════════════════════════════════════════════════════════════
+TIMELINE RÁPIDA
+═══════════════════════════════════════════════════════════════════════
+
+Agora:          Fazer passos 1-2 (10 minutos)
+Depois:         Fazer passos 3-5 (10 minutos)
+Depois:         Testar (5 minutos)
+                ─────────────────────
+Total:          ~30 minutos
+
+Depois você pode:
+  ✅ Editar skills sem medo (auto-deploy)
+  ✅ Usar Telegram Bot pra executar
+  ✅ Ver dashboard em tempo real
+  ✅ Monitorar com Aurora Monitor
+
+═══════════════════════════════════════════════════════════════════════
+URGENTE
+═══════════════════════════════════════════════════════════════════════
+
+⚠️ Se der erro no GitHub Actions:
+  1. Abra os logs (clique no job que falhou)
+  2. 99% é secret errado
+  3. Verifique cada secret no GitHub
+
+⚠️ Se a Vercel disser "Project not found":
+  1. Verifique que VERCEL_PROJECT_ID está correto
+  2. Verifique que está usando o projeto openclaw-aurora
+  3. Tente novamente ("Re-run jobs")
+
+⚠️ Se Railway disser "Unauthorized":
+  1. Verifique que RAILWAY_TOKEN é novo
+  2. Verifique que é um token válido (não expirado)
+  3. Tente novamente
+
+═══════════════════════════════════════════════════════════════════════
+SUCESSO = ?
+═══════════════════════════════════════════════════════════════════════
+
+Quando tudo estiver funcionando, você vai ver:
+
+GitHub Actions: ✅ SUCCESS em ambos (backend + dashboard)
+Railway: Backend respondendo em https://openclawaurora-production.up.railway.app
+Vercel: Dashboard acessível em https://openclaw-aurora.vercel.app
+WebSocket: Dashboard conectado em tempo real
+Telegram: Bot respondendo aos comandos
+
+═══════════════════════════════════════════════════════════════════════
+
+Dúvidas? Veja CONSOLIDACAO_CHECKLIST.md
+
+Pronto? Começar agora! 🚀
+
+═══════════════════════════════════════════════════════════════════════
