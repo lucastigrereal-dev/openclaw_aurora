@@ -246,3 +246,73 @@ export class FileDeleteSkill extends Skill {
     }
   }
 }
+
+// ============================================================================
+// FILE.CREATE
+// ============================================================================
+
+export class FileCreateSkill extends Skill {
+  constructor() {
+    super(
+      {
+        name: 'file.create',
+        description: 'Cria novos arquivos (sem sobrescrever existentes)',
+        version: '1.0.0',
+        category: 'FILE',
+        tags: ['file', 'create', 'filesystem', 'new'],
+      },
+      {
+        timeout: 10000,
+        requiresApproval: false, // CREATE não requer aprovação
+      }
+    );
+  }
+
+  validate(input: SkillInput): boolean {
+    return !!input.path && input.content !== undefined;
+  }
+
+  async execute(input: SkillInput): Promise<SkillOutput> {
+    const { path: filePath, content, overwrite = false } = input;
+
+    try {
+      const absolutePath = path.resolve(filePath);
+
+      // Verifica se arquivo já existe
+      const exists = await fs
+        .access(absolutePath)
+        .then(() => true)
+        .catch(() => false);
+
+      if (exists && !overwrite) {
+        return {
+          success: false,
+          error: `File already exists: ${absolutePath}. Use overwrite=true to replace.`,
+        };
+      }
+
+      // Cria diretório se não existir
+      await fs.mkdir(path.dirname(absolutePath), { recursive: true });
+
+      // Cria o arquivo
+      await fs.writeFile(absolutePath, content);
+
+      const stats = await fs.stat(absolutePath);
+
+      return {
+        success: true,
+        data: {
+          path: absolutePath,
+          size: stats.size,
+          created: stats.birthtime,
+          overwritten: exists,
+        },
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  }
+}

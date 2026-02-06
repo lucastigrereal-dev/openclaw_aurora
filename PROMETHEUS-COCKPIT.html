@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prometheus Cockpit - Aurora Monitor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 3em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 10px;
+        }
+
+        .connection-status {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+
+        .status-connected {
+            background: #00ff88;
+            color: #000;
+        }
+
+        .status-disconnected {
+            background: #ff4444;
+            color: #fff;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .card h2 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: #00ff88;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .metric:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            color: #ccc;
+        }
+
+        .metric-value {
+            font-weight: bold;
+            color: #00ff88;
+            font-size: 1.2em;
+        }
+
+        .log-container {
+            grid-column: 1 / -1;
+            max-height: 400px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .log-entry {
+            padding: 8px;
+            margin-bottom: 5px;
+            border-left: 3px solid #00ff88;
+            background: rgba(255, 255, 255, 0.05);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .log-timestamp {
+            color: #888;
+            margin-right: 10px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #00ff88;
+            color: #000;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .skill-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            margin: 5px;
+            background: rgba(0, 255, 136, 0.2);
+            border: 1px solid #00ff88;
+            border-radius: 15px;
+            font-size: 0.85em;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            background: rgba(0,0,0,0.3);
+            color: #fff;
+            font-size: 1em;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #00ff88;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 PROMETHEUS COCKPIT</h1>
+            <div id="connectionStatus" class="connection-status status-disconnected">
+                ⚠️ Desconectado
+            </div>
+        </header>
+
+        <div class="controls">
+            <button onclick="sendCommand('get_status')">📊 Status</button>
+            <button onclick="sendCommand('list_skills')">🛠️ Skills</button>
+            <button onclick="clearLogs()">🗑️ Limpar Logs</button>
+            <input type="text" id="customCommand" placeholder="Digite um comando personalizado..." onkeypress="handleEnter(event)">
+            <button onclick="sendCustomCommand()">▶️ Enviar</button>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h2>⚡ Sistema</h2>
+                <div class="metric">
+                    <span class="metric-label">Status</span>
+                    <span class="metric-value" id="systemStatus">-</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Uptime</span>
+                    <span class="metric-value" id="systemUptime">-</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">CPU</span>
+                    <span class="metric-value" id="systemCPU">-</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Memória</span>
+                    <span class="metric-value" id="systemMemory">-</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>🤖 Executor</h2>
+                <div class="metric">
+                    <span class="metric-label">Tarefas Totais</span>
+                    <span class="metric-value" id="tasksTotal">-</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Sucesso</span>
+                    <span class="metric-value" id="tasksSuccess">-</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Falhas</span>
+                    <span class="metric-value" id="tasksFailure">-</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Em Execução</span>
+                    <span class="metric-value" id="tasksRunning">-</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📡 Serviços</h2>
+                <div id="servicesContainer">
+                    <div class="metric">
+                        <span class="metric-label">Carregando...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>🛠️ Skills Ativas</h2>
+                <div id="skillsContainer">
+                    <span class="skill-badge">Carregando...</span>
+                </div>
+            </div>
+
+            <div class="log-container">
+                <h2 style="margin-bottom: 15px; color: #00ff88;">📋 Logs em Tempo Real</h2>
+                <div id="logs"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ws = null;
+        let reconnectInterval = null;
+
+        function connect() {
+            const wsUrl = 'ws://localhost:18789';
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = () => {
+                updateConnectionStatus(true);
+                addLog('✅ Conectado ao OpenClaw Aurora');
+                setTimeout(() => sendCommand('get_status'), 500);
+                setTimeout(() => sendCommand('list_skills'), 1000);
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    handleMessage(data);
+                } catch (e) {
+                    addLog('❌ Erro ao processar mensagem: ' + e.message);
+                }
+            };
+
+            ws.onerror = (error) => {
+                addLog('❌ Erro na conexão WebSocket');
+            };
+
+            ws.onclose = () => {
+                updateConnectionStatus(false);
+                addLog('⚠️ Desconectado. Reconectando em 5s...');
+                setTimeout(connect, 5000);
+            };
+        }
+
+        function handleMessage(data) {
+            addLog('📨 ' + data.type + ': ' + JSON.stringify(data).substring(0, 100) + '...');
+
+            switch(data.type) {
+                case 'command_result':
+                    if (data.command === 'get_status' && data.data) {
+                        updateSystemStatus(data.data);
+                    } else if (data.command === 'list_skills' && data.data) {
+                        updateSkills(data.data);
+                    }
+                    break;
+                case 'metric':
+                    updateMetric(data);
+                    break;
+                case 'alert':
+                    addLog('🚨 ALERTA: ' + data.message);
+                    break;
+            }
+        }
+
+        function updateSystemStatus(data) {
+            if (data.system) {
+                document.getElementById('systemStatus').textContent = data.system.status || '-';
+                document.getElementById('systemUptime').textContent = formatUptime(data.system.uptime);
+                document.getElementById('systemCPU').textContent = (data.system.cpu_percent || 0).toFixed(1) + '%';
+                document.getElementById('systemMemory').textContent = (data.system.memory_percent || 0).toFixed(1) + '%';
+            }
+
+            if (data.executor) {
+                document.getElementById('tasksTotal').textContent = data.executor.total_tasks || 0;
+                document.getElementById('tasksSuccess').textContent = data.executor.successful_tasks || 0;
+                document.getElementById('tasksFailure').textContent = data.executor.failed_tasks || 0;
+                document.getElementById('tasksRunning').textContent = data.executor.running_tasks || 0;
+            }
+
+            if (data.services) {
+                updateServices(data.services);
+            }
+        }
+
+        function updateServices(services) {
+            const container = document.getElementById('servicesContainer');
+            container.innerHTML = services.map(function(s) {
+                return '<div class="metric"><span class="metric-label">' + s.name + '</span><span class="metric-value" style="color: ' + (s.status === 'online' ? '#00ff88' : '#ff4444') + '">' + s.status + ' (' + s.latency + 'ms)</span></div>';
+            }).join('');
+        }
+
+        function updateSkills(skills) {
+            const container = document.getElementById('skillsContainer');
+            container.innerHTML = skills.map(function(skill) {
+                return '<span class="skill-badge">' + skill + '</span>';
+            }).join('');
+        }
+
+        function updateMetric(data) {
+        }
+
+        function formatUptime(ms) {
+            if (!ms) return '-';
+            const seconds = Math.floor(ms / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+
+            if (days > 0) return days + 'd ' + (hours % 24) + 'h';
+            if (hours > 0) return hours + 'h ' + (minutes % 60) + 'm';
+            if (minutes > 0) return minutes + 'm ' + (seconds % 60) + 's';
+            return seconds + 's';
+        }
+
+        function sendCommand(command) {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                const message = {
+                    type: 'command',
+                    command: command,
+                    id: Date.now()
+                };
+                ws.send(JSON.stringify(message));
+                addLog('📤 Comando enviado: ' + command);
+            } else {
+                addLog('❌ WebSocket não conectado');
+            }
+        }
+
+        function sendCustomCommand() {
+            const input = document.getElementById('customCommand');
+            const command = input.value.trim();
+            if (command) {
+                sendCommand(command);
+                input.value = '';
+            }
+        }
+
+        function handleEnter(event) {
+            if (event.key === 'Enter') {
+                sendCustomCommand();
+            }
+        }
+
+        function updateConnectionStatus(connected) {
+            const statusEl = document.getElementById('connectionStatus');
+            if (connected) {
+                statusEl.className = 'connection-status status-connected';
+                statusEl.textContent = '✅ Conectado';
+            } else {
+                statusEl.className = 'connection-status status-disconnected';
+                statusEl.textContent = '⚠️ Desconectado';
+            }
+        }
+
+        function addLog(message) {
+            const logsDiv = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString('pt-BR');
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.innerHTML = '<span class="log-timestamp">[' + timestamp + ']</span>' + message;
+            logsDiv.insertBefore(logEntry, logsDiv.firstChild);
+
+            while (logsDiv.children.length > 100) {
+                logsDiv.removeChild(logsDiv.lastChild);
+            }
+        }
+
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
+            addLog('🗑️ Logs limpos');
+        }
+
+        connect();
+
+        setInterval(function() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                sendCommand('get_status');
+            }
+        }, 10000);
+    </script>
+</body>
+</html>

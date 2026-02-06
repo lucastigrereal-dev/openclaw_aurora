@@ -6,12 +6,21 @@
 // Base
 export * from './skill-base';
 
+// Infrastructure (New Critical Skills)
+export * from './skill-spec';
+export * from './skill-registry-v2';
+export * from './skill-sandbox';
+export * from './skill-scaffolder';
+export * from './skill-intent-router';
+export * from './skill-metrics';
+
 // Skills individuais
 export * from './exec-bash';
 export * from './ai-claude';
 export * from './ai-gpt';
 export * from './ai-ollama';
 export * from './file-ops';
+export * from './file-ops-advanced';
 export * from './comm-telegram';
 export * from './web-fetch';
 export * from './util-misc';
@@ -22,7 +31,8 @@ import { ExecBashSkill } from './exec-bash';
 import { AIClaudeSkill } from './ai-claude';
 import { AIGPTSkill } from './ai-gpt';
 import { AIOllamaSkill } from './ai-ollama';
-import { FileReadSkill, FileWriteSkill, FileListSkill, FileDeleteSkill } from './file-ops';
+import { FileReadSkill, FileWriteSkill, FileListSkill, FileDeleteSkill, FileCreateSkill } from './file-ops';
+import { FileCreateAdvancedSkill } from './file-ops-advanced';
 import { TelegramSendSkill, TelegramGetUpdatesSkill } from './comm-telegram';
 import { WebFetchSkill, WebScrapeSkill } from './web-fetch';
 import { UtilSleepSkill, UtilDatetimeSkill, UtilUUIDSkill, UtilHashSkill, UtilJSONSkill } from './util-misc';
@@ -46,6 +56,8 @@ export function registerAllSkills(registry?: SkillRegistry): SkillRegistry {
   // FILE
   reg.register(new FileReadSkill());
   reg.register(new FileWriteSkill());
+  reg.register(new FileCreateSkill());
+  reg.register(new FileCreateAdvancedSkill());
   reg.register(new FileListSkill());
   reg.register(new FileDeleteSkill());
 
@@ -84,6 +96,8 @@ export const AVAILABLE_SKILLS = [
   // FILE
   { name: 'file.read', category: 'FILE', description: 'Lê arquivos' },
   { name: 'file.write', category: 'FILE', description: 'Escreve arquivos' },
+  { name: 'file.create', category: 'FILE', description: 'Cria novos arquivos' },
+  { name: 'file.create.advanced', category: 'FILE', description: 'Cria arquivos com recursos avançados (validação, templates, atomic writes, backup)' },
   { name: 'file.list', category: 'FILE', description: 'Lista diretórios' },
   { name: 'file.delete', category: 'FILE', description: 'Deleta arquivos' },
 
