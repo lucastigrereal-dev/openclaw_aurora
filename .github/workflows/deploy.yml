@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - claude/monitoring-crash-prevention-Qx84d
   workflow_dispatch:
 
 jobs:
