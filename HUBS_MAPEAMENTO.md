@@ -8,70 +8,192 @@
 
 ## 📊 VISÃO GERAL
 
-Criamos **4 HUBS principais** no OpenClaw Aurora, cada um com propósito específico:
+Criamos **5 HUBS principais** no OpenClaw Aurora, cada um com propósito específico:
 
 | Hub | Tipo | Skills | Status | Propósito |
 |-----|------|--------|--------|-----------|
-| **1. Hub Enterprise MVP** | Orquestração | Personas | ✅ Ativo | Fábrica de aplicações |
+| **1. Hub Enterprise MVP** | Orquestração | 9 personas + 55 subskills | ✅ Ativo (v2) | Fábrica de aplicações enterprise |
 | **2. Social Hub Enterprise** | Marketing | 15 skills | ✅ Ativo | Automação de redes sociais |
 | **3. Supabase Archon** | Database | 30 skills | ✅ Ativo | Gestão de Supabase |
 | **4. Aurora Monitor** | Sistema | 8 módulos | ✅ Ativo | Proteção e observabilidade |
+| **5. GuardrailSkill** | Segurança | 1 skill | ✅ Ativo | Validação universal de inputs |
 
 ---
 
-## 1️⃣ HUB ENTERPRISE MVP
+## 1️⃣ HUB ENTERPRISE MVP (Nova versão TypeScript)
 
 ### 📍 Localização
 ```
-hub_enterprise_mvp/
-├── README.md
-├── personas/
-│   ├── engenharia/
-│   ├── produto/
-│   └── qa/
-├── router/
-├── templates/
-├── guardioes/
-├── queue/
-├── apps/
-└── logs/
+skills/hub-enterprise/
+├── hub-enterprise-index.ts              # Registry central
+├── hub-enterprise-orchestrator.ts       # Orquestrador principal
+│
+├── personas/                            # 9 Personas (55+ subskills)
+│   ├── hub-enterprise-produto.ts        # S-01: Product Owner
+│   ├── hub-enterprise-arquitetura.ts    # S-02: Architecture
+│   ├── hub-enterprise-engenharia.ts     # S-03: Engineering
+│   ├── hub-enterprise-qa.ts             # S-04: QA
+│   ├── hub-enterprise-ops.ts            # S-05: DevOps
+│   ├── hub-enterprise-security.ts       # S-06: Security
+│   ├── hub-enterprise-dados.ts          # S-07: Data/Analytics
+│   ├── hub-enterprise-design.ts         # S-08: UX/Design
+│   └── hub-enterprise-performance.ts    # S-09: Performance/SRE
+│
+├── shared/                              # Utilities compartilhadas
+│   ├── hub-enterprise-config.ts         # Configuration management
+│   ├── hub-enterprise-logger.ts         # Structured logging
+│   ├── hub-enterprise-types.ts          # TypeScript interfaces (900+ lines)
+│   └── hub-enterprise-templates.ts      # Code templates (12+)
+│
+├── tests/                               # E2E & Integration tests
+│   ├── orchestrator.test.ts
+│   ├── produto.test.ts
+│   └── integration.test.ts
+│
+└── README.md                            # Documentação completa
 ```
+
+**Status:** ✅ Em Produção
+**Data de Implementação:** 06/02/2026
+**Commit:** a96ce04
 
 ### 🎯 O que faz?
 
-**Hub Enterprise** é uma **fábrica de aplicações** que orquestra personas (Produto, Engenharia, QA) para gerar apps enterprise.
+**Hub Enterprise** é uma **fábrica completa de aplicações enterprise** que orquestra **9 personas de IA especializadas** para gerar apps production-ready.
 
-### 👥 Personas
+### 👥 9 Personas Especializadas (55+ Subskills)
 
-| Persona | Função | Responsabilidades |
-|---------|--------|-------------------|
-| **Produto** | MVP Definition | Define MVP, features, requisitos |
-| **Engenharia** | Code Generation | Gera esqueleto do app, CI/CD |
-| **QA** | Testing | Smoke tests, validação |
+| # | Persona | Função | Subskills | Status |
+|---|---------|--------|-----------|--------|
+| **S-01** | **Produto** | Product Owner | MVP definition, user stories, acceptance criteria, roadmap, stakeholder report | ✅ 5 |
+| **S-02** | **Arquitetura** | Software Architect | Design architecture, select tech stack, define API contracts, plan scaling, design data model, security review | ✅ 6 |
+| **S-03** | **Engenharia** | Engineering Lead | Scaffold app, setup database, setup CI/CD, generate API, setup auth, setup monitoring, generate tests | ✅ 7 |
+| **S-04** | **QA** | Quality Assurance | Smoke tests, integration tests, performance tests, security tests, accessibility tests, coverage report | ✅ 6 |
+| **S-05** | **Ops** | DevOps Engineer | Provision infrastructure, setup CI/CD, deploy production, setup monitoring, setup logging, backup/restore, incident response | ✅ 7 |
+| **S-06** | **Security** | Security Engineer | Security audit, vulnerability scan, penetration test, compliance check, secrets rotation, access control review | ✅ 6 |
+| **S-07** | **Dados** | Data Engineer | Create dashboard, setup analytics, data pipeline, query optimization, data quality, export report | ✅ 6 |
+| **S-08** | **Design** | UX/UI Designer | Create wireframes, design system, user flows, accessibility audit, prototype | ✅ 5 |
+| **S-09** | **Performance** | Performance Engineer | Performance audit, load testing, capacity planning, SLO monitoring, optimize queries, caching strategy | ✅ 6 |
+| **ORCH** | **Orchestrator** | Workflow Coordinator | 6 workflows completos | ✅ 1 |
 
-### 🚀 Como usa?
+**Total:** 10 skills × 55+ subskills = **Sistema completo de automação**
 
-```bash
-./orchestrate.sh "faz o app pedidos_online"
+### 🔄 6 Workflows Disponíveis
+
+| Workflow | Fluxo | Resultado |
+|----------|-------|-----------|
+| **`full`** | Produto → Arquitetura → Engenharia → QA → Security → Ops | App production-ready completo |
+| **`mvp-only`** | Produto | MVP definition (escopo + features) |
+| **`code-only`** | Arquitetura → Engenharia | Código gerado + estrutura |
+| **`test-only`** | QA → Security → Performance | Relatórios de testes e validações |
+| **`incident-response`** | Ops → Dados → Ops → QA | Diagnóstico + fix + validação |
+| **`feature-add`** | Produto → Arquitetura → Engenharia → QA → Ops | Nova feature adicionada e deployada |
+
+### 🤖 Integração com IA
+
+Todas as **55+ subskills** são **powered by Claude AI** via `registry.execute('ai.claude', {...})`:
+
+```typescript
+// Padrão em todas as subskills
+const aiResult = await this.registry.execute('ai.claude', {
+  skillId: 'ai.claude',
+  params: {
+    prompt: `Analyze ${userIntent} and create MVP...`,
+    systemPrompt: `You are an experienced Product Manager...`,
+    maxTokens: 2000
+  }
+});
+
+// Parse JSON response
+const mvpDefinition = JSON.parse(aiResult.data?.content);
 ```
 
-Isso:
-1. Classifica intenção (intent router)
-2. Persona Produto define MVP
-3. Persona Engenharia gera código
-4. Persona QA roda testes
-5. App criado em `apps/pedidos_online`
+### 📚 Biblioteca de Templates (12+)
+
+**Backend:**
+- REST API Express + TypeScript + PostgreSQL + Prisma
+- GraphQL Apollo Server + PostgreSQL
+- gRPC Service + Node.js
+
+**Frontend:**
+- React SPA + Vite + TailwindCSS
+- Next.js SSR/SSG + TypeScript
+- Admin Dashboard + React Admin
+
+**Data:**
+- PostgreSQL + Prisma ORM
+- MongoDB + Mongoose
+- Redis Cache Layer
+- Elasticsearch Search
+
+### 🚀 Como Usa?
+
+```typescript
+import { HubEnterpriseOrchestrator } from './skills/hub-enterprise/hub-enterprise-orchestrator';
+
+const orchestrator = new HubEnterpriseOrchestrator();
+
+// Workflow completo: MVP → Código → Testes → Deploy
+const result = await orchestrator.execute({
+  skillId: 'hub-enterprise-orchestrator',
+  params: {
+    workflow: 'full',
+    userIntent: 'Cria app de vendas online com carrinho de compras',
+    appName: 'ecommerce_vendas',
+    constraints: {
+      budget: 50000,
+      timeline: '3 meses',
+      team: 3
+    }
+  }
+});
+
+console.log(result.data.summary);
+// {
+//   totalDuration: 47880,
+//   successfulSteps: 6,
+//   failedSteps: 0,
+//   appLocation: 'apps/ecommerce_vendas',
+//   deploymentUrl: 'https://ecommerce-vendas-prod.railway.app'
+// }
+```
 
 ### 📦 Output
 
 ```
-apps/pedidos_online/
+apps/ecommerce_vendas/
 ├── src/
-├── tests/
-├── package.json
+│   ├── server.ts                    # Express/GraphQL server
+│   ├── routes/                      # API endpoints
+│   ├── models/                      # Database models
+│   └── tests/                       # Unit + integration tests
+├── prisma/
+│   ├── schema.prisma                # Database schema
+│   └── migrations/                  # Database migrations
 ├── .github/workflows/
-└── README.md
+│   ├── ci.yml                       # GitHub Actions CI
+│   └── deploy.yml                   # GitHub Actions Deploy
+├── package.json                     # Dependências
+├── Dockerfile                       # Container
+├── docker-compose.yml               # Local development
+├── README.md                        # Documentação
+└── .env.example                     # Environment template
 ```
+
+### 🧩 Integrações
+
+- ✅ **GuardrailSkill** - Validação de segurança em todos inputs
+- ✅ **Aurora Monitor** - Métricas, alertas, auto-recovery
+- ✅ **Supabase Archon** - Setup automático de database
+- ✅ **Social Hub** - Marketing do app criado
+
+### 📊 Métricas
+
+Todas execuções são rastreadas:
+- Tempo de execução por persona
+- Taxa de sucesso/falha
+- Resource usage (CPU, memória)
+- Alertas via Telegram se falhas
 
 ---
 
@@ -379,46 +501,50 @@ Serve como **guardrail para TODOS os hubs**.
 ### Hubs por Tipo
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                      HUB ECOSYSTEM                       │
-├─────────────────────────────────────────────────────────┤
-│                                                          │
-│  🏭 Hub Enterprise MVP                                  │
-│     └─ Fábrica de apps enterprise                      │
-│     └─ 3 personas (Produto, Engenharia, QA)            │
-│                                                          │
-│  📱 Social Hub Enterprise                              │
-│     └─ Automação de redes sociais                      │
-│     └─ 15 skills integradas                            │
-│     └─ Integração Publer                               │
-│                                                          │
-│  🗄️  Supabase Archon                                    │
-│     └─ Gestão de banco de dados                        │
-│     └─ 30 skills enterprise                            │
-│     └─ Performance + Security + Analytics              │
-│                                                          │
-│  🛡️  Aurora Monitor                                     │
-│     └─ Proteção e observabilidade                      │
-│     └─ 8 módulos de monitoramento                      │
-│     └─ Auto-healing integrado                          │
-│                                                          │
-│  🔐 GuardrailSkill                                     │
-│     └─ Validação de segurança                          │
-│     └─ Protetor de TODOS os hubs                       │
-│                                                          │
-└─────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│                       HUB ECOSYSTEM v2                        │
+├──────────────────────────────────────────────────────────────┤
+│                                                               │
+│  🏭 Hub Enterprise MVP (NOVO!)                              │
+│     └─ Fábrica de apps enterprise completa                 │
+│     └─ 9 personas (55+ subskills)                           │
+│     └─ Powered by Claude AI                                │
+│     └─ Workflows: full, mvp-only, code-only, test-only,   │
+│        incident-response, feature-add                      │
+│                                                               │
+│  📱 Social Hub Enterprise                                   │
+│     └─ Automação de redes sociais (8 plataformas)          │
+│     └─ 15 skills integradas                                │
+│     └─ Integração Publer + Analytics                       │
+│                                                               │
+│  🗄️  Supabase Archon                                         │
+│     └─ Gestão enterprise de banco de dados                 │
+│     └─ 30 skills (S01-S30)                                 │
+│     └─ Performance + Security + Analytics                  │
+│                                                               │
+│  🛡️  Aurora Monitor                                          │
+│     └─ Proteção e observabilidade em tempo real            │
+│     └─ 8 módulos de monitoramento                          │
+│     └─ Auto-healing + Anomaly detection                    │
+│                                                               │
+│  🔐 GuardrailSkill                                          │
+│     └─ Validação universal de segurança                    │
+│     └─ SQL injection, XSS, Path traversal protection       │
+│     └─ Protetor de TODOS os hubs                           │
+│                                                               │
+└──────────────────────────────────────────────────────────────┘
 ```
 
 ### Skills por Hub
 
 ```
-Hub Enterprise MVP:       3 personas (Produto, Engenharia, QA)
+Hub Enterprise MVP:       9 personas × 5-7 subskills = 55+ skills
 Social Hub Enterprise:   15 skills
-Supabase Archon:         30 skills
+Supabase Archon:         30 skills (S01-S30)
 Aurora Monitor:          8 módulos (40+ sub-componentes)
 GuardrailSkill:          1 skill (protetor universal)
-─────────────────────────────────────────
-TOTAL:                   60+ skills/componentes
+──────────────────────────────────────────────────────
+TOTAL:                   90+ skills/componentes enterprise
 ```
 
 ### Funcionalidades Totais
