@@ -1,0 +1,15 @@
+{
+  "name": "template-enterprise-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node tests/smoke.test.js"
+  },
+  "dependencies": {
+    "express": "4.18.2"
+  },
+  "devDependencies": {
+    "node-fetch": "3.3.2"
+  }
+}
