@@ -17,6 +17,7 @@ import Automation from "./pages/Automation";
 import Costs from "./pages/Costs";
 import Executions from "./pages/Executions";
 import Health from "./pages/Health";
+import Operator from "./pages/Operator";
 
 function Router() {
   return (
@@ -32,6 +33,7 @@ function Router() {
         <Route path="/costs" component={Costs} />
         <Route path="/executions" component={Executions} />
         <Route path="/health" component={Health} />
+        <Route path="/operator" component={Operator} />
         <Route path="/404" component={NotFound} />
         <Route component={NotFound} />
       </Switch>

@@ -1,0 +1,811 @@
+{
+  "$schema": "./openclaw-registry.schema.json",
+  "version": "1.0.0",
+  "generated_at": "2026-02-07T21:30:00.000Z",
+  "meta": {
+    "name": "OpenClaw Aurora Registry",
+    "description": "Canonical source of truth for all hubs, skills, and workflows",
+    "maintainer": "openclaw-team",
+    "repository": "https://github.com/openclaw/aurora"
+  },
+  "statistics": {
+    "total_hubs": 3,
+    "total_skills": 53,
+    "total_workflows": 19,
+    "by_category": {
+      "development": 9,
+      "data": 30,
+      "content": 14
+    }
+  },
+  "hubs": {
+    "enterprise": {
+      "id": "enterprise",
+      "name": "Hub Enterprise",
+      "description": "Enterprise-grade app development through specialized personas",
+      "version": "1.0.0",
+      "category": "development",
+      "status": "active",
+      "adapter": "HubEnterpriseAdapter",
+      "adapter_path": "adapters/hub.adapter.ts",
+      "capabilities": ["ai:generate", "ai:code", "exec:bash", "file:read", "file:write", "file:list"],
+      "risk_level": "medium",
+      "skills": [
+        {
+          "id": "S-01",
+          "name": "hub-enterprise-produto",
+          "display_name": "Produto",
+          "role": "Product Owner",
+          "description": "MVP definition, requirements scoping, user stories",
+          "category": "UTIL",
+          "capabilities": ["ai", "utility"],
+          "risk": "low",
+          "tags": ["product", "mvp", "requirements"]
+        },
+        {
+          "id": "S-02",
+          "name": "hub-enterprise-arquitetura",
+          "display_name": "Arquitetura",
+          "role": "Architect",
+          "description": "System design, tech stack selection, architecture diagrams",
+          "category": "UTIL",
+          "capabilities": ["ai", "utility"],
+          "risk": "low",
+          "tags": ["architecture", "design", "tech-stack"]
+        },
+        {
+          "id": "S-03",
+          "name": "hub-enterprise-engenharia",
+          "display_name": "Engenharia",
+          "role": "Engineer",
+          "description": "Code generation, scaffolding, implementation",
+          "category": "EXEC",
+          "capabilities": ["ai", "process", "shell"],
+          "risk": "medium",
+          "tags": ["code", "implementation", "scaffolding"]
+        },
+        {
+          "id": "S-04",
+          "name": "hub-enterprise-qa",
+          "display_name": "QA",
+          "role": "QA Engineer",
+          "description": "Testing, validation, quality assurance",
+          "category": "EXEC",
+          "capabilities": ["ai", "process", "shell"],
+          "risk": "low",
+          "tags": ["testing", "quality", "validation"]
+        },
+        {
+          "id": "S-05",
+          "name": "hub-enterprise-ops",
+          "display_name": "Ops",
+          "role": "DevOps Engineer",
+          "description": "Infrastructure, deployment, CI/CD pipelines",
+          "category": "EXEC",
+          "capabilities": ["ai", "process", "shell", "network"],
+          "risk": "high",
+          "tags": ["devops", "infrastructure", "deployment"]
+        },
+        {
+          "id": "S-06",
+          "name": "hub-enterprise-security",
+          "display_name": "Security",
+          "role": "Security Engineer",
+          "description": "Security audits, vulnerability scanning, compliance",
+          "category": "UTIL",
+          "capabilities": ["ai", "utility", "network"],
+          "risk": "medium",
+          "tags": ["security", "audit", "compliance"]
+        },
+        {
+          "id": "S-07",
+          "name": "hub-enterprise-dados",
+          "display_name": "Dados",
+          "role": "Data Engineer",
+          "description": "Analytics, dashboards, data pipelines",
+          "category": "UTIL",
+          "capabilities": ["ai", "utility", "data"],
+          "risk": "low",
+          "tags": ["data", "analytics", "dashboards"]
+        },
+        {
+          "id": "S-08",
+          "name": "hub-enterprise-design",
+          "display_name": "Design",
+          "role": "UX/UI Designer",
+          "description": "UX/UI design, wireframes, design systems",
+          "category": "UTIL",
+          "capabilities": ["ai", "utility"],
+          "risk": "low",
+          "tags": ["design", "ux", "ui", "wireframes"]
+        },
+        {
+          "id": "S-09",
+          "name": "hub-enterprise-performance",
+          "display_name": "Performance",
+          "role": "SRE",
+          "description": "Performance optimization, load testing, monitoring",
+          "category": "UTIL",
+          "capabilities": ["ai", "utility", "data"],
+          "risk": "low",
+          "tags": ["performance", "sre", "optimization"]
+        }
+      ],
+      "workflows": [
+        {
+          "id": "full",
+          "name": "Full Pipeline",
+          "description": "Complete app development pipeline with all 9 personas",
+          "steps": ["S-01", "S-02", "S-03", "S-04", "S-05", "S-06", "S-07", "S-08", "S-09"],
+          "risk_level": "high",
+          "estimated_duration_ms": 300000,
+          "requires_confirmation": true
+        },
+        {
+          "id": "mvp-only",
+          "name": "MVP Analysis",
+          "description": "Product analysis and MVP definition only",
+          "steps": ["S-01"],
+          "risk_level": "low",
+          "estimated_duration_ms": 30000,
+          "requires_confirmation": false
+        },
+        {
+          "id": "code-only",
+          "name": "Architecture + Code",
+          "description": "Architecture design and code generation",
+          "steps": ["S-02", "S-03"],
+          "risk_level": "medium",
+          "estimated_duration_ms": 60000,
+          "requires_confirmation": true
+        },
+        {
+          "id": "test-only",
+          "name": "QA + Security + Performance",
+          "description": "Complete quality and security validation",
+          "steps": ["S-04", "S-06", "S-09"],
+          "risk_level": "low",
+          "estimated_duration_ms": 45000,
+          "requires_confirmation": false
+        },
+        {
+          "id": "incident-response",
+          "name": "Incident Response",
+          "description": "Rapid incident handling workflow",
+          "steps": ["S-05", "S-07", "S-04"],
+          "risk_level": "high",
+          "estimated_duration_ms": 20000,
+          "requires_confirmation": true
+        },
+        {
+          "id": "feature-add",
+          "name": "Feature Implementation",
+          "description": "End-to-end feature development",
+          "steps": ["S-01", "S-02", "S-03", "S-04", "S-05"],
+          "risk_level": "medium",
+          "estimated_duration_ms": 120000,
+          "requires_confirmation": true
+        }
+      ]
+    },
+    "supabase": {
+      "id": "supabase",
+      "name": "Supabase Archon Hub",
+      "description": "Enterprise-grade database management and operations for Supabase/PostgreSQL",
+      "version": "3.0.0",
+      "category": "data",
+      "status": "active",
+      "adapter": "HubSupabaseAdapter",
+      "adapter_path": "adapters/hub-supabase.adapter.ts",
+      "capabilities": ["database:read", "database:write", "database:admin", "analytics:read"],
+      "risk_level": "high",
+      "skills": [
+        {
+          "id": "P0-SEC-01",
+          "name": "supabase-schema-sentinel",
+          "display_name": "Schema Sentinel",
+          "priority": "P0",
+          "domain": "security",
+          "description": "Real-time unauthorized schema change detection",
+          "category": "UTIL",
+          "risk": "low",
+          "tags": ["security", "schema", "monitoring"]
+        },
+        {
+          "id": "P0-SEC-02",
+          "name": "supabase-rls-auditor",
+          "display_name": "RLS Auditor",
+          "priority": "P0",
+          "domain": "security",
+          "description": "Row Level Security policy auditing and validation",
+          "category": "UTIL",
+          "risk": "low",
+          "tags": ["security", "rls", "audit"]
+        },
+        {
+          "id": "P0-SEC-03",
+          "name": "supabase-permission-diff",
+          "display_name": "Permission Diff",
+          "priority": "P0",
+          "domain": "security",
+          "description": "Permission change detection and tracking",
+          "category": "UTIL",
+          "risk": "low",
+          "tags": ["security", "permissions", "diff"]
+        },
+        {
+          "id": "P0-SEC-04",
+          "name": "supabase-secrets-scanner",
+          "display_name": "Secrets Scanner",
+          "priority": "P0",
+          "domain": "security",
+          "description": "Credential exposure detection in code and configs",
+          "category": "UTIL",
+          "risk": "low",
+          "tags": ["security", "secrets", "scanning"]
+        },
+        {
+          "id": "P0-DB-01",
+          "name": "supabase-data-auditor",
+          "display_name": "Data Auditor",
+          "priority": "P0",
+          "domain": "database",
+          "description": "Data integrity auditing and validation",
+          "category": "UTIL",
+          "risk": "low",
+          "tags": ["database", "audit", "integrity"]
+        },
+        {
+          "id": "P0-DB-02",
+          "name": "supabase-migration-planner",
+          "display_name": "Migration Planner",
+          "priority": "P0",
+          "domain": "database",
+          "description": "Safe database migration planning and execution",
+          "category": "UTIL",
+          "risk": "medium",
+          "tags": ["database", "migration", "planning"]
+        },
+        {
+          "id": "P0-DB-03",
+          "name": "supabase-schema-differ",
+          "display_name": "Schema Differ",
+          "priority": "P0",
+          "domain": "database",
+          "description": "Schema comparison and diff generation",
+          "category": "UTIL",
+          "risk": "low",
+          "tags": ["database", "schema", "diff"]
+        },
+        {
+          "id": "P0-DB-04",
+          "name": "supabase-query-doctor",
+          "display_name": "Query Doctor",
+          "priority": "P0",
+          "domain": "database",
+          "description": "SQL query analysis and optimization recommendations",
+          "category": "UTIL",
+          "risk": "low",
+          "tags": ["database", "query", "optimization"]
+        },
+        {
+          "id": "P0-DB-05",
+          "name": "supabase-backup-driller",
+          "display_name": "Backup Driller",
+          "priority": "P0",
+          "domain": "database",
+          "description": "Backup creation, validation, and disaster recovery",
+          "category": "UTIL",
+          "risk": "medium",
+          "tags": ["database", "backup", "recovery"]
+        },
+        {
+          "id": "P1-OPS-01",
+          "name": "supabase-index-optimizer",
+          "display_name": "Index Optimizer",
+          "priority": "P1",
+          "domain": "operations",
+          "description": "Query pattern analysis and index recommendations",
+          "category": "UTIL",
+          "risk": "medium",
+          "tags": ["operations", "index", "optimization"]
+        },
+        {
+          "id": "P1-OPS-02",
+          "name": "supabase-vacuum-scheduler",
+          "display_name": "Vacuum Scheduler",
+          "priority": "P1",
+          "domain": "operations",
+          "description": "PostgreSQL VACUUM management and scheduling",
+          "category": "UTIL",
+          "risk": "medium",
+          "tags": ["operations", "vacuum", "maintenance"]
+        },
+        {
+          "id": "P1-OPS-03",
+          "name": "supabase-connection-pool",
+          "display_name": "Connection Pool",
+          "priority": "P1",
+          "domain": "operations",
+          "description": "Connection pool optimization and monitoring",
+          "category": "UTIL",
+          "risk": "medium",
+          "tags": ["operations", "connections", "pooling"]
+        },
+        {
+          "id": "P1-OPS-04",
+          "name": "supabase-health-dashboard",
+          "display_name": "Health Dashboard",
+          "priority": "P1",
+          "domain": "operations",
+          "description": "Real-time database health monitoring",
+          "category": "UTIL",
+          "risk": "low",
+          "tags": ["operations", "health", "monitoring"]
+        },
+        {
+          "id": "P1-OPS-05",
+          "name": "supabase-circuit-breaker",
+          "display_name": "Circuit Breaker",
+          "priority": "P1",
+          "domain": "operations",
+          "description": "Cascade failure prevention and isolation",
+          "category": "UTIL",
+          "risk": "medium",
+          "tags": ["operations", "reliability", "circuit-breaker"]
+        },
+        {
+          "id": "P1-OPS-06",
+          "name": "supabase-rate-limiter",
+          "display_name": "Rate Limiter",
+          "priority": "P1",
+          "domain": "operations",
+          "description": "API and database rate limiting",
+          "category": "UTIL",
+          "risk": "medium",
+          "tags": ["operations", "rate-limit", "throttling"]
+        },
+        {
+          "id": "P1-OPS-07",
+          "name": "supabase-cache-warmer",
+          "display_name": "Cache Warmer",
+          "priority": "P1",
+          "domain": "operations",
+          "description": "Intelligent data pre-loading and cache warming",
+          "category": "UTIL",
+          "risk": "low",
+          "tags": ["operations", "cache", "performance"]
+        },
+        {
+          "id": "P1-OPS-08",
+          "name": "supabase-query-cache",
+          "display_name": "Query Cache",
+          "priority": "P1",
+          "domain": "operations",
+          "description": "Query result caching with smart invalidation",
+          "category": "UTIL",
+          "risk": "low",
+          "tags": ["operations", "cache", "query"]
+        },
+        {
+          "id": "P1-OPS-09",
+          "name": "supabase-slow-query-logger",
+          "display_name": "Slow Query Logger",
+          "priority": "P1",
+          "domain": "operations",
+          "description": "Slow query detection and analysis",
+          "category": "UTIL",
+          "risk": "low",
+          "tags": ["operations", "slow-query", "logging"]
+        },
+        {
+          "id": "P1-OPS-10",
+          "name": "supabase-transaction-monitor",
+          "display_name": "Transaction Monitor",
+          "priority": "P1",
+          "domain": "operations",
+          "description": "Long-running transaction tracking",
+          "category": "UTIL",
+          "risk": "low",
+          "tags": ["operations", "transactions", "monitoring"]
+        },
+        {
+          "id": "P1-OPS-11",
+          "name": "supabase-deadlock-detector",
+          "display_name": "Deadlock Detector",
+          "priority": "P1",
+          "domain": "operations",
+          "description": "Deadlock detection and resolution",
+          "category": "UTIL",
+          "risk": "medium",
+          "tags": ["operations", "deadlock", "detection"]
+        },
+        {
+          "id": "P1-OPS-12",
+          "name": "supabase-storage-analyzer",
+          "display_name": "Storage Analyzer",
+          "priority": "P1",
+          "domain": "operations",
+          "description": "Storage usage analysis and optimization",
+          "category": "UTIL",
+          "risk": "low",
+          "tags": ["operations", "storage", "analysis"]
+        },
+        {
+          "id": "P2-ADV-01",
+          "name": "supabase-replication-monitor",
+          "display_name": "Replication Monitor",
+          "priority": "P2",
+          "domain": "advanced",
+          "description": "Replication lag monitoring and alerting",
+          "category": "UTIL",
+          "risk": "low",
+          "tags": ["advanced", "replication", "monitoring"]
+        },
+        {
+          "id": "P2-ADV-02",
+          "name": "supabase-table-bloat-detector",
+          "display_name": "Table Bloat Detector",
+          "priority": "P2",
+          "domain": "advanced",
+          "description": "Table bloat detection and reporting",
+          "category": "UTIL",
+          "risk": "low",
+          "tags": ["advanced", "bloat", "detection"]
+        },
+        {
+          "id": "P2-ADV-03",
+          "name": "supabase-lock-monitor",
+          "display_name": "Lock Monitor",
+          "priority": "P2",
+          "domain": "advanced",
+          "description": "Lock and blocking query monitoring",
+          "category": "UTIL",
+          "risk": "low",
+          "tags": ["advanced", "locks", "monitoring"]
+        },
+        {
+          "id": "P2-ADV-04",
+          "name": "supabase-partition-manager",
+          "display_name": "Partition Manager",
+          "priority": "P2",
+          "domain": "advanced",
+          "description": "Automatic table partitioning management",
+          "category": "UTIL",
+          "risk": "high",
+          "tags": ["advanced", "partitioning", "management"]
+        },
+        {
+          "id": "P2-ADV-05",
+          "name": "supabase-statistics-collector",
+          "display_name": "Statistics Collector",
+          "priority": "P2",
+          "domain": "advanced",
+          "description": "Database statistics analysis and reporting",
+          "category": "UTIL",
+          "risk": "low",
+          "tags": ["advanced", "statistics", "analysis"]
+        },
+        {
+          "id": "P2-ADV-06",
+          "name": "supabase-disk-usage-monitor",
+          "display_name": "Disk Usage Monitor",
+          "priority": "P2",
+          "domain": "advanced",
+          "description": "Disk capacity monitoring and alerting",
+          "category": "UTIL",
+          "risk": "low",
+          "tags": ["advanced", "disk", "monitoring"]
+        },
+        {
+          "id": "P2-ADV-07",
+          "name": "supabase-compliance-reporter",
+          "display_name": "Compliance Reporter",
+          "priority": "P2",
+          "domain": "advanced",
+          "description": "LGPD/GDPR/SOC2 compliance reports",
+          "category": "UTIL",
+          "risk": "low",
+          "tags": ["advanced", "compliance", "reporting"]
+        },
+        {
+          "id": "P2-ADV-08",
+          "name": "supabase-cost-analyzer",
+          "display_name": "Cost Analyzer",
+          "priority": "P2",
+          "domain": "advanced",
+          "description": "Supabase cost optimization recommendations",
+          "category": "UTIL",
+          "risk": "low",
+          "tags": ["advanced", "cost", "optimization"]
+        },
+        {
+          "id": "P2-ADV-09",
+          "name": "supabase-ai-query-optimizer",
+          "display_name": "AI Query Optimizer",
+          "priority": "P2",
+          "domain": "advanced",
+          "description": "AI-powered query rewriting and optimization",
+          "category": "UTIL",
+          "risk": "medium",
+          "tags": ["advanced", "ai", "query-optimization"]
+        }
+      ],
+      "workflows": [
+        {
+          "id": "security-audit",
+          "name": "Security Audit",
+          "description": "Complete security audit of the database",
+          "steps": ["P0-SEC-01", "P0-SEC-02", "P0-SEC-03", "P0-SEC-04"],
+          "risk_level": "low",
+          "estimated_duration_ms": 60000,
+          "requires_confirmation": false
+        },
+        {
+          "id": "health-check",
+          "name": "Health Check",
+          "description": "Full database health verification",
+          "steps": ["P1-OPS-04", "P1-OPS-09", "P1-OPS-10", "P2-ADV-06"],
+          "risk_level": "low",
+          "estimated_duration_ms": 30000,
+          "requires_confirmation": false
+        },
+        {
+          "id": "performance-tune",
+          "name": "Performance Tuning",
+          "description": "Complete performance optimization workflow",
+          "steps": ["P0-DB-04", "P1-OPS-01", "P1-OPS-07", "P1-OPS-08", "P2-ADV-09"],
+          "risk_level": "medium",
+          "estimated_duration_ms": 90000,
+          "requires_confirmation": true
+        },
+        {
+          "id": "migration-safe",
+          "name": "Safe Migration",
+          "description": "Safe schema migration with validation",
+          "steps": ["P0-DB-05", "P0-DB-03", "P0-DB-02"],
+          "risk_level": "high",
+          "estimated_duration_ms": 120000,
+          "requires_confirmation": true
+        },
+        {
+          "id": "compliance-report",
+          "name": "Compliance Report",
+          "description": "Generate compliance reports for audits",
+          "steps": ["P2-ADV-07", "P0-SEC-02", "P0-DB-01"],
+          "risk_level": "low",
+          "estimated_duration_ms": 45000,
+          "requires_confirmation": false
+        },
+        {
+          "id": "full-scan",
+          "name": "Full Database Scan",
+          "description": "Complete database analysis and reporting",
+          "steps": ["P0-SEC-01", "P0-SEC-02", "P0-DB-01", "P1-OPS-04", "P2-ADV-05"],
+          "risk_level": "low",
+          "estimated_duration_ms": 180000,
+          "requires_confirmation": false
+        }
+      ]
+    },
+    "social": {
+      "id": "social",
+      "name": "Social Media Hub",
+      "description": "Complete social media management and automation",
+      "version": "1.0.0",
+      "category": "content",
+      "status": "active",
+      "adapter": "HubSocialAdapter",
+      "adapter_path": "adapters/hub-social.adapter.ts",
+      "capabilities": ["content:create", "content:schedule", "analytics:read", "api:external"],
+      "risk_level": "medium",
+      "skills": [
+        {
+          "id": "BASIC-01",
+          "name": "social-hub-planner",
+          "display_name": "Content Planner",
+          "tier": "basic",
+          "description": "Content planning and calendar management",
+          "category": "UTIL",
+          "risk": "low",
+          "tags": ["planning", "calendar", "content"]
+        },
+        {
+          "id": "BASIC-02",
+          "name": "social-hub-publer",
+          "display_name": "Basic Publisher",
+          "tier": "basic",
+          "description": "Basic content scheduling and publishing",
+          "category": "UTIL",
+          "risk": "low",
+          "tags": ["publishing", "scheduling"]
+        },
+        {
+          "id": "BASIC-03",
+          "name": "social-hub-caption-ai",
+          "display_name": "Caption AI",
+          "tier": "basic",
+          "description": "AI-powered caption generation",
+          "category": "UTIL",
+          "risk": "low",
+          "tags": ["ai", "captions", "content"]
+        },
+        {
+          "id": "BASIC-04",
+          "name": "social-hub-hashtag-ai",
+          "display_name": "Hashtag AI",
+          "tier": "basic",
+          "description": "Hashtag optimization and recommendations",
+          "category": "UTIL",
+          "risk": "low",
+          "tags": ["ai", "hashtags", "optimization"]
+        },
+        {
+          "id": "BASIC-05",
+          "name": "social-hub-inventory",
+          "display_name": "Media Inventory",
+          "tier": "basic",
+          "description": "Media asset inventory and scanning",
+          "category": "UTIL",
+          "risk": "low",
+          "tags": ["media", "inventory", "assets"]
+        },
+        {
+          "id": "BASIC-06",
+          "name": "social-hub-analytics",
+          "display_name": "Basic Analytics",
+          "tier": "basic",
+          "description": "Basic social media analytics",
+          "category": "UTIL",
+          "risk": "low",
+          "tags": ["analytics", "metrics"]
+        },
+        {
+          "id": "BASIC-07",
+          "name": "social-hub-orchestrator",
+          "display_name": "Workflow Orchestrator",
+          "tier": "basic",
+          "description": "Workflow orchestration and coordination",
+          "category": "UTIL",
+          "risk": "low",
+          "tags": ["orchestration", "workflow"]
+        },
+        {
+          "id": "ENT-01",
+          "name": "social-hub-publer-v2",
+          "display_name": "Advanced Publisher",
+          "tier": "enterprise",
+          "description": "Advanced scheduling via Publer API",
+          "category": "EXEC",
+          "risk": "medium",
+          "tags": ["publishing", "publer", "api"]
+        },
+        {
+          "id": "ENT-02",
+          "name": "social-hub-video-enricher",
+          "display_name": "Video Enricher",
+          "tier": "enterprise",
+          "description": "Video metadata enrichment and optimization",
+          "category": "UTIL",
+          "risk": "low",
+          "tags": ["video", "metadata", "enrichment"]
+        },
+        {
+          "id": "ENT-03",
+          "name": "social-hub-quota-enforcer",
+          "display_name": "Quota Enforcer",
+          "tier": "enterprise",
+          "description": "Post quota management and enforcement",
+          "category": "UTIL",
+          "risk": "low",
+          "tags": ["quota", "limits", "enforcement"]
+        },
+        {
+          "id": "ENT-04",
+          "name": "social-hub-analytics-collector",
+          "display_name": "Analytics Collector",
+          "tier": "enterprise",
+          "description": "Instagram Graph API metrics collection",
+          "category": "EXEC",
+          "risk": "low",
+          "tags": ["analytics", "instagram", "api"]
+        },
+        {
+          "id": "ENT-05",
+          "name": "social-hub-approval-workflow",
+          "display_name": "Approval Workflow",
+          "tier": "enterprise",
+          "description": "Post approval flow with Telegram notifications",
+          "category": "EXEC",
+          "risk": "medium",
+          "tags": ["approval", "workflow", "telegram"]
+        },
+        {
+          "id": "ENT-06",
+          "name": "social-hub-database-manager",
+          "display_name": "Database Manager",
+          "tier": "enterprise",
+          "description": "PostgreSQL migrations and management",
+          "category": "EXEC",
+          "risk": "high",
+          "tags": ["database", "migrations", "postgresql"]
+        },
+        {
+          "id": "ENT-07",
+          "name": "social-hub-observability",
+          "display_name": "Observability",
+          "tier": "enterprise",
+          "description": "Activity logging and monitoring",
+          "category": "UTIL",
+          "risk": "low",
+          "tags": ["observability", "logging", "monitoring"]
+        }
+      ],
+      "workflows": [
+        {
+          "id": "full",
+          "name": "Full Pipeline",
+          "description": "Complete content workflow: Plan → Inventory → Generate → Schedule → Analytics",
+          "steps": ["BASIC-01", "BASIC-05", "BASIC-03", "BASIC-04", "ENT-01", "ENT-04"],
+          "risk_level": "medium",
+          "estimated_duration_ms": 120000,
+          "requires_confirmation": true
+        },
+        {
+          "id": "plan-only",
+          "name": "Content Planning",
+          "description": "Content planning and calendar setup",
+          "steps": ["BASIC-01"],
+          "risk_level": "low",
+          "estimated_duration_ms": 15000,
+          "requires_confirmation": false
+        },
+        {
+          "id": "generate-only",
+          "name": "AI Content Generation",
+          "description": "Generate captions and hashtags with AI",
+          "steps": ["BASIC-03", "BASIC-04"],
+          "risk_level": "low",
+          "estimated_duration_ms": 20000,
+          "requires_confirmation": false
+        },
+        {
+          "id": "schedule-only",
+          "name": "Post Scheduling",
+          "description": "Schedule posts via Publer",
+          "steps": ["ENT-01"],
+          "risk_level": "medium",
+          "estimated_duration_ms": 10000,
+          "requires_confirmation": true
+        },
+        {
+          "id": "analytics-only",
+          "name": "Analytics Collection",
+          "description": "Collect metrics from all platforms",
+          "steps": ["BASIC-06", "ENT-04"],
+          "risk_level": "low",
+          "estimated_duration_ms": 30000,
+          "requires_confirmation": false
+        },
+        {
+          "id": "approval-flow",
+          "name": "Approval Workflow",
+          "description": "Post approval with Telegram notifications",
+          "steps": ["ENT-05", "ENT-01"],
+          "risk_level": "medium",
+          "estimated_duration_ms": 60000,
+          "requires_confirmation": true
+        },
+        {
+          "id": "database-setup",
+          "name": "Database Setup",
+          "description": "PostgreSQL setup and migrations",
+          "steps": ["ENT-06"],
+          "risk_level": "high",
+          "estimated_duration_ms": 45000,
+          "requires_confirmation": true
+        }
+      ]
+    }
+  }
+}

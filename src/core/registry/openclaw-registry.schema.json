@@ -1,0 +1,212 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://openclaw.dev/schemas/registry.json",
+  "title": "OpenClaw Registry Schema",
+  "description": "Schema for the OpenClaw Aurora canonical registry",
+  "type": "object",
+  "required": ["version", "meta", "statistics", "hubs"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to this schema"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Registry version in semver format"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the registry was generated"
+    },
+    "meta": {
+      "type": "object",
+      "required": ["name", "description"],
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "maintainer": { "type": "string" },
+        "repository": { "type": "string", "format": "uri" }
+      }
+    },
+    "statistics": {
+      "type": "object",
+      "required": ["total_hubs", "total_skills", "total_workflows"],
+      "properties": {
+        "total_hubs": { "type": "integer", "minimum": 0 },
+        "total_skills": { "type": "integer", "minimum": 0 },
+        "total_workflows": { "type": "integer", "minimum": 0 },
+        "by_category": {
+          "type": "object",
+          "additionalProperties": { "type": "integer" }
+        }
+      }
+    },
+    "hubs": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/Hub"
+      }
+    }
+  },
+  "definitions": {
+    "Hub": {
+      "type": "object",
+      "required": ["id", "name", "description", "version", "category", "status", "adapter", "skills", "workflows"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "Unique hub identifier"
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable hub name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Hub description"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "category": {
+          "type": "string",
+          "enum": ["development", "data", "content", "integration", "security", "operations"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "beta", "deprecated", "disabled"]
+        },
+        "adapter": {
+          "type": "string",
+          "description": "Adapter class name"
+        },
+        "adapter_path": {
+          "type": "string",
+          "description": "Path to adapter file"
+        },
+        "capabilities": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Required capabilities for this hub"
+        },
+        "risk_level": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "critical"]
+        },
+        "skills": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Skill" }
+        },
+        "workflows": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Workflow" }
+        }
+      }
+    },
+    "Skill": {
+      "type": "object",
+      "required": ["id", "name", "description", "category"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique skill identifier within the hub"
+        },
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "Skill name (kebab-case)"
+        },
+        "display_name": {
+          "type": "string",
+          "description": "Human-readable name"
+        },
+        "role": {
+          "type": "string",
+          "description": "Role or persona name (for enterprise hub)"
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["P0", "P1", "P2", "P3"],
+          "description": "Priority level (for supabase hub)"
+        },
+        "domain": {
+          "type": "string",
+          "description": "Domain area (security, database, operations, etc.)"
+        },
+        "tier": {
+          "type": "string",
+          "enum": ["basic", "enterprise"],
+          "description": "Tier level (for social hub)"
+        },
+        "description": {
+          "type": "string",
+          "description": "Skill description"
+        },
+        "category": {
+          "type": "string",
+          "enum": ["UTIL", "EXEC", "NET", "DATA"],
+          "description": "Skill category"
+        },
+        "capabilities": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Skill capabilities"
+        },
+        "risk": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "critical"]
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "Workflow": {
+      "type": "object",
+      "required": ["id", "name", "description", "steps", "risk_level"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "Workflow identifier"
+        },
+        "name": {
+          "type": "string",
+          "description": "Workflow name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Workflow description"
+        },
+        "steps": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1,
+          "description": "Array of skill IDs to execute"
+        },
+        "risk_level": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "critical"]
+        },
+        "estimated_duration_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Estimated execution time in milliseconds"
+        },
+        "requires_confirmation": {
+          "type": "boolean",
+          "description": "Whether user confirmation is required"
+        },
+        "input_schema": {
+          "type": "object",
+          "description": "JSON Schema for workflow input parameters"
+        }
+      }
+    }
+  }
+}

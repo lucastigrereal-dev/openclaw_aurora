@@ -6,7 +6,7 @@ import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { Link, useLocation } from 'wouter';
 import {
   Home, Radio, Terminal, Zap, GitBranch, Link2,
-  Bot, DollarSign, Play, Activity
+  Bot, DollarSign, Play, Activity, Brain
 } from 'lucide-react';
 
 interface CockpitLayoutProps {
@@ -24,6 +24,7 @@ const navItems = [
   { path: '/costs', label: 'COSTS', icon: DollarSign, color: '#84cc16' },
   { path: '/executions', label: 'EXECUTIONS', icon: Play, color: '#f97316' },
   { path: '/health', label: 'HEALTH', icon: Activity, color: '#ef4444' },
+  { path: '/operator', label: 'OPERATOR', icon: Brain, color: '#6366f1' },
 ];
 
 export function CockpitLayout({ children }: CockpitLayoutProps) {

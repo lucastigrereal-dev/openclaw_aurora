@@ -174,7 +174,7 @@ export class AuroraMonitor extends EventEmitter {
 
     // Auto Healer
     if (this.config.autoHealer.enabled) {
-      this.autoHealer = new AutoHealer(this.config.autoHealer, this.alertManager);
+      this.autoHealer = new AutoHealer(this.config.autoHealer, this.alertManager ?? undefined);
       this.autoHealer.on('healed', (action: HealingAction) => {
         this.emit('healed', action);
       });
@@ -183,7 +183,7 @@ export class AuroraMonitor extends EventEmitter {
 
     // Watchdog
     if (this.config.watchdog.enabled) {
-      this.watchdog = new ProcessWatchdog(this.config.watchdog, this.alertManager);
+      this.watchdog = new ProcessWatchdog(this.config.watchdog, this.alertManager ?? undefined);
       this.logger.debug('ProcessWatchdog initialized');
     }
   }
