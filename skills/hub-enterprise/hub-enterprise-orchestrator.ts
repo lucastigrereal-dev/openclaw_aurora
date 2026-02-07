@@ -13,7 +13,7 @@ import { getConfig } from './shared/hub-enterprise-config';
 export class HubEnterpriseOrchestrator extends Skill {
   private registry = getSkillRegistryV2();
   private logger = createLogger('orchestrator');
-  private config = getConfig();
+  private hubConfig = getConfig();
 
   constructor() {
     super(

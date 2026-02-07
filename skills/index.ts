@@ -22,7 +22,7 @@ export * from './exec-extended';
 // export * from './autopc-control';   // TODO: Update to new Skill API
 export * from './security-config';
 
-// NEW: Marketing Hub skills (TODO: Update to new Skill API)
+// NEW: Marketing Hub skills (TODO: Update to new Skill API - TEMPORARILY DISABLED)
 // export * from './marketing-captacao';
 // export * from './social-media';
 // export * from './content-ia';
@@ -38,11 +38,11 @@ export * from './intent-router';
 // NEW: Guardrail (Security & Protection) (TODO: Update to new Skill API)
 // export * from './guardrail';
 
-// NEW: Supabase Archon skills (TODO: Fix compilation errors)
+// NEW: Supabase Archon skills (TODO: Fix compilation errors - TEMPORARILY DISABLED)
 // export * from './supabase-archon/supabase-archon-index';
 
-// NEW: Hub Enterprise skills (TODO: Fix compilation errors)
-// export * from './hub-enterprise/hub-enterprise-index';
+// NEW: Hub Enterprise skills
+export * from './hub-enterprise/hub-enterprise-index';
 
 // Imports para registro
 import { getSkillRegistry, SkillRegistry } from './skill-base';
@@ -61,7 +61,7 @@ import { execExtendedSkills } from './exec-extended';
 // import { autopcSkills } from './autopc-control';    // TODO: Update to new Skill API
 import { securityManager, isSkillAllowed } from './security-config';
 
-// NEW: Marketing Hub imports (TODO: Update to new Skill API)
+// NEW: Marketing Hub imports (TODO: Update to new Skill API - TEMPORARILY DISABLED)
 // import { marketingSkills } from './marketing-captacao';
 // import { socialSkills } from './social-media';
 // import { contentSkills } from './content-ia';
@@ -71,11 +71,11 @@ import { securityManager, isSkillAllowed } from './security-config';
 // EVOLUTION: Phase 2 imports
 import { getSkillRegistryV2, buildSpecFromAvailable } from './registry-v2';
 
-// NEW: Supabase Archon imports (TODO: Fix compilation errors)
+// NEW: Supabase Archon imports (TODO: Fix compilation errors - TEMPORARILY DISABLED)
 // import { registerSupabaseArchonSkills } from './supabase-archon/supabase-archon-index';
 
-// NEW: Hub Enterprise imports (TODO: Fix compilation errors)
-// import { registerHubEnterpriseSkills } from './hub-enterprise/hub-enterprise-index';
+// NEW: Hub Enterprise imports
+import { registerHubEnterpriseSkills } from './hub-enterprise/hub-enterprise-index';
 
 /**
  * Registra todas as skills no registry
@@ -158,9 +158,9 @@ export function registerAllSkills(registry?: SkillRegistry): SkillRegistry {
   // console.log('[Skills] Registering supabase archon skills...');
   // registerSupabaseArchonSkills();
 
-  // NEW: Hub Enterprise Skills (TODO: Fix compilation errors)
-  // console.log('[Skills] Registering hub enterprise skills...');
-  // registerHubEnterpriseSkills();
+  // NEW: Hub Enterprise Skills
+  console.log('[Skills] Registering hub enterprise skills...');
+  registerHubEnterpriseSkills();
 
   console.log(`[Skills] Registered ${reg.getStats().total} skills`);
 

@@ -3,140 +3,212 @@
  * Registra todas as personas e o orchestrator
  */
 
-import { SkillRegistryV2, SkillStatus, SkillRiskLevel } from '../skill-base';
-import { createHubEnterpriseProdutoSkill } from './personas/hub-enterprise-produto';
-import { createHubEnterpriseArquiteturaSkill } from './personas/hub-enterprise-arquitetura';
-import { createHubEnterpriseEngenhariaSkill } from './personas/hub-enterprise-engenharia';
-import { createHubEnterpriseQASkill } from './personas/hub-enterprise-qa';
-import { createHubEnterpriseOpsSkill } from './personas/hub-enterprise-ops';
-import { createHubEnterpriseSecuritySkill } from './personas/hub-enterprise-security';
-import { createHubEnterpriseDadosSkill } from './personas/hub-enterprise-dados';
-import { createHubEnterpriseDesignSkill } from './personas/hub-enterprise-design';
-import { createHubEnterprisePerformanceSkill } from './personas/hub-enterprise-performance';
-import { createHubEnterpriseOrchestrator } from './hub-enterprise-orchestrator';
+import { getSkillRegistryV2 } from '../skill-base';
 
 export function registerHubEnterpriseSkills(): void {
-  const registry = SkillRegistryV2.getInstance();
+  const registry = getSkillRegistryV2();
 
   console.log('[HubEnterprise] 🏭 Starting Hub Enterprise skill registration...');
 
   // S-01: Produto Persona
-  registry.register(createHubEnterpriseProdutoSkill(), {
+  registry.register({
     name: 'hub-enterprise-produto',
     version: '1.0.0',
-    status: SkillStatus.ACTIVE,
-    riskLevel: SkillRiskLevel.LOW,
+    status: 'stable',
+    risk: 'low',
     category: 'UTIL',
     description:
       'Product Owner persona - MVP definition, feature scoping, requirements',
     tags: ['hub-enterprise', 'product', 'mvp', 'requirements', 'p1'],
+    author: 'Hub Enterprise',
+    approval: 'blocked',
+    dangerous: false,
+    dependencies: [],
+    capabilities: ['ai', 'utility'],
+    inputs: [],
+    outputs: [],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   });
 
   // S-02: Arquitetura Persona
-  registry.register(createHubEnterpriseArquiteturaSkill(), {
+  registry.register({
     name: 'hub-enterprise-arquitetura',
     version: '1.0.0',
-    status: SkillStatus.ACTIVE,
-    riskLevel: SkillRiskLevel.MEDIUM,
+    status: 'stable',
+    risk: 'medium',
     category: 'UTIL',
-    description:
-      'Architecture persona - system design, tech stack, scalability planning',
+    description: 'Architecture persona - system design, tech stack, scalability planning',
     tags: ['hub-enterprise', 'architecture', 'design', 'tech-stack', 'p2'],
+    author: 'Hub Enterprise',
+    approval: 'blocked',
+    dangerous: false,
+    dependencies: [],
+    capabilities: ['ai', 'utility'],
+    inputs: [],
+    outputs: [],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   });
 
   // S-03: Engenharia Persona
-  registry.register(createHubEnterpriseEngenhariaSkill(), {
+  registry.register({
     name: 'hub-enterprise-engenharia',
     version: '1.0.0',
-    status: SkillStatus.ACTIVE,
-    riskLevel: SkillRiskLevel.MEDIUM,
+    status: 'stable',
+    risk: 'medium',
     category: 'EXEC',
-    description:
-      'Engineering persona - code generation, scaffolding, CI/CD setup',
+    description: 'Engineering persona - code generation, scaffolding, CI/CD setup',
     tags: ['hub-enterprise', 'engineering', 'code-gen', 'scaffold', 'p3'],
+    author: 'Hub Enterprise',
+    approval: 'blocked',
+    dangerous: false,
+    dependencies: [],
+    capabilities: ['process', 'shell', 'utility'],
+    inputs: [],
+    outputs: [],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   });
 
   // S-04: QA Persona
-  registry.register(createHubEnterpriseQASkill(), {
+  registry.register({
     name: 'hub-enterprise-qa',
     version: '1.0.0',
-    status: SkillStatus.ACTIVE,
-    riskLevel: SkillRiskLevel.LOW,
+    status: 'stable',
+    risk: 'low',
     category: 'UTIL',
     description: 'QA persona - testing, validation, quality assurance',
     tags: ['hub-enterprise', 'qa', 'testing', 'validation', 'p4'],
+    author: 'Hub Enterprise',
+    approval: 'blocked',
+    dangerous: false,
+    dependencies: [],
+    capabilities: ['utility'],
+    inputs: [],
+    outputs: [],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   });
 
   // S-05: Ops Persona
-  registry.register(createHubEnterpriseOpsSkill(), {
+  registry.register({
     name: 'hub-enterprise-ops',
     version: '1.0.0',
-    status: SkillStatus.ACTIVE,
-    riskLevel: SkillRiskLevel.HIGH,
+    status: 'stable',
+    risk: 'high',
     category: 'EXEC',
-    description:
-      'DevOps persona - infrastructure, deployment, monitoring, incident response',
+    description: 'DevOps persona - infrastructure, deployment, monitoring, incident response',
     tags: ['hub-enterprise', 'ops', 'devops', 'deployment', 'p5'],
+    author: 'Hub Enterprise',
+    approval: 'blocked',
+    dangerous: false,
+    dependencies: [],
+    capabilities: ['process', 'shell', 'network'],
+    inputs: [],
+    outputs: [],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   });
 
   // S-06: Security Persona
-  registry.register(createHubEnterpriseSecuritySkill(), {
+  registry.register({
     name: 'hub-enterprise-security',
     version: '1.0.0',
-    status: SkillStatus.ACTIVE,
-    riskLevel: SkillRiskLevel.HIGH,
+    status: 'stable',
+    risk: 'high',
     category: 'UTIL',
-    description:
-      'Security persona - audits, vulnerability scanning, compliance checks',
+    description: 'Security persona - audits, vulnerability scanning, compliance checks',
     tags: ['hub-enterprise', 'security', 'compliance', 'audit', 'p6'],
+    author: 'Hub Enterprise',
+    approval: 'blocked',
+    dangerous: false,
+    dependencies: [],
+    capabilities: ['utility', 'network'],
+    inputs: [],
+    outputs: [],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   });
 
   // S-07: Dados Persona
-  registry.register(createHubEnterpriseDadosSkill(), {
+  registry.register({
     name: 'hub-enterprise-dados',
     version: '1.0.0',
-    status: SkillStatus.ACTIVE,
-    riskLevel: SkillRiskLevel.LOW,
+    status: 'stable',
+    risk: 'low',
     category: 'UTIL',
-    description:
-      'Data persona - dashboards, analytics, data pipelines, reporting',
+    description: 'Data persona - dashboards, analytics, data pipelines, reporting',
     tags: ['hub-enterprise', 'data', 'analytics', 'dashboard', 'p7'],
+    author: 'Hub Enterprise',
+    approval: 'blocked',
+    dangerous: false,
+    dependencies: [],
+    capabilities: ['data', 'utility'],
+    inputs: [],
+    outputs: [],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   });
 
   // S-08: Design Persona
-  registry.register(createHubEnterpriseDesignSkill(), {
+  registry.register({
     name: 'hub-enterprise-design',
     version: '1.0.0',
-    status: SkillStatus.ACTIVE,
-    riskLevel: SkillRiskLevel.LOW,
+    status: 'stable',
+    risk: 'low',
     category: 'UTIL',
-    description:
-      'Design persona - wireframes, design systems, accessibility, UX flows',
+    description: 'Design persona - wireframes, design systems, accessibility, UX flows',
     tags: ['hub-enterprise', 'design', 'ux', 'ui', 'p8'],
+    author: 'Hub Enterprise',
+    approval: 'blocked',
+    dangerous: false,
+    dependencies: [],
+    capabilities: ['utility'],
+    inputs: [],
+    outputs: [],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   });
 
   // S-09: Performance Persona
-  registry.register(createHubEnterprisePerformanceSkill(), {
+  registry.register({
     name: 'hub-enterprise-performance',
     version: '1.0.0',
-    status: SkillStatus.ACTIVE,
-    riskLevel: SkillRiskLevel.MEDIUM,
+    status: 'stable',
+    risk: 'medium',
     category: 'UTIL',
-    description:
-      'Performance persona - optimization, load testing, SLO monitoring',
+    description: 'Performance persona - optimization, load testing, SLO monitoring',
     tags: ['hub-enterprise', 'performance', 'sre', 'optimization', 'p9'],
+    author: 'Hub Enterprise',
+    approval: 'blocked',
+    dangerous: false,
+    dependencies: [],
+    capabilities: ['utility'],
+    inputs: [],
+    outputs: [],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   });
 
   // Orchestrator
-  registry.register(createHubEnterpriseOrchestrator(), {
+  registry.register({
     name: 'hub-enterprise-orchestrator',
     version: '1.0.0',
-    status: SkillStatus.ACTIVE,
-    riskLevel: SkillRiskLevel.MEDIUM,
+    status: 'stable',
+    risk: 'medium',
     category: 'UTIL',
-    description:
-      'Orchestrator - coordinates all personas in 6 workflows (full, mvp-only, code-only, test-only, incident-response, feature-add)',
+    description: 'Orchestrator - coordinates all personas in 6 workflows (full, mvp-only, code-only, test-only, incident-response, feature-add)',
     tags: ['hub-enterprise', 'orchestration', 'workflow', 'automation'],
+    author: 'Hub Enterprise',
+    approval: 'blocked',
+    dangerous: false,
+    dependencies: [],
+    capabilities: ['utility'],
+    inputs: [],
+    outputs: [],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   });
 
   console.log('[HubEnterprise] ✅ Successfully registered 10 skills:');

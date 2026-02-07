@@ -102,6 +102,23 @@ export abstract class Skill extends EventEmitter {
     }
   }
 
+  protected success(data?: any, metadata?: any): SkillOutput {
+    return {
+      success: true,
+      data,
+      ...(metadata || {}),
+    };
+  }
+
+  protected error(error: string | Error, metadata?: any): SkillOutput {
+    const errorMessage = error instanceof Error ? error.message : error;
+    return {
+      success: false,
+      error: errorMessage,
+      ...(metadata || {}),
+    };
+  }
+
   enable(): void {
     this._enabled = true;
     this.emit('enabled', { skill: this.metadata.name });
@@ -202,3 +219,6 @@ export function getSkillRegistry(): SkillRegistry {
   }
   return registryInstance;
 }
+
+// Re-export registry-v2 for convenience
+export { getSkillRegistryV2, SkillRegistryV2, SkillStatus, RiskLevel as SkillRiskLevel, SkillSpec } from './registry-v2';

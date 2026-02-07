@@ -230,6 +230,20 @@ export class SkillRegistryV2 {
     }
     return 0;
   }
+
+  /**
+   * Executa uma skill usando o SkillRegistry V1
+   * Compatibilidade com código que espera execute() no registry
+   */
+  async execute(skillName: string, input: any): Promise<any> {
+    const { getSkillRegistry } = await import('./skill-base');
+    const registry = getSkillRegistry();
+    const skill = registry.get(skillName);
+    if (!skill) {
+      return { success: false, error: `Skill not found: ${skillName}` };
+    }
+    return skill.run(input);
+  }
 }
 
 // ============================================================================
