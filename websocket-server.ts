@@ -307,7 +307,8 @@ export class DashboardWebSocketServer {
   }
 
   /**
-   * Processa mensagens de chat (Automation page e Aurora Avatar)
+   * Processa mensagens de chat (Automation page, Aurora Avatar, e Cockpit)
+   * Suporta comandos Aurora como /ask, /status, /orchestrator, /produto, /exec
    */
   private async handleChat(ws: WebSocket, message: ChatMessage): Promise<void> {
     const { id, message: text, model = 'claude' } = message;
@@ -333,44 +334,149 @@ export class DashboardWebSocketServer {
       timestamp: Date.now(),
     });
 
-    // Escolhe o modelo
-    const skillName = model === 'gpt' ? 'ai.gpt' : model === 'ollama' ? 'ai.ollama' : 'ai.claude';
+    // ============================================================
+    // AURORA COMMAND ROUTING - Suporta comandos especiais
+    // ============================================================
+    const trimmedText = text.trim().toLowerCase();
+    let result: any = null;
 
-    // Executa
-    const result = await this.executor.run(skillName, {
-      prompt: text,
-      systemPrompt: 'Você é KRONOS, um assistente IA avançado. Responda de forma clara e concisa em português brasileiro. Você pode executar skills, automações e ajudar com qualquer tarefa.',
-      maxTokens: 2000,
-    });
+    // /ask [pergunta]
+    if (trimmedText.startsWith('/ask ')) {
+      const question = text.substring(5);
+      result = await this.executor.run('ai.claude', {
+        prompt: question,
+        systemPrompt: 'Você é Aurora, um assistente IA avançado especializado em desenvolvimento. Responda de forma clara e concisa em português brasileiro.',
+        maxTokens: 2000,
+      });
+    }
+    // /status
+    else if (trimmedText === '/status') {
+      const status = this.monitor.getSystemStatus();
+      const executorStats = this.executor.getStats();
+      result = {
+        success: true,
+        data: {
+          content: `📊 **Aurora Status**\n\n✅ Sistema Online\n⏱️ Uptime: ${Math.floor(status.uptime / 1000 / 60)} minutos\n👥 Conexões ativas: ${this.clients.size}\n📦 Memória: ${Math.round(status.memoryUsage)}\n📝 Skills disponíveis: ${executorStats.totalSkills || 38}`,
+          status: 'healthy'
+        }
+      };
+    }
+    // /orchestrator [workflow] [intent]
+    else if (trimmedText.startsWith('/orchestrator ')) {
+      const parts = text.substring(14).split(' ');
+      const workflow = parts[0] || 'full';
+      const intent = parts.slice(1).join(' ') || 'Create a complete application';
+
+      result = await this.executor.run('hub.enterprise.orchestrator', {
+        workflow: workflow,
+        userIntent: intent,
+        appName: `app_${Date.now()}`,
+      });
+    }
+    // /produto [subskill] [details]
+    else if (trimmedText.startsWith('/produto ')) {
+      const parts = text.substring(9).split(' ');
+      const subskill = parts[0] || 'mvp_definition';
+      const details = parts.slice(1).join(' ') || 'Create MVP for new product';
+
+      result = await this.executor.run('hub.enterprise.produto', {
+        subskill: subskill,
+        userIntent: details,
+        appName: `app_${Date.now()}`,
+      });
+    }
+    // /arquitetura [subskill] [details]
+    else if (trimmedText.startsWith('/arquitetura ')) {
+      const parts = text.substring(13).split(' ');
+      const subskill = parts[0] || 'design_architecture';
+      const details = parts.slice(1).join(' ') || 'Design architecture for scalability';
+
+      result = await this.executor.run('hub.enterprise.arquitetura', {
+        subskill: subskill,
+        userIntent: details,
+      });
+    }
+    // /engenharia [subskill] [details]
+    else if (trimmedText.startsWith('/engenharia ')) {
+      const parts = text.substring(12).split(' ');
+      const subskill = parts[0] || 'scaffold_app';
+      const details = parts.slice(1).join(' ') || 'Scaffold application';
+
+      result = await this.executor.run('hub.enterprise.engenharia', {
+        subskill: subskill,
+        userIntent: details,
+      });
+    }
+    // /qa [subskill] [details]
+    else if (trimmedText.startsWith('/qa ')) {
+      const parts = text.substring(4).split(' ');
+      const subskill = parts[0] || 'smoke_tests';
+      const details = parts.slice(1).join(' ') || 'Run smoke tests';
+
+      result = await this.executor.run('hub.enterprise.qa', {
+        subskill: subskill,
+        userIntent: details,
+      });
+    }
+    // /exec [comando bash]
+    else if (trimmedText.startsWith('/exec ')) {
+      const command = text.substring(6);
+      result = await this.executor.run('exec.bash', {
+        command: command,
+        timeout: 30000,
+      });
+    }
+    // /py [código python]
+    else if (trimmedText.startsWith('/py ')) {
+      const code = text.substring(4);
+      result = await this.executor.run('exec.python', {
+        code: code,
+        timeout: 30000,
+      });
+    }
+    // Chat normal com Claude
+    else {
+      const skillName = model === 'gpt' ? 'ai.gpt' : model === 'ollama' ? 'ai.ollama' : 'ai.claude';
+
+      result = await this.executor.run(skillName, {
+        prompt: text,
+        systemPrompt: 'Você é Aurora (também chamada Khron), um assistente IA avançado especializado em desenvolvimento e automação. Responda de forma clara e concisa em português brasileiro. Você pode executar skills, automações e ajudar com qualquer tarefa.',
+        maxTokens: 2000,
+      });
+    }
+
+    // ============================================================
+    // ENVIA RESPOSTA
+    // ============================================================
 
     // Envia resposta para o cliente que pediu
     this.sendToClient(ws, {
       type: 'chat_response',
       id,
       success: result.success,
-      message: result.success ? result.data?.content : result.error,
-      model: skillName,
+      message: result.success ? (result.data?.content || JSON.stringify(result.data).slice(0, 500)) : result.error,
+      model: model,
       timestamp: Date.now(),
     });
 
     // Broadcast notificação de resposta (formato que AuroraAvatar espera)
     if (result.success) {
       // Notificação para Activity Feed
+      const responseContent = result.data?.content || (typeof result.data === 'string' ? result.data : JSON.stringify(result.data));
+
       this.broadcast({
         type: 'notification',
         event: 'notification_sent',
         data: {
-          title: 'KRONOS respondeu',
-          message: result.data?.content?.slice(0, 100) + (result.data?.content?.length > 100 ? '...' : ''),
+          title: 'Aurora respondeu',
+          message: responseContent.slice(0, 100) + (responseContent.length > 100 ? '...' : ''),
           priority: 'low',
           action: 'ai_response',
-          // Campos extras para o AuroraAvatar
-          response: result.data?.content,
+          response: responseContent,
           model: model,
         },
-        // metadata para AuroraAvatar
         metadata: {
-          response: result.data?.content,
+          response: responseContent,
           model: model,
         },
         timestamp: Date.now(),
@@ -381,7 +487,7 @@ export class DashboardWebSocketServer {
         type: 'notification',
         event: 'notification_sent',
         data: {
-          title: 'Erro KRONOS',
+          title: 'Erro Aurora',
           message: result.error || 'Erro desconhecido',
           priority: 'high',
           action: 'ai_error',
