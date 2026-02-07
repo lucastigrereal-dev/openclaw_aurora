@@ -352,11 +352,12 @@ export class DashboardWebSocketServer {
     // /status
     else if (trimmedText === '/status') {
       const status = this.monitor.getSystemStatus();
-      const executorStats = this.executor.getStats();
+      const executorStats = this.executor.getStats() || {};
+      const skillCount = executorStats.skills?.total || 38;
       result = {
         success: true,
         data: {
-          content: `📊 **Aurora Status**\n\n✅ Sistema Online\n⏱️ Uptime: ${Math.floor(status.uptime / 1000 / 60)} minutos\n👥 Conexões ativas: ${this.clients.size}\n📦 Memória: ${Math.round(status.memoryUsage)}\n📝 Skills disponíveis: ${executorStats.totalSkills || 38}`,
+          content: `📊 **Aurora Status**\n\n✅ Sistema Online\n⏱️ Uptime: ${Math.floor(status.uptime / 1000 / 60)} minutos\n👥 Conexões ativas: ${this.clients.size}\n📝 Skills disponíveis: ${skillCount}`,
           status: 'healthy'
         }
       };
