@@ -146,10 +146,13 @@ export function CockpitLayout({ children }: CockpitLayoutProps) {
                 }}
                 transition={{ duration: 3, repeat: Infinity }}
               />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span 
+              <div className="absolute inset-0 flex items-center justify-center pt-1">
+                <span
                   className="text-2xl font-black"
-                  style={{ color: currentNav.color }}
+                  style={{
+                    color: currentNav.color,
+                    lineHeight: 1,
+                  }}
                 >
                   A
                 </span>
