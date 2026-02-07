@@ -418,7 +418,21 @@ export interface WorkflowStep {
 }
 
 /**
- * Orchestrator Output
+ * Command result from exec.run_safe
+ */
+export interface CommandResult {
+  cmd: string;
+  args: string[];
+  status: 'success' | 'failed' | 'timeout' | 'blocked';
+  exitCode?: number;
+  stdout: string;
+  stderr: string;
+  duration: number;
+  logFile?: string;
+}
+
+/**
+ * Orchestrator Output (P0 Extended)
  */
 export interface OrchestratorOutput {
   appName: string;
@@ -436,4 +450,9 @@ export interface OrchestratorOutput {
   documentation?: string;
   artifacts?: string[];
   nextActions?: string[];
+  // P0 Extended fields
+  filesWritten?: string[];
+  commandsRun?: CommandResult[];
+  errors?: Array<{ path?: string; error: string }>;
+  runFolder?: string;
 }

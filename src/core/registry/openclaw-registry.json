@@ -10,13 +10,189 @@
   },
   "statistics": {
     "total_hubs": 3,
-    "total_skills": 53,
+    "total_skills": 62,
     "total_workflows": 19,
     "by_category": {
       "development": 9,
       "data": 30,
-      "content": 14
+      "content": 14,
+      "core_p0": 3,
+      "core_p1_stub": 3,
+      "core_p2_stub": 3
     }
+  },
+  "core_skills": {
+    "p0": [
+      {
+        "id": "file.materialize",
+        "name": "file.materialize",
+        "description": "Materializa arquivos no disco de forma segura",
+        "version": "1.0.0",
+        "category": "FILE",
+        "path": "src/skills/file/materialize.ts",
+        "risk": "medium",
+        "permissions": ["file:write"],
+        "status": "active",
+        "methods": {
+          "execute": {
+            "input": {
+              "appName": "string",
+              "basePath": "string?",
+              "files": "FilePlan[]"
+            },
+            "output": {
+              "filesWritten": "string[]",
+              "filesSkipped": "string[]",
+              "errors": "array",
+              "totalBytes": "number",
+              "appLocation": "string"
+            }
+          }
+        },
+        "security": {
+          "maxFiles": 15,
+          "maxFileSizeBytes": 204800,
+          "blockedPatterns": ["..", "/etc/", "/var/", "C:\\\\Windows"]
+        }
+      },
+      {
+        "id": "exec.run_safe",
+        "name": "exec.run_safe",
+        "description": "Executa comandos de forma segura com lista branca",
+        "version": "1.0.0",
+        "category": "EXEC",
+        "path": "src/skills/execution/run-safe.ts",
+        "risk": "high",
+        "permissions": ["exec:shell"],
+        "status": "active",
+        "methods": {
+          "execute": {
+            "input": {
+              "appLocation": "string",
+              "commands": "CommandPlan[]",
+              "logDir": "string?",
+              "executionId": "string?"
+            },
+            "output": {
+              "commandsRun": "CommandResult[]",
+              "totalCommands": "number",
+              "successCount": "number",
+              "failedCount": "number",
+              "blockedCount": "number"
+            }
+          }
+        },
+        "security": {
+          "timeoutMs": 300000,
+          "maxCommands": 10,
+          "allowedCommands": ["npm", "npx", "pnpm", "yarn", "node", "tsc"],
+          "blockedArgs": ["rm", "del", "--force", "--global", "publish"]
+        }
+      },
+      {
+        "id": "artifact.collect",
+        "name": "artifact.collect",
+        "description": "Coleta artefatos de execução e gera relatório",
+        "version": "1.0.0",
+        "category": "UTIL",
+        "path": "src/skills/artifact/collect.ts",
+        "risk": "low",
+        "permissions": ["file:write"],
+        "status": "active",
+        "methods": {
+          "execute": {
+            "input": {
+              "executionId": "string",
+              "appName": "string",
+              "appLocation": "string",
+              "workflow": "string",
+              "filesWritten": "string[]",
+              "commandsRun": "CommandResult[]",
+              "workflowSteps": "WorkflowStepSummary[]",
+              "errors": "array",
+              "startTime": "number"
+            },
+            "output": {
+              "runFolder": "string",
+              "reportJson": "string",
+              "reportMd": "string",
+              "logsCollected": "string[]",
+              "summary": "object"
+            }
+          }
+        }
+      }
+    ],
+    "p1_stubs": [
+      {
+        "id": "analyze.error",
+        "name": "analyze.error",
+        "description": "[STUB] Analisa erros de build/test e sugere correções",
+        "version": "0.1.0",
+        "category": "UTIL",
+        "path": "src/skills/analyze/error.ts",
+        "risk": "low",
+        "permissions": ["ai:invoke"],
+        "status": "stub"
+      },
+      {
+        "id": "patch.apply",
+        "name": "patch.apply",
+        "description": "[STUB] Aplica patches sugeridos pelo analyze.error",
+        "version": "0.1.0",
+        "category": "FILE",
+        "path": "src/skills/patch/apply.ts",
+        "risk": "medium",
+        "permissions": ["file:write"],
+        "status": "stub"
+      },
+      {
+        "id": "test.run",
+        "name": "test.run",
+        "description": "[STUB] Executa testes e coleta resultados",
+        "version": "0.1.0",
+        "category": "EXEC",
+        "path": "src/skills/testing/run.ts",
+        "risk": "medium",
+        "permissions": ["exec:shell"],
+        "status": "stub"
+      }
+    ],
+    "p2_stubs": [
+      {
+        "id": "deploy.stub",
+        "name": "deploy.stub",
+        "description": "[STUB] Faz deploy para Railway/Vercel/etc",
+        "version": "0.1.0",
+        "category": "EXEC",
+        "path": "src/skills/deploy/stub.ts",
+        "risk": "high",
+        "permissions": ["exec:shell", "network:external"],
+        "status": "stub"
+      },
+      {
+        "id": "rollback.plan",
+        "name": "rollback.plan",
+        "description": "[STUB] Gera plano de rollback para deploy",
+        "version": "0.1.0",
+        "category": "UTIL",
+        "path": "src/skills/release/rollback-plan.ts",
+        "risk": "low",
+        "permissions": [],
+        "status": "stub"
+      },
+      {
+        "id": "release.notes",
+        "name": "release.notes",
+        "description": "[STUB] Gera release notes automatizadas",
+        "version": "0.1.0",
+        "category": "UTIL",
+        "path": "src/skills/release/notes.ts",
+        "risk": "low",
+        "permissions": ["ai:invoke"],
+        "status": "stub"
+      }
+    ]
   },
   "hubs": {
     "enterprise": {

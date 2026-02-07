@@ -4,16 +4,23 @@
  * Implement 6 workflows: full, mvp-only, code-only, test-only, incident-response, feature-add
  */
 
-import { Skill, SkillInput, SkillOutput } from '../skill-base';
-import { getSkillRegistryV2 } from '../registry-v2';
-import { OrchestratorOutput, WorkflowStep } from './hub-enterprise-types';
+import { Skill, SkillInput, SkillOutput, getSkillRegistryV2 } from '../../skills/base';
+import { OrchestratorOutput, WorkflowStep, CommandResult } from './hub-enterprise-types';
 import { createLogger } from './shared/hub-enterprise-logger';
 import { getConfig } from './shared/hub-enterprise-config';
+import { FileMaterializeSkill, FilePlan } from '../../skills/file/materialize';
+import { ExecRunSafeSkill, CommandPlan } from '../../skills/execution/run-safe';
+import { ArtifactCollectSkill } from '../../skills/artifact/collect';
 
 export class HubEnterpriseOrchestrator extends Skill {
   private registry = getSkillRegistryV2();
   private logger = createLogger('orchestrator');
   private hubConfig = getConfig();
+
+  // P0 Skills
+  private fileMaterialize = new FileMaterializeSkill();
+  private execRunSafe = new ExecRunSafeSkill();
+  private artifactCollect = new ArtifactCollectSkill();
 
   constructor() {
     super(
@@ -83,6 +90,12 @@ export class HubEnterpriseOrchestrator extends Skill {
     const startTime = Date.now();
     const steps: WorkflowStep[] = [];
 
+    // P0 extended fields
+    let filesWritten: string[] = [];
+    let commandsRun: CommandResult[] = [];
+    let errors: Array<{ path?: string; error: string }> = [];
+    let runFolder: string | undefined;
+
     try {
       switch (workflow) {
         case 'full':
@@ -92,7 +105,11 @@ export class HubEnterpriseOrchestrator extends Skill {
           await this.workflowMVPOnly(appName, userIntent, params, steps);
           break;
         case 'code-only':
-          await this.workflowCodeOnly(appName, params, steps);
+          const codeOnlyResult = await this.workflowCodeOnly(appName, params, steps);
+          filesWritten = codeOnlyResult.filesWritten;
+          commandsRun = codeOnlyResult.commandsRun;
+          errors = codeOnlyResult.errors;
+          runFolder = codeOnlyResult.runFolder;
           break;
         case 'test-only':
           await this.workflowTestOnly(appName, params, steps);
@@ -101,7 +118,11 @@ export class HubEnterpriseOrchestrator extends Skill {
           await this.workflowIncidentResponse(appName, params, steps);
           break;
         case 'feature-add':
-          await this.workflowFeatureAdd(appName, userIntent, params, steps);
+          const featureAddResult = await this.workflowFeatureAdd(appName, userIntent, params, steps);
+          filesWritten = featureAddResult.filesWritten;
+          commandsRun = featureAddResult.commandsRun;
+          errors = featureAddResult.errors;
+          runFolder = featureAddResult.runFolder;
           break;
       }
 
@@ -130,6 +151,11 @@ export class HubEnterpriseOrchestrator extends Skill {
                 'Deploy to production',
               ]
             : ['Review failures above', 'Fix issues and retry'],
+        // P0 extended fields
+        filesWritten: filesWritten.length > 0 ? filesWritten : undefined,
+        commandsRun: commandsRun.length > 0 ? commandsRun : undefined,
+        errors: errors.length > 0 ? errors : undefined,
+        runFolder,
       };
 
       this.logger.info('Workflow completed', {
@@ -137,6 +163,8 @@ export class HubEnterpriseOrchestrator extends Skill {
         duration: totalDuration,
         successfulSteps,
         failedSteps,
+        filesWritten: filesWritten.length,
+        commandsRun: commandsRun.length,
       });
 
       return this.success(output);
@@ -268,17 +296,24 @@ export class HubEnterpriseOrchestrator extends Skill {
   }
 
   /**
-   * WORKFLOW 3: CODE-ONLY
-   * Arquitetura → Engenharia → Output code
+   * WORKFLOW 3: CODE-ONLY (P0 Real Execution)
+   * Arquitetura → Engenharia → file.materialize → exec.run_safe → artifact.collect
    */
   private async workflowCodeOnly(
     appName: string,
     params: any,
     steps: WorkflowStep[]
-  ): Promise<void> {
-    this.logger.info('Executing CODE-ONLY workflow');
+  ): Promise<{ filesWritten: string[]; commandsRun: CommandResult[]; errors: Array<{ path?: string; error: string }>; runFolder: string }> {
+    this.logger.info('Executing CODE-ONLY workflow (P0)');
 
-    // Step 1: Arquitetura
+    const executionId = `exec-${Date.now()}`;
+    const startTime = Date.now();
+    const errors: Array<{ path?: string; error: string }> = [];
+    let filesWritten: string[] = [];
+    let commandsRun: CommandResult[] = [];
+    let runFolder = `./runs/${executionId}`;
+
+    // Step 1: Arquitetura (plano)
     await this.executeStep(
       steps,
       'arquitetura',
@@ -290,7 +325,7 @@ export class HubEnterpriseOrchestrator extends Skill {
       }
     );
 
-    // Step 2: Engenharia
+    // Step 2: Engenharia (plano de arquivos + comandos)
     const arquiteturaResult = steps[steps.length - 1].result;
     await this.executeStep(
       steps,
@@ -303,6 +338,187 @@ export class HubEnterpriseOrchestrator extends Skill {
         techStack: arquiteturaResult?.techStack,
       }
     );
+
+    const engenhariaResult = steps[steps.length - 1].result;
+
+    // Step 3: P0 - Materializar arquivos
+    if (engenhariaResult?.filesCreated && engenhariaResult.filesCreated.length > 0) {
+      this.logger.info('P0: Materializing files...');
+      const materializeStep: WorkflowStep = {
+        persona: 'p0-executor',
+        subskill: 'file.materialize',
+        status: 'in-progress',
+        startTime: Date.now(),
+      };
+      steps.push(materializeStep);
+
+      try {
+        const filePlans: FilePlan[] = engenhariaResult.filesCreated.map((f: any) => ({
+          path: f.path,
+          content: f.content || this.generateMinimalContent(f.path, appName),
+        }));
+
+        const materializeResult = await this.fileMaterialize.run({
+          params: {
+            appName,
+            basePath: './apps',
+            files: filePlans,
+          },
+        });
+
+        if (materializeResult.success) {
+          materializeStep.status = 'success';
+          materializeStep.result = materializeResult.data;
+          filesWritten = materializeResult.data?.filesWritten || [];
+          this.logger.info(`P0: Materialized ${filesWritten.length} files`);
+        } else {
+          materializeStep.status = 'failed';
+          materializeStep.error = materializeResult.error;
+          errors.push({ error: materializeResult.error || 'Materialize failed' });
+        }
+      } catch (err) {
+        materializeStep.status = 'failed';
+        materializeStep.error = String(err);
+        errors.push({ error: String(err) });
+      }
+      materializeStep.duration = Date.now() - materializeStep.startTime!;
+    }
+
+    // Step 4: P0 - Executar comandos (build)
+    const appLocation = `./apps/${appName}`;
+    const defaultCommands: CommandPlan[] = [
+      { cmd: 'npm', args: ['install'], description: 'Install dependencies' },
+      { cmd: 'npx', args: ['tsc', '--noEmit'], description: 'Type check' },
+    ];
+
+    this.logger.info('P0: Running build commands...');
+    const execStep: WorkflowStep = {
+      persona: 'p0-executor',
+      subskill: 'exec.run_safe',
+      status: 'in-progress',
+      startTime: Date.now(),
+    };
+    steps.push(execStep);
+
+    try {
+      const execResult = await this.execRunSafe.run({
+        params: {
+          appLocation,
+          commands: engenhariaResult?.commands || defaultCommands,
+          logDir: `./runs/${executionId}/logs`,
+          executionId,
+        },
+      });
+
+      if (execResult.success) {
+        execStep.status = 'success';
+        execStep.result = execResult.data;
+        commandsRun = execResult.data?.commandsRun || [];
+        this.logger.info(`P0: Ran ${commandsRun.length} commands`);
+      } else {
+        execStep.status = 'failed';
+        execStep.error = execResult.error;
+        errors.push({ error: execResult.error || 'Exec failed' });
+      }
+    } catch (err) {
+      execStep.status = 'failed';
+      execStep.error = String(err);
+      errors.push({ error: String(err) });
+    }
+    execStep.duration = Date.now() - execStep.startTime!;
+
+    // Step 5: P0 - Coletar artefatos
+    this.logger.info('P0: Collecting artifacts...');
+    const collectStep: WorkflowStep = {
+      persona: 'p0-executor',
+      subskill: 'artifact.collect',
+      status: 'in-progress',
+      startTime: Date.now(),
+    };
+    steps.push(collectStep);
+
+    try {
+      const collectResult = await this.artifactCollect.run({
+        params: {
+          executionId,
+          appName,
+          appLocation,
+          workflow: 'code-only',
+          filesWritten,
+          commandsRun,
+          workflowSteps: steps.map(s => ({
+            persona: s.persona,
+            subskill: s.subskill || '',
+            status: s.status,
+            duration: s.duration,
+            error: s.error,
+          })),
+          errors,
+          startTime,
+          endTime: Date.now(),
+        },
+      });
+
+      if (collectResult.success) {
+        collectStep.status = 'success';
+        collectStep.result = collectResult.data;
+        runFolder = collectResult.data?.runFolder || runFolder;
+        this.logger.info(`P0: Artifacts collected at ${runFolder}`);
+      } else {
+        collectStep.status = 'failed';
+        collectStep.error = collectResult.error;
+      }
+    } catch (err) {
+      collectStep.status = 'failed';
+      collectStep.error = String(err);
+    }
+    collectStep.duration = Date.now() - collectStep.startTime!;
+
+    return { filesWritten, commandsRun, errors, runFolder };
+  }
+
+  /**
+   * Gera conteúdo mínimo para arquivo quando não fornecido
+   */
+  private generateMinimalContent(filePath: string, appName: string): string {
+    if (filePath.endsWith('package.json')) {
+      return JSON.stringify({
+        name: appName,
+        version: '1.0.0',
+        scripts: {
+          build: 'tsc',
+          test: 'echo "No tests yet"',
+          start: 'node dist/index.js',
+        },
+        devDependencies: {
+          typescript: '^5.0.0',
+        },
+      }, null, 2);
+    }
+    if (filePath.endsWith('tsconfig.json')) {
+      return JSON.stringify({
+        compilerOptions: {
+          target: 'ES2020',
+          module: 'commonjs',
+          outDir: './dist',
+          strict: true,
+          esModuleInterop: true,
+          skipLibCheck: true,
+          forceConsistentCasingInFileNames: true,
+        },
+        include: ['src/**/*'],
+      }, null, 2);
+    }
+    if (filePath.endsWith('index.ts')) {
+      return `// ${appName} - Entry point\nconsole.log('Hello from ${appName}');\n`;
+    }
+    if (filePath.endsWith('.gitignore')) {
+      return 'node_modules/\ndist/\n.env\n';
+    }
+    if (filePath.endsWith('README.md')) {
+      return `# ${appName}\n\nGenerated by OpenClaw Aurora P0 App Factory.\n\n## Setup\n\n\`\`\`bash\nnpm install\nnpm run build\n\`\`\`\n`;
+    }
+    return `// ${filePath}\n// Generated by OpenClaw Aurora\n`;
   }
 
   /**
@@ -409,16 +625,23 @@ export class HubEnterpriseOrchestrator extends Skill {
   }
 
   /**
-   * WORKFLOW 6: FEATURE-ADD
-   * Produto → Arquitetura → Engenharia → QA → Ops (deploy)
+   * WORKFLOW 6: FEATURE-ADD (P0 Real Execution)
+   * Produto → Arquitetura → Engenharia → file.materialize → exec.run_safe → QA → artifact.collect
    */
   private async workflowFeatureAdd(
     appName: string,
     featureIntent: string,
     params: any,
     steps: WorkflowStep[]
-  ): Promise<void> {
-    this.logger.info('Executing FEATURE-ADD workflow');
+  ): Promise<{ filesWritten: string[]; commandsRun: CommandResult[]; errors: Array<{ path?: string; error: string }>; runFolder: string }> {
+    this.logger.info('Executing FEATURE-ADD workflow (P0)');
+
+    const executionId = `exec-${Date.now()}`;
+    const startTime = Date.now();
+    const errors: Array<{ path?: string; error: string }> = [];
+    let filesWritten: string[] = [];
+    let commandsRun: CommandResult[] = [];
+    let runFolder = `./runs/${executionId}`;
 
     // Step 1: Produto - Scope new feature
     await this.executeStep(
@@ -457,7 +680,94 @@ export class HubEnterpriseOrchestrator extends Skill {
       }
     );
 
-    // Step 4: QA - Test feature
+    const engenhariaResult = steps[steps.length - 1].result;
+
+    // Step 4: P0 - Materializar arquivos (se houver)
+    if (engenhariaResult?.filesCreated && engenhariaResult.filesCreated.length > 0) {
+      this.logger.info('P0: Materializing feature files...');
+      const materializeStep: WorkflowStep = {
+        persona: 'p0-executor',
+        subskill: 'file.materialize',
+        status: 'in-progress',
+        startTime: Date.now(),
+      };
+      steps.push(materializeStep);
+
+      try {
+        const filePlans: FilePlan[] = engenhariaResult.filesCreated.map((f: any) => ({
+          path: f.path,
+          content: f.content || `// ${f.path}\n// Generated by OpenClaw Aurora\n`,
+        }));
+
+        const materializeResult = await this.fileMaterialize.run({
+          params: {
+            appName,
+            basePath: './apps',
+            files: filePlans,
+          },
+        });
+
+        if (materializeResult.success) {
+          materializeStep.status = 'success';
+          materializeStep.result = materializeResult.data;
+          filesWritten = materializeResult.data?.filesWritten || [];
+        } else {
+          materializeStep.status = 'failed';
+          materializeStep.error = materializeResult.error;
+          errors.push({ error: materializeResult.error || 'Materialize failed' });
+        }
+      } catch (err) {
+        materializeStep.status = 'failed';
+        materializeStep.error = String(err);
+        errors.push({ error: String(err) });
+      }
+      materializeStep.duration = Date.now() - materializeStep.startTime!;
+    }
+
+    // Step 5: P0 - Executar comandos (build/test)
+    const appLocation = `./apps/${appName}`;
+    const defaultCommands: CommandPlan[] = [
+      { cmd: 'npm', args: ['install'], description: 'Install dependencies' },
+      { cmd: 'npm', args: ['run', 'build'], description: 'Build' },
+      { cmd: 'npm', args: ['test'], description: 'Run tests' },
+    ];
+
+    this.logger.info('P0: Running build/test commands...');
+    const execStep: WorkflowStep = {
+      persona: 'p0-executor',
+      subskill: 'exec.run_safe',
+      status: 'in-progress',
+      startTime: Date.now(),
+    };
+    steps.push(execStep);
+
+    try {
+      const execResult = await this.execRunSafe.run({
+        params: {
+          appLocation,
+          commands: engenhariaResult?.commands || defaultCommands,
+          logDir: `./runs/${executionId}/logs`,
+          executionId,
+        },
+      });
+
+      if (execResult.success) {
+        execStep.status = 'success';
+        execStep.result = execResult.data;
+        commandsRun = execResult.data?.commandsRun || [];
+      } else {
+        execStep.status = 'failed';
+        execStep.error = execResult.error;
+        errors.push({ error: execResult.error || 'Exec failed' });
+      }
+    } catch (err) {
+      execStep.status = 'failed';
+      execStep.error = String(err);
+      errors.push({ error: String(err) });
+    }
+    execStep.duration = Date.now() - execStep.startTime!;
+
+    // Step 6: QA - Read logs and summarize (simulated, P1 will do real analysis)
     await this.executeStep(
       steps,
       'qa',
@@ -466,21 +776,57 @@ export class HubEnterpriseOrchestrator extends Skill {
       {
         appName,
         testScenarios: params.testScenarios,
+        commandsRun, // Pass P0 results for QA to analyze
       }
     );
 
-    // Step 5: Ops - Deploy feature
-    await this.executeStep(
-      steps,
-      'ops',
-      'deploy_production',
-      'hub-enterprise-ops',
-      {
-        appName,
-        environment: 'production',
-        strategy: 'canary',
+    // Step 7: P0 - Coletar artefatos
+    this.logger.info('P0: Collecting artifacts...');
+    const collectStep: WorkflowStep = {
+      persona: 'p0-executor',
+      subskill: 'artifact.collect',
+      status: 'in-progress',
+      startTime: Date.now(),
+    };
+    steps.push(collectStep);
+
+    try {
+      const collectResult = await this.artifactCollect.run({
+        params: {
+          executionId,
+          appName,
+          appLocation,
+          workflow: 'feature-add',
+          filesWritten,
+          commandsRun,
+          workflowSteps: steps.map(s => ({
+            persona: s.persona,
+            subskill: s.subskill || '',
+            status: s.status,
+            duration: s.duration,
+            error: s.error,
+          })),
+          errors,
+          startTime,
+          endTime: Date.now(),
+        },
+      });
+
+      if (collectResult.success) {
+        collectStep.status = 'success';
+        collectStep.result = collectResult.data;
+        runFolder = collectResult.data?.runFolder || runFolder;
+      } else {
+        collectStep.status = 'failed';
+        collectStep.error = collectResult.error;
       }
-    );
+    } catch (err) {
+      collectStep.status = 'failed';
+      collectStep.error = String(err);
+    }
+    collectStep.duration = Date.now() - collectStep.startTime!;
+
+    return { filesWritten, commandsRun, errors, runFolder };
   }
 
   /**

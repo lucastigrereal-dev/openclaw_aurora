@@ -220,5 +220,5 @@ export function getSkillRegistry(): SkillRegistry {
   return registryInstance;
 }
 
-// Re-export registry-v2 for convenience
-export { getSkillRegistryV2, SkillRegistryV2, SkillStatus, RiskLevel as SkillRiskLevel, SkillSpec } from './registry-v2';
+// Note: RegistryV2 available at skills/infrastructure/registry-v2.ts
+// Re-export disabled due to migration - use direct import if needed
