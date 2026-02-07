@@ -1,12 +1,15 @@
 /**
- * test.run - P1 Stub
- * Executa testes e coleta resultados
+ * test.run - P1 Skill
+ * Executa build/test via exec.run_safe e retorna resultados estruturados
  *
- * STATUS: NOT_IMPLEMENTED (P1 Stub)
- * TODO: Implementar execução de testes com parsing de resultados
+ * Usa internamente:
+ * - exec.run_safe para execução segura
+ * - analyze.error para parsing de erros
  */
 
 import { Skill, SkillInput, SkillOutput } from '../base';
+import { ExecRunSafeSkill, CommandPlan, CommandResult } from '../execution/run-safe';
+import { AnalyzeErrorSkill, AnalyzeErrorOutput } from '../analyze/error';
 
 // ============================================================================
 // TIPOS
@@ -14,47 +17,52 @@ import { Skill, SkillInput, SkillOutput } from '../base';
 
 export interface TestRunInput {
   appLocation: string;
-  testCommand?: string;  // Default: npm test
-  coverage?: boolean;
-  timeout?: number;
+  command: 'build' | 'test' | 'typecheck' | 'lint';
+  executionId?: string;
+  logDir?: string;
 }
 
 export interface TestRunOutput {
-  testResults: {
-    total: number;
-    passed: number;
-    failed: number;
-    skipped: number;
-  };
-  coverage?: {
-    statements: number;
-    branches: number;
-    functions: number;
-    lines: number;
-  };
-  failures: Array<{
-    test: string;
-    error: string;
-    stack?: string;
-  }>;
+  status: 'passed' | 'failed' | 'error';
+  command: string;
+  args: string[];
+  exitCode: number;
+  stdout: string;
+  stderr: string;
   duration: number;
-  logFile: string;
+  logFile?: string;
+  // Se falhou, inclui análise de erro
+  errorAnalysis?: AnalyzeErrorOutput;
 }
 
 // ============================================================================
-// SKILL (STUB)
+// MAPEAMENTO DE COMANDOS
+// ============================================================================
+
+const COMMAND_MAP: Record<string, CommandPlan> = {
+  build: { cmd: 'npm', args: ['run', 'build'], description: 'Build project' },
+  test: { cmd: 'npm', args: ['test'], description: 'Run tests' },
+  typecheck: { cmd: 'npx', args: ['tsc', '--noEmit'], description: 'Type check' },
+  lint: { cmd: 'npm', args: ['run', 'lint'], description: 'Lint code' },
+};
+
+// ============================================================================
+// SKILL
 // ============================================================================
 
 export class TestRunSkill extends Skill {
+  private execRunSafe = new ExecRunSafeSkill();
+  private analyzeError = new AnalyzeErrorSkill();
+
   constructor() {
     super(
       {
         name: 'test.run',
-        description: '[P1 STUB] Executa testes e coleta resultados',
-        version: '0.1.0',
+        description: 'Executa build/test e retorna resultados estruturados',
+        version: '1.0.0',
         category: 'EXEC',
         author: 'OpenClaw',
-        tags: ['p1', 'stub', 'test', 'run', 'qa'],
+        tags: ['p1', 'test', 'build', 'run', 'qa'],
       },
       {
         timeout: 300000, // 5 min
@@ -66,14 +74,76 @@ export class TestRunSkill extends Skill {
 
   validate(input: SkillInput): boolean {
     const params = input.params as TestRunInput;
-    return !!params?.appLocation;
+    return !!(
+      params?.appLocation &&
+      params?.command &&
+      Object.keys(COMMAND_MAP).includes(params.command)
+    );
   }
 
   async execute(input: SkillInput): Promise<SkillOutput> {
-    console.log('[test.run] P1 STUB - NOT_IMPLEMENTED');
-    console.log('[test.run] This skill will execute tests and parse results in P1');
+    const params = input.params as TestRunInput;
+    const { appLocation, command, executionId, logDir } = params;
 
-    return this.error('NOT_IMPLEMENTED: test.run is a P1 stub. Implementation pending.');
+    console.log(`[test.run] Running ${command} on ${appLocation}`);
+
+    const commandPlan = COMMAND_MAP[command];
+    if (!commandPlan) {
+      return this.error(`Unknown command: ${command}`);
+    }
+
+    // Executar via exec.run_safe
+    const execResult = await this.execRunSafe.run({
+      params: {
+        appLocation,
+        commands: [commandPlan],
+        executionId: executionId || `test-${Date.now()}`,
+        logDir,
+      },
+    });
+
+    // Extrair resultado do comando
+    const cmdResult: CommandResult | undefined = execResult.data?.commandsRun?.[0];
+
+    if (!cmdResult) {
+      return this.error('No command result returned from exec.run_safe');
+    }
+
+    const output: TestRunOutput = {
+      status: cmdResult.status === 'success' ? 'passed' : 'failed',
+      command: cmdResult.cmd,
+      args: cmdResult.args,
+      exitCode: cmdResult.exitCode ?? 1,
+      stdout: cmdResult.stdout,
+      stderr: cmdResult.stderr,
+      duration: cmdResult.duration,
+      logFile: cmdResult.logFile,
+    };
+
+    // Se falhou, analisar erro
+    if (output.status === 'failed') {
+      console.log(`[test.run] Command failed with exit code ${output.exitCode}`);
+
+      const analysisResult = await this.analyzeError.run({
+        params: {
+          appLocation,
+          errorType: command === 'test' ? 'test' : 'build',
+          stdout: cmdResult.stdout,
+          stderr: cmdResult.stderr,
+          exitCode: cmdResult.exitCode ?? 1,
+        },
+      });
+
+      if (analysisResult.success) {
+        output.errorAnalysis = analysisResult.data as AnalyzeErrorOutput;
+        console.log(`[test.run] Error analysis: ${output.errorAnalysis.totalErrors} errors found`);
+      }
+
+      return this.error(`${command} failed with exit code ${output.exitCode}`, { data: output });
+    }
+
+    console.log(`[test.run] ${command} passed in ${(output.duration / 1000).toFixed(2)}s`);
+    return this.success(output);
   }
 }
 
