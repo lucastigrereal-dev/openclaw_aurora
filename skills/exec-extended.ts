@@ -1,7 +1,7 @@
 // Extended Exec Skills - PowerShell, Python, Node, Background, Sudo
 // Skills: exec.powershell, exec.python, exec.node, exec.background, exec.sudo
 
-import { SkillBase, SkillResult } from './skill-base';
+import { Skill, SkillOutput, SkillInput } from './skill-base';
 import { exec, spawn, ChildProcess } from 'child_process';
 import { promisify } from 'util';
 import * as fs from 'fs';
@@ -32,55 +32,74 @@ function isCommandBlocked(command: string): boolean {
 // ============================================================================
 // exec.powershell - Execute PowerShell commands
 // ============================================================================
-export class ExecPowerShellSkill extends SkillBase {
-  name = 'exec.powershell';
-  description = 'Execute PowerShell commands (Windows)';
-  category = 'exec';
-  dangerous = true;
+export class ExecPowerShellSkill extends Skill {
+  constructor() {
+    super(
+      {
+        name: 'exec.powershell',
+        description: 'Execute PowerShell commands (Windows)',
+        version: '1.0.0',
+        category: 'EXEC',
+        tags: ['powershell', 'windows', 'script'],
+      },
+      {
+        timeout: 60000,
+        retries: 1,
+        requiresApproval: true,
+      }
+    );
+  }
 
-  parameters = {
-    command: { type: 'string', required: true, description: 'PowerShell command to execute' },
-    script: { type: 'string', required: false, description: 'PowerShell script content (multi-line)' },
-    cwd: { type: 'string', required: false, description: 'Working directory' },
-    timeout: { type: 'number', required: false, description: 'Timeout in ms (default: 60000)' },
-  };
+  validate(input: SkillInput): boolean {
+    const { command, script } = input;
+    if (!command && !script) return false;
+    const cmd = (command || script) as string;
+    return !isCommandBlocked(cmd);
+  }
 
-  async execute(params: { command?: string; script?: string; cwd?: string; timeout?: number }): Promise<SkillResult> {
+  async execute(input: SkillInput): Promise<SkillOutput> {
+    const { command, script, cwd, timeout } = input;
+
     try {
-      const cmd = params.command || params.script;
-      if (!cmd) return this.error('Command or script required');
-
-      if (isCommandBlocked(cmd)) {
-        return this.error('Command blocked for security reasons');
+      const cmd = command || script;
+      if (!cmd) {
+        return { success: false, error: 'Command or script required' };
       }
 
       // Write script to temp file if multi-line
       let psCommand: string;
-      if (params.script && params.script.includes('\n')) {
+      if (script && (script as string).includes('\n')) {
         const tempFile = path.join(os.tmpdir(), `ps-${Date.now()}.ps1`);
-        fs.writeFileSync(tempFile, params.script);
+        fs.writeFileSync(tempFile, script);
         psCommand = `powershell -ExecutionPolicy Bypass -File "${tempFile}"`;
       } else {
-        psCommand = `powershell -ExecutionPolicy Bypass -Command "${cmd.replace(/"/g, '\\"')}"`;
+        psCommand = `powershell -ExecutionPolicy Bypass -Command "${(cmd as string).replace(/"/g, '\\"')}"`;
       }
 
       const { stdout, stderr } = await execAsync(psCommand, {
-        cwd: params.cwd || process.cwd(),
-        timeout: params.timeout || 60000,
+        cwd: (cwd as string) || process.cwd(),
+        timeout: (timeout as number) || 60000,
         maxBuffer: 10 * 1024 * 1024,
       });
 
-      return this.success({
-        stdout: stdout.trim(),
-        stderr: stderr.trim(),
-        command: cmd,
-      });
+      return {
+        success: true,
+        data: {
+          stdout: stdout.trim(),
+          stderr: stderr.trim(),
+          command: cmd,
+        },
+      };
     } catch (error: any) {
-      return this.error(error.message, {
-        stdout: error.stdout?.trim() || '',
-        stderr: error.stderr?.trim() || '',
-        code: error.code,
-      });
+      return {
+        success: false,
+        error: error.message,
+        data: {
+          stdout: error.stdout?.trim() || '',
+          stderr: error.stderr?.trim() || '',
+          code: error.code,
+        },
+      };
     }
   }
 }
@@ -88,62 +107,78 @@ export class ExecPowerShellSkill extends SkillBase {
 // ============================================================================
 // exec.python - Execute Python scripts
 // ============================================================================
-export class ExecPythonSkill extends SkillBase {
-  name = 'exec.python';
-  description = 'Execute Python scripts';
-  category = 'exec';
-  dangerous = true;
+export class ExecPythonSkill extends Skill {
+  constructor() {
+    super(
+      {
+        name: 'exec.python',
+        description: 'Execute Python scripts',
+        version: '1.0.0',
+        category: 'EXEC',
+        tags: ['python', 'script'],
+      },
+      {
+        timeout: 60000,
+        retries: 1,
+        requiresApproval: true,
+      }
+    );
+  }
 
-  parameters = {
-    code: { type: 'string', required: false, description: 'Python code to execute' },
-    file: { type: 'string', required: false, description: 'Python file to run' },
-    args: { type: 'array', required: false, description: 'Arguments for the script' },
-    cwd: { type: 'string', required: false, description: 'Working directory' },
-    timeout: { type: 'number', required: false, description: 'Timeout in ms' },
-    python: { type: 'string', required: false, description: 'Python executable (python, python3, py)' },
-  };
+  validate(input: SkillInput): boolean {
+    const { code, file } = input;
+    if (!code && !file) return false;
+    if (code && isCommandBlocked(code as string)) return false;
+    return true;
+  }
 
-  async execute(params: { code?: string; file?: string; args?: string[]; cwd?: string; timeout?: number; python?: string }): Promise<SkillResult> {
+  async execute(input: SkillInput): Promise<SkillOutput> {
+    const { code, file, args, cwd, timeout, python } = input;
+
     try {
-      if (!params.code && !params.file) {
-        return this.error('Either code or file required');
+      if (!code && !file) {
+        return { success: false, error: 'Either code or file required' };
       }
 
-      const pythonCmd = params.python || (process.platform === 'win32' ? 'python' : 'python3');
+      const pythonCmd = (python as string) || (process.platform === 'win32' ? 'python' : 'python3');
       let command: string;
 
-      if (params.code) {
-        if (isCommandBlocked(params.code)) {
-          return this.error('Code blocked for security reasons');
-        }
+      if (code) {
         // Write to temp file
         const tempFile = path.join(os.tmpdir(), `py-${Date.now()}.py`);
-        fs.writeFileSync(tempFile, params.code);
+        fs.writeFileSync(tempFile, code as string);
         command = `${pythonCmd} "${tempFile}"`;
       } else {
-        command = `${pythonCmd} "${params.file}"`;
+        command = `${pythonCmd} "${file}"`;
       }
 
-      if (params.args?.length) {
-        command += ' ' + params.args.map(a => `"${a}"`).join(' ');
+      if (args && Array.isArray(args)) {
+        command += ' ' + (args as string[]).map(a => `"${a}"`).join(' ');
       }
 
       const { stdout, stderr } = await execAsync(command, {
-        cwd: params.cwd || process.cwd(),
-        timeout: params.timeout || 60000,
+        cwd: (cwd as string) || process.cwd(),
+        timeout: (timeout as number) || 60000,
         maxBuffer: 10 * 1024 * 1024,
       });
 
-      return this.success({
-        stdout: stdout.trim(),
-        stderr: stderr.trim(),
-        command,
-      });
+      return {
+        success: true,
+        data: {
+          stdout: stdout.trim(),
+          stderr: stderr.trim(),
+          command,
+        },
+      };
     } catch (error: any) {
-      return this.error(error.message, {
-        stdout: error.stdout?.trim() || '',
-        stderr: error.stderr?.trim() || '',
-      });
+      return {
+        success: false,
+        error: error.message,
+        data: {
+          stdout: error.stdout?.trim() || '',
+          stderr: error.stderr?.trim() || '',
+        },
+      };
     }
   }
 }
@@ -151,59 +186,76 @@ export class ExecPythonSkill extends SkillBase {
 // ============================================================================
 // exec.node - Execute Node.js scripts
 // ============================================================================
-export class ExecNodeSkill extends SkillBase {
-  name = 'exec.node';
-  description = 'Execute Node.js scripts';
-  category = 'exec';
-  dangerous = true;
+export class ExecNodeSkill extends Skill {
+  constructor() {
+    super(
+      {
+        name: 'exec.node',
+        description: 'Execute Node.js scripts',
+        version: '1.0.0',
+        category: 'EXEC',
+        tags: ['node', 'javascript', 'script'],
+      },
+      {
+        timeout: 60000,
+        retries: 1,
+        requiresApproval: true,
+      }
+    );
+  }
 
-  parameters = {
-    code: { type: 'string', required: false, description: 'JavaScript code to execute' },
-    file: { type: 'string', required: false, description: 'JS file to run' },
-    args: { type: 'array', required: false, description: 'Arguments' },
-    cwd: { type: 'string', required: false, description: 'Working directory' },
-    timeout: { type: 'number', required: false, description: 'Timeout in ms' },
-  };
+  validate(input: SkillInput): boolean {
+    const { code, file } = input;
+    if (!code && !file) return false;
+    if (code && isCommandBlocked(code as string)) return false;
+    return true;
+  }
 
-  async execute(params: { code?: string; file?: string; args?: string[]; cwd?: string; timeout?: number }): Promise<SkillResult> {
+  async execute(input: SkillInput): Promise<SkillOutput> {
+    const { code, file, args, cwd, timeout } = input;
+
     try {
-      if (!params.code && !params.file) {
-        return this.error('Either code or file required');
+      if (!code && !file) {
+        return { success: false, error: 'Either code or file required' };
       }
 
       let command: string;
 
-      if (params.code) {
-        if (isCommandBlocked(params.code)) {
-          return this.error('Code blocked for security reasons');
-        }
+      if (code) {
         const tempFile = path.join(os.tmpdir(), `node-${Date.now()}.js`);
-        fs.writeFileSync(tempFile, params.code);
+        fs.writeFileSync(tempFile, code as string);
         command = `node "${tempFile}"`;
       } else {
-        command = `node "${params.file}"`;
+        command = `node "${file}"`;
       }
 
-      if (params.args?.length) {
-        command += ' ' + params.args.map(a => `"${a}"`).join(' ');
+      if (args && Array.isArray(args)) {
+        command += ' ' + (args as string[]).map(a => `"${a}"`).join(' ');
       }
 
       const { stdout, stderr } = await execAsync(command, {
-        cwd: params.cwd || process.cwd(),
-        timeout: params.timeout || 60000,
+        cwd: (cwd as string) || process.cwd(),
+        timeout: (timeout as number) || 60000,
         maxBuffer: 10 * 1024 * 1024,
       });
 
-      return this.success({
-        stdout: stdout.trim(),
-        stderr: stderr.trim(),
-        command,
-      });
+      return {
+        success: true,
+        data: {
+          stdout: stdout.trim(),
+          stderr: stderr.trim(),
+          command,
+        },
+      };
     } catch (error: any) {
-      return this.error(error.message, {
-        stdout: error.stdout?.trim() || '',
-        stderr: error.stderr?.trim() || '',
-      });
+      return {
+        success: false,
+        error: error.message,
+        data: {
+          stdout: error.stdout?.trim() || '',
+          stderr: error.stderr?.trim() || '',
+        },
+      };
     }
   }
 }
@@ -211,84 +263,103 @@ export class ExecNodeSkill extends SkillBase {
 // ============================================================================
 // exec.background - Run process in background
 // ============================================================================
-export class ExecBackgroundSkill extends SkillBase {
-  name = 'exec.background';
-  description = 'Run process in background, returns process ID';
-  category = 'exec';
-  dangerous = true;
+export class ExecBackgroundSkill extends Skill {
+  constructor() {
+    super(
+      {
+        name: 'exec.background',
+        description: 'Run process in background, returns process ID',
+        version: '1.0.0',
+        category: 'EXEC',
+        tags: ['background', 'process', 'async'],
+      },
+      {
+        timeout: 30000,
+        retries: 1,
+        requiresApproval: true,
+      }
+    );
+  }
 
-  parameters = {
-    command: { type: 'string', required: true, description: 'Command to run in background' },
-    cwd: { type: 'string', required: false, description: 'Working directory' },
-    action: { type: 'string', required: false, description: 'Action: start, status, stop, list, output' },
-    processId: { type: 'string', required: false, description: 'Process ID for status/stop/output' },
-  };
+  validate(input: SkillInput): boolean {
+    const { action, command } = input;
+    const act = action || 'start';
+    if (act === 'start' && !command) return false;
+    return true;
+  }
 
-  async execute(params: { command?: string; cwd?: string; action?: string; processId?: string }): Promise<SkillResult> {
+  async execute(input: SkillInput): Promise<SkillOutput> {
     try {
-      const action = params.action || 'start';
+      const { command, cwd, action, processId } = input;
+      const act = (action as string) || 'start';
 
       // List all background processes
-      if (action === 'list') {
+      if (act === 'list') {
         const list = Array.from(backgroundProcesses.entries()).map(([id, info]) => ({
           id,
           command: info.command,
           startTime: info.startTime,
           running: !info.process.killed,
         }));
-        return this.success({ processes: list });
+        return { success: true, data: { processes: list } };
       }
 
       // Get status of a process
-      if (action === 'status' && params.processId) {
-        const info = backgroundProcesses.get(params.processId);
-        if (!info) return this.error('Process not found');
-        return this.success({
-          id: params.processId,
-          command: info.command,
-          running: !info.process.killed,
-          startTime: info.startTime,
-          outputLines: info.output.length,
-        });
+      if (act === 'status' && processId) {
+        const info = backgroundProcesses.get(processId as string);
+        if (!info) return { success: false, error: 'Process not found' };
+        return {
+          success: true,
+          data: {
+            id: processId,
+            command: info.command,
+            running: !info.process.killed,
+            startTime: info.startTime,
+            outputLines: info.output.length,
+          },
+        };
       }
 
       // Get output of a process
-      if (action === 'output' && params.processId) {
-        const info = backgroundProcesses.get(params.processId);
-        if (!info) return this.error('Process not found');
-        return this.success({
-          id: params.processId,
-          output: info.output.join('\n'),
-        });
+      if (act === 'output' && processId) {
+        const info = backgroundProcesses.get(processId as string);
+        if (!info) return { success: false, error: 'Process not found' };
+        return {
+          success: true,
+          data: {
+            id: processId,
+            output: info.output.join('\n'),
+          },
+        };
       }
 
       // Stop a process
-      if (action === 'stop' && params.processId) {
-        const info = backgroundProcesses.get(params.processId);
-        if (!info) return this.error('Process not found');
+      if (act === 'stop' && processId) {
+        const info = backgroundProcesses.get(processId as string);
+        if (!info) return { success: false, error: 'Process not found' };
         info.process.kill();
-        backgroundProcesses.delete(params.processId);
-        return this.success({ stopped: params.processId });
+        backgroundProcesses.delete(processId as string);
+        return { success: true, data: { stopped: processId } };
       }
 
       // Start new background process
-      if (action === 'start' && params.command) {
-        if (isCommandBlocked(params.command)) {
-          return this.error('Command blocked for security reasons');
+      if (act === 'start' && command) {
+        if (isCommandBlocked(command as string)) {
+          return { success: false, error: 'Command blocked for security reasons' };
         }
 
         const processId = `bg-${Date.now()}`;
-        const [cmd, ...args] = params.command.split(' ');
+        const [cmd, ...cmdArgs] = (command as string).split(' ');
 
-        const child = spawn(cmd, args, {
-          cwd: params.cwd || process.cwd(),
+        const child = spawn(cmd, cmdArgs, {
+          cwd: (cwd as string) || process.cwd(),
           detached: true,
           stdio: ['ignore', 'pipe', 'pipe'],
         });
 
         const info = {
           process: child,
-          command: params.command,
+          command: command as string,
           startTime: new Date(),
           output: [] as string[],
         };
@@ -305,16 +376,19 @@ export class ExecBackgroundSkill extends SkillBase {
 
         backgroundProcesses.set(processId, info);
 
-        return this.success({
-          processId,
-          command: params.command,
-          pid: child.pid,
-        });
+        return {
+          success: true,
+          data: {
+            processId,
+            command,
+            pid: child.pid,
+          },
+        };
       }
 
-      return this.error('Invalid action or missing parameters');
+      return { success: false, error: 'Invalid action or missing parameters' };
     } catch (error: any) {
-      return this.error(error.message);
+      return { success: false, error: error.message };
     }
   }
 }
@@ -322,57 +396,76 @@ export class ExecBackgroundSkill extends SkillBase {
 // ============================================================================
 // exec.sudo - Execute with elevated privileges
 // ============================================================================
-export class ExecSudoSkill extends SkillBase {
-  name = 'exec.sudo';
-  description = 'Execute command with elevated privileges (requires password or admin)';
-  category = 'exec';
-  dangerous = true;
+export class ExecSudoSkill extends Skill {
+  constructor() {
+    super(
+      {
+        name: 'exec.sudo',
+        description: 'Execute command with elevated privileges (requires password or admin)',
+        version: '1.0.0',
+        category: 'EXEC',
+        tags: ['sudo', 'elevated', 'admin'],
+      },
+      {
+        timeout: 60000,
+        retries: 1,
+        requiresApproval: true,
+      }
+    );
+  }
 
-  parameters = {
-    command: { type: 'string', required: true, description: 'Command to execute with sudo' },
-    password: { type: 'string', required: false, description: 'Password for sudo (Linux/Mac)' },
-    cwd: { type: 'string', required: false, description: 'Working directory' },
-    timeout: { type: 'number', required: false, description: 'Timeout in ms' },
-  };
+  validate(input: SkillInput): boolean {
+    const { command } = input;
+    if (!command) return false;
+    return !isCommandBlocked(command as string);
+  }
 
-  async execute(params: { command: string; password?: string; cwd?: string; timeout?: number }): Promise<SkillResult> {
+  async execute(input: SkillInput): Promise<SkillOutput> {
+    const { command, password, cwd, timeout } = input;
+
     try {
-      if (isCommandBlocked(params.command)) {
-        return this.error('Command blocked for security reasons');
+      if (!command) {
+        return { success: false, error: 'Command required' };
       }
 
       let fullCommand: string;
 
       if (process.platform === 'win32') {
         // Windows: Use PowerShell Start-Process with -Verb RunAs
-        // Note: This will prompt UAC dialog
-        fullCommand = `powershell -Command "Start-Process -FilePath 'cmd' -ArgumentList '/c ${params.command.replace(/'/g, "''")}' -Verb RunAs -Wait"`;
+        fullCommand = `powershell -Command "Start-Process -FilePath 'cmd' -ArgumentList '/c ${(command as string).replace(/'/g, "''")}' -Verb RunAs -Wait"`;
       } else {
         // Linux/Mac: Use sudo
-        if (params.password) {
-          fullCommand = `echo '${params.password}' | sudo -S ${params.command}`;
+        if (password) {
+          fullCommand = `echo '${password}' | sudo -S ${command}`;
         } else {
-          fullCommand = `sudo ${params.command}`;
+          fullCommand = `sudo ${command}`;
         }
       }
 
       const { stdout, stderr } = await execAsync(fullCommand, {
-        cwd: params.cwd || process.cwd(),
-        timeout: params.timeout || 60000,
+        cwd: (cwd as string) || process.cwd(),
+        timeout: (timeout as number) || 60000,
         maxBuffer: 10 * 1024 * 1024,
       });
 
-      return this.success({
-        stdout: stdout.trim(),
-        stderr: stderr.trim(),
-        command: params.command,
-        elevated: true,
-      });
+      return {
+        success: true,
+        data: {
+          stdout: stdout.trim(),
+          stderr: stderr.trim(),
+          command,
+          elevated: true,
+        },
+      };
     } catch (error: any) {
-      return this.error(error.message, {
-        stdout: error.stdout?.trim() || '',
-        stderr: error.stderr?.trim() || '',
-      });
+      return {
+        success: false,
+        error: error.message,
+        data: {
+          stdout: error.stdout?.trim() || '',
+          stderr: error.stderr?.trim() || '',
+        },
+      };
     }
   }
 }
@@ -380,20 +473,36 @@ export class ExecSudoSkill extends SkillBase {
 // ============================================================================
 // exec.eval - Evaluate JavaScript expression
 // ============================================================================
-export class ExecEvalSkill extends SkillBase {
-  name = 'exec.eval';
-  description = 'Evaluate JavaScript expression and return result';
-  category = 'exec';
-  dangerous = true;
+export class ExecEvalSkill extends Skill {
+  constructor() {
+    super(
+      {
+        name: 'exec.eval',
+        description: 'Evaluate JavaScript expression and return result',
+        version: '1.0.0',
+        category: 'EXEC',
+        tags: ['eval', 'javascript', 'expression'],
+      },
+      {
+        timeout: 5000,
+        retries: 1,
+        requiresApproval: true,
+      }
+    );
+  }
 
-  parameters = {
-    expression: { type: 'string', required: true, description: 'JavaScript expression to evaluate' },
-  };
+  validate(input: SkillInput): boolean {
+    const { expression } = input;
+    if (!expression) return false;
+    return !isCommandBlocked(expression as string);
+  }
 
-  async execute(params: { expression: string }): Promise<SkillResult> {
+  async execute(input: SkillInput): Promise<SkillOutput> {
+    const { expression } = input;
+
     try {
-      if (isCommandBlocked(params.expression)) {
-        return this.error('Expression blocked for security reasons');
+      if (!expression) {
+        return { success: false, error: 'Expression required' };
       }
 
       // Create sandboxed context with limited globals
@@ -411,16 +520,19 @@ export class ExecEvalSkill extends SkillBase {
         console: { log: (...args: any[]) => args },
       };
 
-      const fn = new Function(...Object.keys(sandbox), `return (${params.expression})`);
+      const fn = new Function(...Object.keys(sandbox), `return (${expression})`);
       const result = fn(...Object.values(sandbox));
 
-      return this.success({
-        expression: params.expression,
-        result,
-        type: typeof result,
-      });
+      return {
+        success: true,
+        data: {
+          expression,
+          result,
+          type: typeof result,
+        },
+      };
     } catch (error: any) {
-      return this.error(error.message);
+      return { success: false, error: error.message };
     }
   }
 }
