@@ -1,0 +1,78 @@
+page_handle,rule_type,rule_value,auto_approve,sample_percentage,description,critical_flag
+@lucasrsmotta,auto_all,true,true,0,"LUCAS: Auto-aprova TUDO (você é dono, valida você mesmo)",false
+@mamae.de.dois,forbidden_type,infantil_viral,false,100,"MAE: REJEITA infantil_viral (você quer controlar)",true
+@mamae.de.dois,min_predicted_engagement,2.5,true,50,"MAE: Auto-aprova se predicted_engagement >= 2.5, senão aprova 50% amostra",false
+@familia.motta,min_predicted_engagement,2.5,true,30,"FAMILIA: Auto-aprova se >= 2.5, aprova 30% amostra para QA",false
+@oinatalrn,min_predicted_engagement,2.0,true,25,"OINATAL: Auto-aprova se >= 2.0, aprova 25% amostra",false
+@oquecomeremnatal,min_predicted_engagement,2.0,true,25,"COMIDA: Auto-aprova se >= 2.0, aprova 25% amostra",false
+@resolutis,min_predicted_engagement,2.5,true,50,"RESOLUTIS: Auto-aprova se >= 2.5, aprova 50% amostra para alta criticidade",true
+# ==================================================================================
+# EXPLICAÇÃO DE REGRAS:
+# ==================================================================================
+#
+# rule_type:
+#   - auto_all: Aprova tudo automaticamente
+#   - forbidden_type: Rejeita posts com esse type
+#   - min_predicted_engagement: Aprova se engagement previsto >= valor
+#   - min_quality_score: Aprova se qualidade visual >= valor
+#
+# auto_approve: true/false
+#   - true: Sistema aprova automaticamente (sem intervenção)
+#   - false: Exige aprovação manual
+#
+# sample_percentage: 0-100
+#   - 0: Não valida amostra (confia 100%)
+#   - 50: Você valida 50% dos posts (sampling para QA)
+#   - 100: Você valida TODOS
+#
+# critical_flag: true/false
+#   - true: Se rejeita, envia alerta urgente
+#   - false: Rejeição normal
+#
+# ==================================================================================
+# FLUXO DE APROVAÇÃO:
+# ==================================================================================
+#
+# 1. Post é criado pelo Planner
+#
+# 2. AI gera captions + hashtags
+#
+# 3. ML prevê engagement (predicted_engagement score 0-10)
+#
+# 4. Approval Workflow checa regras:
+#    - @lucasrsmotta: APROVA AUTOMATICAMENTE
+#    - @mamae.de.dois:
+#      - Se tipo = infantil_viral → REJEITA (você não quer)
+#      - Se tipo != infantil_viral E predicted_engagement >= 2.5 → APROVA AUTOMATICAMENTE
+#      - Se tipo != infantil_viral E predicted_engagement < 2.5 → 50% vão pro seu queue manual
+#    - @familia.motta:
+#      - Se predicted_engagement >= 2.5 → APROVA AUTOMATICAMENTE
+#      - Se predicted_engagement < 2.5 → 30% vão pro seu queue
+#
+# 5. Posts aprovados → vão pra fila de agendamento
+#
+# 6. Posts rejeitados → ficam com status "rejected", você pode editar e reaprovar
+#
+# ==================================================================================
+# INSIGHTS:
+# ==================================================================================
+#
+# @lucasrsmotta (auto_approve=true):
+#   - Você é o dono/criador, confia em si mesmo
+#   - Economiza tempo de aprovação
+#   - Sistema só agenda quando você estiver confortável
+#
+# @mamae.de.dois (sample_percentage=50):
+#   - Você quer revisar maternidade/estilo, não infantil
+#   - 50% sampling = você vê ~15-20 posts por mês em amostra
+#   - Diminui carga vs revisar todos
+#
+# Satélites (sample_percentage=25-50):
+#   - Auto-aprova alta qualidade (predicted_engagement >= threshold)
+#   - Você faz QA aleatória 25-50% (visita surpresa)
+#   - Mantém qualidade sem virar escravo de aprovação
+#
+# RECOMENDAÇÃO INICIAL:
+#   - Comece com sample_percentage=100 em TODAS (revise tudo 1x)
+#   - Depois diminua conforme ganhar confiança no sistema
+#   - Assim você aprende o padrão do ML e pode calibrar

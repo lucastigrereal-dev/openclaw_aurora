@@ -1,0 +1,41 @@
+handle,category,priority,usage_count,last_used_at,revenue_share,next_available_date,description,engagement_rate_avg,min_followers,status
+@agenteviajabrasil,fixed,1,0,,15%,2026-02-07,"Travel/adventure content partner - FIXED collab for @lucasrsmotta",0.045,50000,active
+@oinatalrn,rotating,2,0,,8%,2026-02-07,"Local Natal content - rotating satellite",0.032,15000,active
+@oquecomeremnatal,rotating,2,0,,8%,2026-02-07,"Food/gastronomy content - rotating satellite",0.038,12000,active
+@resolutis,rotating,2,0,,10%,2026-02-07,"Solutions/niche content - rotating satellite",0.028,8000,active
+@mamae.de.dois,satellite_internal,1,0,,12%,2026-02-07,"INTERNAL: Maternidade + estilo de vida (YOUR page)",0.052,25000,active
+@familia.motta,satellite_internal,1,0,,12%,2026-02-07,"INTERNAL: Vida em família (YOUR page)",0.048,18000,active
+# ==================================================================================
+# INSTRUÇÕES:
+# ==================================================================================
+# 1. handle: @handle da página
+# 2. category: fixed|rotating|satellite_internal
+#    - fixed: aparece sempre (collab GARANTIDA com Lucas todas os dias)
+#    - rotating: roda entre satélites (9 spots por dia, 4 satélites = 2.25 spots cada)
+#    - satellite_internal: páginas suas próprias (Mamãe de Dois, Família Motta)
+# 3. priority: 1=high, 2=medium, 3=low (quando há empate, prioridade quebra)
+# 4. usage_count: Quantas vezes foi usada como collab (atualiza automaticamente)
+# 5. last_used_at: Última data que foi usada (YYYY-MM-DD ou vazio)
+# 6. revenue_share: Percentual que recebe (referencial)
+# 7. next_available_date: Data que está disponível para novo collab (para respeitar intervalo)
+# 8. description: Descrição livre
+# 9. engagement_rate_avg: Taxa média de engajamento (para sorting)
+# 10. min_followers: Mínimo de followers (para validação)
+# 11. status: active|paused|archived
+#
+# CONTEXTO SUAS PÁGINAS:
+# - @lucasrsmotta (MAIN): 3 posts/dia, 3 collabs
+#   - Slot 1 (08:50): FIXED (@agenteviajabrasil)
+#   - Slot 2 (16:50): ROTATING (próxima da fila)
+#   - Slot 3 (20:50): ROTATING (próxima da fila)
+#
+# - @mamae.de.dois: 2 posts/dia, 2 collabs (precisa de partners)
+# - @familia.motta: 2 posts/dia, 2 collabs (precisa de partners)
+# - @oinatalrn: 2 posts/dia, 1 collab (pode ser com outro satélite)
+# - @oquecomeremnatal: 2 posts/dia, 1 collab
+# - @resolutis: 2 posts/dia, 1 collab
+#
+# DICA:
+# - Se collab não existe ainda, coloque status="paused" e negocie depois
+# - Se collab cancela, mude status para "archived" (não deleta, fica histórico)
+# - engagement_rate_avg: use métricas reais do Instagram (engagement/followers)

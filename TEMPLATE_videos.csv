@@ -1,0 +1,49 @@
+id,content_group_id,hash_arquivo,file_local,file_drive,duracao_seg,tema,pilar,formato,paginas_sugeridas,gancho,legenda_base,cta,hashtags,status,score_prioridade,usage_count,last_used_at,energy_level,video_type,visual_quality_score,recycled_count,last_recycled_at,observacoes
+VID-00001,GRP-001,a1b2c3d4e5f6,/media/video_001.mp4,drive:xyz,62,maternidade,entretenimento,vertical,"@lucasrsmotta|@mamae.de.dois","Você NÃO vai acreditar no que...",Dia de loucura com as crianças,Comenta aqui!,"#maternidade #diademe #viral",ready,85,0,,high,infantil_viral,88,0,,Infantil muito viral
+VID-00002,GRP-002,b2c3d4e5f6a7,/media/video_002.mp4,drive:abc,45,gastronomia,educacao,vertical,"@oquecomeremnatal|@familia.motta","Receita que NINGUÉM conhece",Aprenda esse segredo,Salva para depois!,"#receita #culinaria #food",ready,72,0,,high,infantil_viral,92,0,,Comida infantil
+VID-00003,GRP-003,c3d4e5f6a7b8,/media/video_003.mp4,drive:def,78,saude_mulher,autoridade,vertical,"@resolutis","A verdade que ninguém fala",Cuidados essenciais explicados,Vem aprender,#saudedamulher #autocuidado #verdade,ready,65,0,,mid,cuidados_mulher,79,0,,Saúde e bem-estar
+VID-00004,GRP-004,d4e5f6a7b8c9,/media/video_004.mp4,drive:ghi,35,humor,entretenimento,vertical,"@lucasrsmotta|@mamae.de.dois|@familia.motta","O que TODO pai passa",Rotina real da maternidade,Marca alguém,#maternidade #humor #realidade,ready,90,0,,high,infantil_viral,85,0,,Muito engraçado
+VID-00005,GRP-005,e5f6a7b8c9d0,/media/video_005.mp4,drive:jkl,92,rotina_familiar,entretenimento,vertical,"@familia.motta|@oinatalrn","Essa é de chorar de rir",Domingo em familia,Kkkk qual é você?,#familia #risada #real,ready,78,0,,high,infantil_viral,81,0,,Familiar cômico
+VID-00006,GRP-006,f6a7b8c9d0e1,/media/video_006.mp4,drive:mno,48,dicas,educacao,vertical,"@resolutis|@oquecomeremnatal","3 dicas que MUDAM TUDO",Simples mas poderosas,Comenta qual você vai usar,#dicas #útil #conhecimento,ready,68,0,,mid,original_lucas,84,0,,Dicas práticas
+VID-00007,GRP-007,g7a8b9c0d1e2f,/media/video_007.mp4,drive:pqr,58,viagem,entretenimento,vertical,"@agenteviajabrasil|@lucasrsmotta","Lugar que você DEVE conhecer",Paraíso escondido,Já visitou?,#viagem #paraiso #destino,ready,75,0,,high,original_lucas,89,0,,Travel content
+VID-00008,GRP-008,h8b9c0d1e2f3a,/media/video_008.mp4,drive:stu,72,educacao_infantil,educacao,vertical,"@mamae.de.dois|@familia.motta","Seu filho PRECISA saber isso",Educação que faz diferença",Compartilha com outros pais,#educacao #crianca #aprendizado,ready,70,0,,mid,infantil_viral,76,0,,Educacional infantil
+VID-00009,GRP-009,i9c0d1e2f3a4b,/media/video_009.mp4,drive:vwx,55,saude_mulher,autoridade,vertical,"@resolutis","Mito ou verdade? AQUI ESCLARECEMOS",Saúde sem fake news,Me chama nos comentários,#saude #verdade #ciencia,ready,62,0,,mid,cuidados_mulher,72,0,,Debunking saúde
+VID-00010,GRP-010,j0d1e2f3a4b5c,/media/video_010.mp4,drive:yz1,44,humor,entretenimento,vertical,"@lucasrsmotta|@oinatalrn","Isso é MUITO relatable",Dia normal de admin,Se identificou comenta,#admin #trabalho #humor,ready,88,0,,high,infantil_viral,83,0,,Relatable admin
+VID-00011,GRP-011,k1e2f3a4b5c6d,/media/video_011.mp4,drive:abc2,81,maternidade,conversao,vertical,"@mamae.de.dois","Vocês vão amar esse novo produto",Maternidade facilitada,Link na bio!,#maternidade #produto #novidade,ready,55,0,,low,original_lucas,77,0,,Promotional content
+VID-00012,GRP-012,l2f3a4b5c6d7e,/media/video_012.mp4,drive:def2,39,rotina_familiar,bastidor,vertical,"@familia.motta","Por trás das câmeras...",Como REALMENTE é,Vocês sabem?,#bastidor #realidade #familia,ready,73,0,,mid,infantil_viral,80,0,,Behind-the-scenes
+VID-00013,GRP-013,m3a4b5c6d7e8f,/media/video_013.mp4,drive:ghi2,67,gastronomia,entretenimento,vertical,"@oquecomeremnatal|@familia.motta","ISSO vai explodir em views",Receita vira febre,Qual é seu voto?,#receita #viral #comida,ready,92,0,,high,infantil_viral,90,0,,Viral gastronômico
+VID-00014,GRP-014,n4b5c6d7e8f9g,/media/video_014.mp4,drive:jkl2,53,dicas,educacao,vertical,"@resolutis|@oquecomeremnatal","NINGUÉM te ensinou isso",Life hack confirmado,Vale muito a pena,#lifehack #dica #utilidade,ready,79,0,,mid,original_lucas,86,0,,Useful hack
+VID-00015,GRP-015,o5c6d7e8f9g0h,/media/video_015.mp4,drive:mno2,88,viagem,entretenimento,vertical,"@agenteviajabrasil|@familia.motta","Volta amanhã senão explodo",Férias ideais,Vocês concordam?,#viagem #ferias #sonho,ready,77,0,,high,original_lucas,87,0,,Dream vacation
+# ==================================================================================
+# INSTRUÇÕES PARA PREENCHER:
+# ==================================================================================
+# 1. id: VID-00001, VID-00002, etc (único)
+# 2. content_group_id: GRP-001, GRP-002, etc (agrupa vídeos similares/mesma série)
+# 3. hash_arquivo: MD5 do arquivo (use: md5sum /media/video_001.mp4 | cut -d' ' -f1)
+# 4. file_local: Caminho local do vídeo
+# 5. file_drive: Se está no Google Drive, coloque; senão deixe vazio
+# 6. duracao_seg: Duração em segundos
+# 7. tema: maternidade|gastronomia|saude_mulher|humor|rotina_familiar|educacao_infantil|dicas|viagem
+# 8. pilar: entretenimento|educacao|autoridade|conversao|bastidor
+# 9. formato: vertical|horizontal|quadrado
+# 10. paginas_sugeridas: Pipe-separated (@handle1|@handle2|...)
+# 11. gancho: Hook viral (max 12 palavras)
+# 12. legenda_base: Legenda base que pode ser melhorada
+# 13. cta: Call-to-action
+# 14. hashtags: Pipe-separated
+# 15. status: raw|ready|used|blocked
+# 16. score_prioridade: 0-100 (quantos pontos esse vídeo tem)
+# 17. usage_count: Quantas vezes foi usado (0 se novo)
+# 18. last_used_at: Última data que foi postado (YYYY-MM-DD ou vazio)
+# 19. energy_level: low|mid|high
+# 20. video_type: original_lucas|infantil_viral|cuidados_mulher
+# 21. visual_quality_score: 0-100 (qualidade visual: blur, composição, luz)
+# 22. recycled_count: Quantas vezes foi reciclado (0 se primeiro uso)
+# 23. last_recycled_at: Última data que foi reciclado (ou vazio)
+# 24. observacoes: Notas livres
+#
+# DICAS:
+# - Preenchimento mínimo: 50 vídeos para começar (mix dos 3 tipos)
+# - Se não tem dados exatos, estime (o importante é ter volume)
+# - Coloque status="ready" para vídeos prontos para usar
+# - score_prioridade: vídeos com 80+ vão aparecer primeiro na seleção

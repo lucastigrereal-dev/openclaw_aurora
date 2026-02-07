@@ -1,0 +1,383 @@
+# ============================================================================
+# SOCIAL HUB - HUB CONFIG TEMPLATE (PRODUCTION)
+# ============================================================================
+# Este arquivo define a configuração operacional do Instagram Hub
+# Preencha com seus valores reais antes de usar
+#
+# Data: 07/02/2026
+# Versão: 1.0.0
+# ============================================================================
+
+# ============================================================================
+# SEÇÃO 1: PÁGINAS E CONFIGURAÇÃO DE POSTAGEM
+# ============================================================================
+
+pages:
+  - handle: "@lucasrsmotta"
+    type: "main"
+    description: "Autoridade + vida real"
+    posts_per_day: 3
+    posting_schedule:
+      - time: "08:50"
+        slot: "matinal"
+        description: "Pico de manhã"
+      - time: "16:50"
+        slot: "tarde"
+        description: "Tarde"
+      - time: "20:50"
+        slot: "noite"
+        description: "Prime time"
+    collab_count: 3
+    collab_type: "fixed_1_rotating_2"
+    collab_duration_hours: 24
+
+  - handle: "@mamae.de.dois"
+    type: "satellite"
+    description: "Maternidade + estilo de vida"
+    posts_per_day: 2
+    posting_schedule:
+      - time: "11:50"
+        slot: "matinal_meio"
+        description: "Meio da manhã"
+      - time: "20:50"
+        slot: "noite"
+        description: "Prime time"
+    collab_count: 2
+    collab_type: "all_from_pool"
+    collab_duration_hours: 24
+
+  - handle: "@familia.motta"
+    type: "satellite"
+    description: "Vida em família"
+    posts_per_day: 2
+    posting_schedule:
+      - time: "11:50"
+        slot: "matinal_meio"
+        description: "Meio da manhã"
+      - time: "14:50"
+        slot: "tarde"
+        description: "Tarde"
+    collab_count: 2
+    collab_type: "selective"
+    collab_duration_hours: 24
+
+  - handle: "@oinatalrn"
+    type: "satellite"
+    description: "Conteúdo de nicho"
+    posts_per_day: 2
+    posting_schedule:
+      - time: "11:50"
+        slot: "matinal_meio"
+      - time: "14:50"
+        slot: "tarde"
+    collab_count: 1
+    collab_type: "rotating"
+
+  - handle: "@oquecomeremnatal"
+    type: "satellite"
+    description: "Gastronomia / culinária"
+    posts_per_day: 2
+    posting_schedule:
+      - time: "11:50"
+        slot: "matinal_meio"
+      - time: "14:50"
+        slot: "tarde"
+    collab_count: 1
+    collab_type: "rotating"
+
+  - handle: "@resolutis"
+    type: "satellite"
+    description: "Resolução de problemas"
+    posts_per_day: 2
+    posting_schedule:
+      - time: "11:50"
+        slot: "matinal_meio"
+      - time: "14:50"
+        slot: "tarde"
+    collab_count: 1
+    collab_type: "rotating"
+
+# ============================================================================
+# SEÇÃO 2: QUOTAS E LIMITES
+# ============================================================================
+
+quotas:
+  # Total por dia em TODA rede
+  max_posts_totais_dia: 15
+
+  # Por página
+  max_posts_por_pagina_dia: 3
+
+  # Intervalo mínimo entre posts (mesma página)
+  min_interval_hours_same_page: 3
+
+  # Dias sem repetir conteúdo (content_group_id)
+  min_days_between_content_group: 45
+
+  # Dias sem repetir hashtag pack
+  min_days_between_hashtag_pack: 30
+
+# ============================================================================
+# SEÇÃO 3: COLLAB POOL (COLABORADORAS)
+# ============================================================================
+
+collab_pool:
+  fixed:
+    - handle: "@agenteviajabrasil"
+      priority: 1
+      revenue_share: "15%"
+      description: "Travel content partner"
+
+  rotating:
+    - handle: "@oinatalrn"
+      priority: 2
+      revenue_share: "8%"
+    - handle: "@oquecomeremnatal"
+      priority: 2
+      revenue_share: "8%"
+    - handle: "@resolutis"
+      priority: 2
+      revenue_share: "10%"
+
+  satellites:
+    - handle: "@mamae.de.dois"
+      priority: 1
+      revenue_share: "12%"
+      description: "Internal satellite - maternity"
+    - handle: "@familia.motta"
+      priority: 1
+      revenue_share: "12%"
+      description: "Internal satellite - family"
+
+# ============================================================================
+# SEÇÃO 4: CONTEÚDO - TIPOS E TEMAS
+# ============================================================================
+
+content:
+  types:
+    original_lucas:
+      description: "Conteúdo original de autoridade"
+      energy_level: "high"
+      typical_duration_sec: "45-90"
+      typical_pages: ["@lucasrsmotta"]
+
+    infantil_viral:
+      description: "Conteúdo infantil que viral naturalmente"
+      energy_level: "high"
+      typical_duration_sec: "15-45"
+      typical_pages: ["@lucasrsmotta", "@mamae.de.dois", "@familia.motta"]
+
+    cuidados_mulher:
+      description: "Nicho: cuidados e bem-estar"
+      energy_level: "mid"
+      typical_duration_sec: "30-60"
+      typical_pages: ["@resolutis"]
+
+  themes:
+    # Catálogo sugerido (não é obrigatório)
+    - "maternidade"
+    - "rotina_familiar"
+    - "educacao_infantil"
+    - "saude_mulher"
+    - "gastronomia"
+    - "viagem"
+    - "humor"
+    - "dicas"
+
+  pillars:
+    - "entretenimento"    # Engajamento
+    - "educacao"          # Valor
+    - "autoridade"        # Credibilidade
+    - "conversao"         # CTA direto
+    - "bastidor"          # Behind-the-scenes
+
+  # Regra de diversidade: em 7 dias, min X tipos diferentes
+  diversity_rules:
+    min_types_per_week: 2
+    max_same_type_consecutive: 3
+    max_same_theme_consecutive: 2
+
+# ============================================================================
+# SEÇÃO 5: APROVAÇÃO (APPROVAL WORKFLOW)
+# ============================================================================
+
+approval:
+  # Política de auto-aprovação por página
+  policies:
+    # @lucasrsmotta: auto-aprova tudo (você é o dono, já valida)
+    - page: "@lucasrsmotta"
+      auto_approve: true
+      condition: "always"
+      override_on_low_predicted_engagement: false
+
+    # @mamae.de.dois: rejeita infantil_viral (você quer controlar)
+    - page: "@mamae.de.dois"
+      auto_approve: false
+      require_human_approval: true
+      forbidden_types: ["infantil_viral"]
+
+    # Satélites: aprova automaticamente se predicted_engagement >= 3.0
+    - page: "@familia.motta"
+      auto_approve: true
+      condition: "predicted_engagement >= 2.5"
+      sample_percentage: 30  # Mas valida 30% manualmente
+
+    - page: "@oinatalrn"
+      auto_approve: true
+      condition: "predicted_engagement >= 2.0"
+      sample_percentage: 25
+
+    - page: "@oquecomeremnatal"
+      auto_approve: true
+      condition: "predicted_engagement >= 2.0"
+      sample_percentage: 25
+
+    - page: "@resolutis"
+      auto_approve: true
+      condition: "predicted_engagement >= 2.5"
+      sample_percentage: 50
+
+  # Notificações
+  notifications:
+    pending_approval_threshold: 10  # Se > 10 posts pendentes, notifica
+    channels: ["telegram"]  # ou ["email", "slack"]
+
+# ============================================================================
+# SEÇÃO 6: RECICLAGEM (CONTENT RECYCLING)
+# ============================================================================
+
+recycling:
+  enabled: true
+
+  # Quando reciclar
+  trigger:
+    performance_score_min: 75  # Recicla se score >= 75
+    min_days_since_published: 60  # Espera 60 dias
+    max_recycles_per_video: 3  # Max 3 reciclagens
+
+  # Como reciclar
+  strategy:
+    regenerate_caption: true  # Gera nova legenda
+    regenerate_hashtags: true  # Novos hashtags
+    reschedule_days_ahead: 75  # Agenda 75 dias à frente
+
+# ============================================================================
+# SEÇÃO 7: IA E CAPTION GENERATION
+# ============================================================================
+
+ai:
+  caption_generator:
+    enabled: true
+    variations: 3  # Gera 3 variações, você escolhe
+    model: "claude-3-5-sonnet-20241022"
+    style_by_page:
+      "@lucasrsmotta": "narrative,authoritative,personal"
+      "@mamae.de.dois": "warm,relatable,humor"
+      "@familia.motta": "family-friendly,storytelling"
+      "@oinatalrn": "informative,practical,tips"
+      "@oquecomeremnatal": "appetizing,descriptive,engaging"
+      "@resolutis": "solution-focused,value-driven"
+
+  hashtag_optimizer:
+    enabled: true
+    model: "claude-3-5-sonnet-20241022"
+    strategy: "viral"  # ou balanced, reach, engagement
+    max_hashtags: 30
+    include_branded: true
+
+# ============================================================================
+# SEÇÃO 8: AGENDAMENTO (PUBLER)
+# ============================================================================
+
+publer:
+  enabled: true
+  batch_size: 10  # Agenda em lotes de 10
+  retry_attempts: 5
+  retry_backoff_minutes: [1, 5, 15, 60, 360]  # Exponential backoff
+  timeout_seconds: 60
+
+  # Modo seco (não agenda de verdade, só valida)
+  dry_run: false
+
+# ============================================================================
+# SEÇÃO 9: PLANEJAMENTO (PLANNER)
+# ============================================================================
+
+planning:
+  window_days: 30  # Sempre planejar 30 dias
+  auto_replan: true  # Toda segunda-feira 00:00
+  fill_mode: "gaps"  # fill apenas slots faltando, não reescreve
+
+  # Validações antes de gerar posts
+  pre_generation_validation:
+    check_video_availability: true
+    check_quota_room: true
+    check_collab_availability: true
+
+# ============================================================================
+# SEÇÃO 10: OBSERVABILIDADE E LOGS
+# ============================================================================
+
+observability:
+  log_level: "info"  # debug, info, warn, error
+  log_format: "json"
+  log_to_file: true
+  log_rotation: "daily"
+
+  metrics:
+    enabled: true
+    prometheus_port: 9090
+    track_planning_duration: true
+    track_approval_time: true
+    track_publer_failures: true
+
+  health_checks:
+    enabled: true
+    check_interval_minutes: 30
+    alert_if_pending_approval_over_24h: true
+    alert_if_schedule_gap_detected: true
+
+# ============================================================================
+# SEÇÃO 11: BACKUP E DISASTER RECOVERY
+# ============================================================================
+
+backup:
+  enabled: true
+  schedule: "daily"
+  retention_days: 30
+  backup_locations:
+    - "/local/backups"
+    # - "s3://my-bucket/social-hub-backups"
+
+# ============================================================================
+# SEÇÃO 12: AMBIENTE E PATHS
+# ============================================================================
+
+environment:
+  stage: "production"  # ou development, staging
+  timezone: "America/Fortaleza"
+  language: "pt-BR"
+
+paths:
+  social_hub_root: "/path/to/SOCIAL-HUB"
+  videos_dir: "/path/to/SOCIAL-HUB/videos"
+  metadata_dir: "/path/to/SOCIAL-HUB/DATA/METADATA"
+  exports_dir: "/path/to/SOCIAL-HUB/EXPORTS"
+  logs_dir: "/path/to/SOCIAL-HUB/LOGS"
+
+# ============================================================================
+# COMENTÁRIOS FINAIS
+# ============================================================================
+
+# 🎯 PRÓXIMOS PASSOS:
+# 1. Preencha os paths reais
+# 2. Valide horários e páginas com suas rotinas
+# 3. Defina collab_pool exato (com nomes/handles reais)
+# 4. Valide approval policies (auto vs manual)
+# 5. Teste com dry_run: true primeiro
+# 6. Depois mude para dry_run: false quando confiante
+
+# 🚀 DEPOIS VOCÊ PRECISA DE:
+# - videos.csv (com seus vídeos)
+# - collab_pool.csv (com suas colaboradoras)
+# - approval_rules.csv (com suas políticas)

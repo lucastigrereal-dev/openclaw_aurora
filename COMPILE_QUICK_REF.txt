@@ -1,0 +1,150 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                                                                            ║
+║              ✅ COMPILADOR DE VÍDEOS - QUICK REFERENCE                     ║
+║                                                                            ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+🎯 OBJETIVO:
+   Você separa vídeos em pasta → Script gera videos.csv automaticamente
+
+════════════════════════════════════════════════════════════════════════════
+
+📋 PASSO 1: Organize vídeos em pasta
+
+   Crie: /sua/pasta/VIDEOS
+
+   Coloque: 50+ vídeos .mp4 / .mov / .avi / etc
+
+   Use nomes descritivos:
+   ✓ 001_infantil_viral_funny.mp4
+   ✓ 002_receita_gastronomia.mp4
+   ✓ 003_maternidade_rotina.mp4
+   ✓ 004_saude_mulher_dicas.mp4
+
+════════════════════════════════════════════════════════════════════════════
+
+🚀 PASSO 2: Rodar script (1 comando)
+
+   $ cd /mnt/c/Users/lucas/openclaw_aurora
+   $ python compile_videos.py /sua/pasta/VIDEOS --output videos.csv
+
+   Exemplo real:
+   $ python compile_videos.py ~/Videos/instagram --output videos.csv
+
+   O que acontece:
+   ✓ Escaneia todos os vídeos
+   ✓ Calcula MD5 hash
+   ✓ Extrai duração (ffprobe)
+   ✓ Infere tipo/tema do nome
+   ✓ Gera videos.csv
+   ✓ Mostra resumo
+
+════════════════════════════════════════════════════════════════════════════
+
+📊 OUTPUT ESPERADO:
+
+   ✅ 50 vídeos salvos em videos.csv
+
+   📁 Por Tipo:
+     • infantil_viral: 25
+     • original_lucas: 15
+     • cuidados_mulher: 10
+
+   🎨 Por Tema:
+     • gastronomia: 12
+     • maternidade: 18
+     • etc...
+
+   ⚡ Por Energia:
+     • high: 25
+     • mid: 15
+     • low: 10
+
+════════════════════════════════════════════════════════════════════════════
+
+✏️ PASSO 3: Ajustar CSV (opcional)
+
+   Abra videos.csv em Excel/Google Sheets e ajuste:
+
+   Campo              | O Que Fazer
+   ───────────────────┼──────────────────────
+   gancho             | Hook viral (max 12 palavras)
+   legenda_base       | Descrição curta do vídeo
+   cta                | Call-to-action ("Comenta!", "Salva!")
+   paginas_sugeridas  | Quais páginas usar (@handle1|@handle2)
+   score_prioridade   | Prioridade (0-100, vídeos bons = 80+)
+   visual_quality     | Qualidade (0-100)
+
+   Resto: deixa como gerado (OK!)
+
+════════════════════════════════════════════════════════════════════════════
+
+📁 PASSO 4: Copiar para SOCIAL-HUB (Python)
+
+   $ cp videos.csv /mnt/c/Users/lucas/Downloads/Downloads_COMET/social-hub-moltbot/SOCIAL-HUB/DATA/METADATA/videos.csv
+
+════════════════════════════════════════════════════════════════════════════
+
+🎬 FLUXO COMPLETO:
+
+   Sua pasta (vídeos)
+          ↓
+   compile_videos.py
+          ↓
+   videos.csv (gerado)
+          ↓
+   Você ajusta (opcional)
+          ↓
+   Copia para SOCIAL-HUB
+          ↓
+   hub_planejar_30d.py
+          ↓
+   posts.csv (390 posts)
+          ↓
+   Agendar no Publer
+          ↓
+   ✅ 30 dias pronto!
+
+════════════════════════════════════════════════════════════════════════════
+
+⚙️ REQUISITOS:
+
+   Python 3.7+
+   ffprobe (opcional, para extrair duração)
+
+   Instalar ffmpeg (tem ffprobe):
+   $ brew install ffmpeg          # Mac
+   $ apt install ffmpeg           # Linux
+   $ choco install ffmpeg         # Windows
+
+════════════════════════════════════════════════════════════════════════════
+
+💡 DICAS:
+
+   ✓ Nomes descritivos ajudam a inferir tipo/tema
+   ✓ Script aguenta 100+ vídeos
+   ✓ Pode rodar de novo (sobrescreve CSV)
+   ✓ Se falhar um vídeo, continua nos outros
+   ✓ Faça backup do CSV se tiver ajustes manuais
+
+════════════════════════════════════════════════════════════════════════════
+
+✅ PRÓXIMAS AÇÕES:
+
+   1. Separe vídeos em pasta
+   2. Rodar compile_videos.py
+   3. Ajustar CSV (se quiser)
+   4. Copiar para SOCIAL-HUB
+   5. Rodar hub_planejar_30d.py
+   6. Agendar no Publer
+
+   Total: ~4-5 horas até tudo pronto!
+
+════════════════════════════════════════════════════════════════════════════
+
+📖 Documentação completa: COMO_COMPILAR_VIDEOS.md
+
+════════════════════════════════════════════════════════════════════════════
+
+Quando os vídeos estiverem separados → avisa! 🚀
+

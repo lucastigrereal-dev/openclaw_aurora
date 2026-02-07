@@ -1,0 +1,232 @@
+name: Dev Supremo Code Review
+
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'infrastructure/**'
+      - '.github/**'
+    types: [opened, synchronize, reopened]
+
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      review_type:
+        description: 'Type of review'
+        required: true
+        default: 'security'
+        type: choice
+        options:
+          - security
+          - architecture
+          - compliance
+          - performance
+          - all
+
+jobs:
+  dev_supremo_review:
+    name: Dev Supremo Security & Architecture Review
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    permissions:
+      pull-requests: write
+      contents: read
+      checks: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          cd personas/dev-supremo
+          npm install
+
+      - name: Get changed files
+        id: files
+        uses: tj-actions/changed-files@v40
+        with:
+          files: |
+            src/**/*.ts
+            src/**/*.js
+            infrastructure/**/*.tf
+
+      - name: Run Dev Supremo Review
+        id: review
+        run: |
+          cd personas/dev-supremo
+
+          # Run security check on all changed files
+          npx ts-node dev-supremo.ts \
+            --files "${{ steps.files.outputs.all_changed_files }}" \
+            --output review_report.json \
+            --format json
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Parse review results
+        id: parse
+        run: |
+          cd personas/dev-supremo
+
+          if [ -f review_report.json ]; then
+            # Extract decision and create output
+            DECISION=$(jq -r '.decision' review_report.json)
+            CONFIDENCE=$(jq -r '.confidence' review_report.json)
+            REASON=$(jq -r '.reason' review_report.json)
+
+            echo "decision=$DECISION" >> $GITHUB_OUTPUT
+            echo "confidence=$CONFIDENCE" >> $GITHUB_OUTPUT
+            echo "reason=$REASON" >> $GITHUB_OUTPUT
+
+            # Check if rejection
+            if [ "$DECISION" == "REJECTED" ]; then
+              echo "status=failure" >> $GITHUB_OUTPUT
+            else
+              echo "status=success" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Comment on PR - Approval
+        if: steps.parse.outputs.status == 'success'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('personas/dev-supremo/review_report.json', 'utf8'));
+
+            const comment = `## ✅ Dev Supremo Review - ${report.decision}
+
+**Confidence:** ${(report.confidence * 100).toFixed(0)}%
+**Reason:** ${report.reason}
+**Rule:** ${report.rule_triggered}
+
+### Evidence
+${report.evidence.map(e => `- ${e}`).join('\n')}
+
+### Suggestion
+${report.suggestion}
+
+---
+_Reviewed by Dev Supremo v1.0 on ${report.timestamp}_`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Comment on PR - Rejection
+        if: steps.parse.outputs.status == 'failure'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('personas/dev-supremo/review_report.json', 'utf8'));
+
+            const comment = `## ❌ Dev Supremo Review - ${report.decision}
+
+**Confidence:** ${(report.confidence * 100).toFixed(0)}%
+**Reason:** ${report.reason}
+**Rule:** ${report.rule_triggered}
+
+### Issues Found
+${report.evidence.map(e => `- ❌ ${e}`).join('\n')}
+
+### How to Fix
+${report.suggestion}
+
+**Escalation Required:** ${report.escalation_required ? '✅ YES' : '❌ NO'}
+
+---
+_Reviewed by Dev Supremo v1.0 on ${report.timestamp}_
+_This PR requires fixes before it can be merged._`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Fail if rejected
+        if: steps.parse.outputs.decision == 'REJECTED'
+        run: |
+          echo "❌ Dev Supremo rejected this PR"
+          echo "Decision: ${{ steps.parse.outputs.decision }}"
+          echo "Reason: ${{ steps.parse.outputs.reason }}"
+          exit 1
+
+      - name: Require human review if uncertain
+        if: steps.parse.outputs.decision == 'NEEDS_HUMAN_REVIEW'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // Request review from senior dev
+            github.rest.pulls.requestReviewers({
+              pull_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              reviewers: ['senior-dev-handle'], // Change to actual GitHub handle
+            });
+
+      - name: Upload review report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: dev-supremo-review-${{ github.run_id }}
+          path: personas/dev-supremo/review_report.json
+          retention-days: 30
+
+      - name: Slack notification - Success
+        if: steps.parse.outputs.status == 'success'
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {
+              "text": "✅ Dev Supremo approved PR #${{ github.event.pull_request.number }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "✅ *Dev Supremo Approved*\nPR: #${{ github.event.pull_request.number }}\nAuthor: ${{ github.event.pull_request.user.login }}\nConfidence: ${{ steps.parse.outputs.confidence }}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Slack notification - Rejection
+        if: steps.parse.outputs.status == 'failure'
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {
+              "text": "❌ Dev Supremo rejected PR #${{ github.event.pull_request.number }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "❌ *Dev Supremo Rejected*\nPR: #${{ github.event.pull_request.number }}\nAuthor: ${{ github.event.pull_request.user.login }}\nReason: ${{ steps.parse.outputs.reason }}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

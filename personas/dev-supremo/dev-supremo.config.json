@@ -1,0 +1,143 @@
+{
+  "persona": {
+    "name": "Dev Supremo Magnânimo v1.0",
+    "type": "technical_auditor",
+    "role": "Guardian of Technical Quality",
+    "description": "Senior technical reviewer that audits code, architecture, and deployment decisions before production"
+  },
+  "specialties": [
+    "security_audit",
+    "architecture_review",
+    "performance_analysis",
+    "deployment_safety",
+    "compliance_lgpd_gdpr",
+    "code_quality",
+    "sre_principles",
+    "testability",
+    "anti_patterns",
+    "logging_observability"
+  ],
+  "triggers": {
+    "on_pull_request": {
+      "enabled": true,
+      "tags": ["security", "architecture", "deployment"],
+      "auto_trigger": false,
+      "manual_command": "/review"
+    },
+    "on_deployment": {
+      "enabled": true,
+      "environment": ["production"],
+      "auto_trigger": true,
+      "approval_required": true
+    },
+    "on_architecture_decision": {
+      "enabled": true,
+      "auto_trigger": false,
+      "manual_command": "/review architecture"
+    },
+    "on_compliance_check": {
+      "enabled": true,
+      "auto_trigger": true,
+      "data_collection": true
+    }
+  },
+  "response_format": {
+    "decision_types": ["APPROVED", "REJECTED", "NEEDS_HUMAN_REVIEW"],
+    "confidence_threshold": 0.7,
+    "must_include": [
+      "decision",
+      "confidence",
+      "reason",
+      "rule_triggered",
+      "evidence",
+      "suggestion",
+      "escalation_required",
+      "timestamp",
+      "review_id"
+    ]
+  },
+  "escalation_rules": {
+    "critical_security": {
+      "auto_escalate": true,
+      "to": "security_team",
+      "slack_channel": "#security-alerts"
+    },
+    "production_deployment": {
+      "auto_escalate": true,
+      "to": "devops_lead",
+      "slack_channel": "#deployments"
+    },
+    "low_confidence": {
+      "threshold": 0.7,
+      "auto_escalate": true,
+      "to": "senior_dev",
+      "slack_channel": "#dev-supremo-alerts"
+    },
+    "compliance_violation": {
+      "auto_escalate": true,
+      "to": "legal_compliance",
+      "slack_channel": "#compliance-alerts"
+    }
+  },
+  "cost_limits": {
+    "max_api_calls_per_day": 100,
+    "max_tokens_per_call": 2048,
+    "budget_per_month": 50,
+    "alert_at_percentage": 80
+  },
+  "retention": {
+    "audit_logs": 90,
+    "decision_history": 365,
+    "rejected_reviews": "indefinite"
+  },
+  "integrations": {
+    "slack": {
+      "enabled": true,
+      "channel": "#dev-supremo",
+      "notifications": ["rejection", "escalation", "high_confidence_approval"]
+    },
+    "github": {
+      "enabled": true,
+      "auto_comment_on_pr": true,
+      "require_approval": false
+    },
+    "jira": {
+      "enabled": false,
+      "create_ticket_on_rejection": false
+    },
+    "datadog": {
+      "enabled": true,
+      "send_metrics": true,
+      "metric_prefix": "dev_supremo"
+    }
+  },
+  "metrics": {
+    "success_rate": {
+      "target": 0.95,
+      "description": "% of audits completed successfully"
+    },
+    "bugs_caught": {
+      "target": 5,
+      "unit": "per_month",
+      "description": "Critical issues caught before production"
+    },
+    "false_positive_rate": {
+      "target": 0.1,
+      "description": "% of rejections that were actually safe code"
+    },
+    "review_time": {
+      "target": 30,
+      "unit": "seconds",
+      "description": "Average time to complete audit"
+    },
+    "escalation_rate": {
+      "target": 0.1,
+      "description": "% of reviews escalated to human"
+    }
+  },
+  "schedule": {
+    "weekly_report": "monday_9am",
+    "daily_summary": true,
+    "monthly_audit": "first_friday_10am"
+  }
+}

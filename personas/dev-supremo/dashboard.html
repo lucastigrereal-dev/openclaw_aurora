@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dev Supremo Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #1e1e2e 0%, #2a2a3e 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 30px;
+            border-bottom: 2px solid #4a4a6a;
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 0.95em;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .metric-card {
+            background: #2a2a3e;
+            border: 1px solid #4a4a6a;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            border-color: #6a6a9a;
+            box-shadow: 0 0 20px rgba(106, 106, 154, 0.3);
+        }
+
+        .metric-label {
+            color: #888;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #4a9eff;
+            margin-bottom: 5px;
+        }
+
+        .metric-detail {
+            color: #666;
+            font-size: 0.85em;
+        }
+
+        .metric-positive {
+            color: #4ade80;
+        }
+
+        .metric-negative {
+            color: #f87171;
+        }
+
+        .metric-neutral {
+            color: #fbbf24;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .chart-container {
+            background: #2a2a3e;
+            border: 1px solid #4a4a6a;
+            border-radius: 8px;
+            padding: 20px;
+            position: relative;
+        }
+
+        .chart-title {
+            font-size: 1.2em;
+            color: #fff;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #4a4a6a;
+        }
+
+        .recent-reviews {
+            background: #2a2a3e;
+            border: 1px solid #4a4a6a;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .review-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #4a4a6a;
+            transition: background 0.2s ease;
+        }
+
+        .review-item:hover {
+            background: #333345;
+        }
+
+        .review-item:last-child {
+            border-bottom: none;
+        }
+
+        .review-info {
+            flex: 1;
+        }
+
+        .review-project {
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 3px;
+        }
+
+        .review-time {
+            color: #666;
+            font-size: 0.85em;
+        }
+
+        .review-decision {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-right: 10px;
+        }
+
+        .decision-approved {
+            background: #165e3f;
+            color: #4ade80;
+        }
+
+        .decision-rejected {
+            background: #5f2c2c;
+            color: #f87171;
+        }
+
+        .decision-review {
+            background: #5f4e2c;
+            color: #fbbf24;
+        }
+
+        .review-confidence {
+            color: #4a9eff;
+            font-weight: bold;
+            min-width: 60px;
+            text-align: right;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75em;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .status-active {
+            background: #165e3f;
+            color: #4ade80;
+        }
+
+        .status-inactive {
+            background: #5f2c2c;
+            color: #f87171;
+        }
+
+        .footer {
+            text-align: center;
+            color: #666;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #4a4a6a;
+        }
+
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .metric-value {
+                font-size: 2em;
+            }
+
+            .review-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .review-decision,
+            .review-confidence {
+                margin-top: 10px;
+            }
+        }
+
+        .system-status {
+            background: #2a2a3e;
+            border: 1px solid #4a4a6a;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-text {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-light {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-light.active {
+            background: #4ade80;
+            box-shadow: 0 0 10px #4ade80;
+        }
+
+        .status-light.inactive {
+            background: #f87171;
+            box-shadow: 0 0 10px #f87171;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .button {
+            background: #4a9eff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.2s ease;
+        }
+
+        .button:hover {
+            background: #2a7fd9;
+        }
+
+        .button-secondary {
+            background: #4a4a6a;
+            color: #e0e0e0;
+        }
+
+        .button-secondary:hover {
+            background: #5a5a7a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔍 Dev Supremo Dashboard</h1>
+            <p class="subtitle">Guardião Técnico Sênior do Hub Enterprise</p>
+        </header>
+
+        <div class="system-status">
+            <div class="status-text">
+                <div class="status-light active"></div>
+                <span>Dev Supremo está ativo e funcionando</span>
+            </div>
+            <button class="button button-secondary">Consultar Status</button>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-label">Auditorias Totais</div>
+                <div class="metric-value">127</div>
+                <div class="metric-detail">
+                    <span class="metric-positive">↑ 12</span> esta semana
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-label">Taxa de Aprovação</div>
+                <div class="metric-value">
+                    <span style="color: #4ade80;">78%</span>
+                </div>
+                <div class="metric-detail">
+                    <span class="metric-positive">↑ +2%</span> vs semana passada
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-label">Bugs Detectados</div>
+                <div class="metric-value" style="color: #fbbf24;">8</div>
+                <div class="metric-detail">
+                    Antes de irem para produção
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-label">Tempo Médio Review</div>
+                <div class="metric-value" style="color: #4ade80;">24s</div>
+                <div class="metric-detail">
+                    <span class="metric-positive">↓ 6s mais rápido</span> que mês anterior
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-label">False Positive Rate</div>
+                <div class="metric-value" style="color: #4ade80;">6%</div>
+                <div class="metric-detail">
+                    Target: &lt; 10% ✅
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-label">Confiança Média</div>
+                <div class="metric-value">0.87</div>
+                <div class="metric-detail">
+                    Em todas as decisões
+                </div>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-container">
+                <div class="chart-title">Decisões por Semana</div>
+                <canvas id="decisionsChart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">Distribuição de Decisões</div>
+                <canvas id="distributionChart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">Confiança das Reviews</div>
+                <canvas id="confidenceChart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">Tempo de Review (segundos)</div>
+                <canvas id="timeChart"></canvas>
+            </div>
+        </div>
+
+        <div class="recent-reviews">
+            <h2 style="margin-bottom: 20px; color: #fff;">Reviews Recentes</h2>
+
+            <div class="review-item">
+                <div class="review-info">
+                    <div class="review-project">🔒 Audit: User Authentication API</div>
+                    <div class="review-time">há 2 minutos • security_audit</div>
+                </div>
+                <span class="review-decision decision-rejected">REJECTED</span>
+                <div class="review-confidence">0.98</div>
+            </div>
+
+            <div class="review-item">
+                <div class="review-info">
+                    <div class="review-project">🏗️ Architecture: Payment Service Redesign</div>
+                    <div class="review-time">há 15 minutos • architecture_review</div>
+                </div>
+                <span class="review-decision decision-review">NEEDS REVIEW</span>
+                <div class="review-confidence">0.65</div>
+            </div>
+
+            <div class="review-item">
+                <div class="review-info">
+                    <div class="review-project">⚡ Performance: Database Query Optimization</div>
+                    <div class="review-time">há 28 minutos • performance_analysis</div>
+                </div>
+                <span class="review-decision decision-approved">APPROVED</span>
+                <div class="review-confidence">0.94</div>
+            </div>
+
+            <div class="review-item">
+                <div class="review-info">
+                    <div class="review-project">📋 Compliance: LGPD Audit - Customer Data</div>
+                    <div class="review-time">há 45 minutos • compliance_lgpd_gdpr</div>
+                </div>
+                <span class="review-decision decision-rejected">REJECTED</span>
+                <div class="review-confidence">1.0</div>
+            </div>
+
+            <div class="review-item">
+                <div class="review-info">
+                    <div class="review-project">✅ Code Review: Product Persona Update</div>
+                    <div class="review-time">há 1 hora • code_quality</div>
+                </div>
+                <span class="review-decision decision-approved">APPROVED</span>
+                <div class="review-confidence">0.91</div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Dev Supremo Magnânimo v1.0 • Guardian of Technical Quality</p>
+            <p style="margin-top: 10px; color: #555;">Última atualização: há 2 minutos</p>
+        </div>
+    </div>
+
+    <script>
+        // Decisões por semana
+        const decisionsCtx = document.getElementById('decisionsChart').getContext('2d');
+        new Chart(decisionsCtx, {
+            type: 'line',
+            data: {
+                labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab', 'Dom'],
+                datasets: [{
+                    label: 'Aprovadas',
+                    data: [12, 15, 18, 14, 20, 8, 5],
+                    borderColor: '#4ade80',
+                    backgroundColor: 'rgba(74, 222, 128, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }, {
+                    label: 'Rejeitadas',
+                    data: [2, 1, 3, 2, 1, 0, 1],
+                    borderColor: '#f87171',
+                    backgroundColor: 'rgba(248, 113, 113, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }, {
+                    label: 'Revisão Humana',
+                    data: [1, 2, 1, 1, 2, 1, 0],
+                    borderColor: '#fbbf24',
+                    backgroundColor: 'rgba(251, 191, 36, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#e0e0e0'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { color: '#666' },
+                        grid: { color: '#3a3a4a' }
+                    },
+                    x: {
+                        ticks: { color: '#666' },
+                        grid: { color: '#3a3a4a' }
+                    }
+                }
+            }
+        });
+
+        // Distribuição
+        const distributionCtx = document.getElementById('distributionChart').getContext('2d');
+        new Chart(distributionCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Aprovadas', 'Rejeitadas', 'Revisão Humana'],
+                datasets: [{
+                    data: [78, 12, 10],
+                    backgroundColor: [
+                        '#4ade80',
+                        '#f87171',
+                        '#fbbf24'
+                    ],
+                    borderColor: '#2a2a3e',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#e0e0e0'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Confiança
+        const confidenceCtx = document.getElementById('confidenceChart').getContext('2d');
+        new Chart(confidenceCtx, {
+            type: 'bar',
+            data: {
+                labels: ['0.90+', '0.80-0.90', '0.70-0.80', '< 0.70'],
+                datasets: [{
+                    label: 'Quantidade de Reviews',
+                    data: [45, 38, 25, 19],
+                    backgroundColor: [
+                        '#4ade80',
+                        '#60a5fa',
+                        '#fbbf24',
+                        '#f87171'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                indexAxis: 'y',
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#e0e0e0'
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: { color: '#666' },
+                        grid: { color: '#3a3a4a' }
+                    },
+                    y: {
+                        ticks: { color: '#666' },
+                        grid: { color: '#3a3a4a' }
+                    }
+                }
+            }
+        });
+
+        // Tempo de Review
+        const timeCtx = document.getElementById('timeChart').getContext('2d');
+        new Chart(timeCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab', 'Dom'],
+                datasets: [{
+                    label: 'Tempo Médio (segundos)',
+                    data: [28, 32, 24, 26, 20, 18, 22],
+                    backgroundColor: '#4a9eff',
+                    borderColor: '#2a7fd9',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                indexAxis: 'x',
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#e0e0e0'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { color: '#666' },
+                        grid: { color: '#3a3a4a' }
+                    },
+                    x: {
+                        ticks: { color: '#666' },
+                        grid: { color: '#3a3a4a' }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
