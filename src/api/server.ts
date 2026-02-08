@@ -205,8 +205,26 @@ class OpenClawServer {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// MAIN
+// EXPORTS & MAIN
 // ════════════════════════════════════════════════════════════════════════════
 
-const server = new OpenClawServer();
-server.start(PORT);
+/**
+ * Cria e retorna uma instância do servidor
+ */
+export function createOpenClawServer(): OpenClawServer {
+  return new OpenClawServer();
+}
+
+/**
+ * Inicia o servidor na porta especificada
+ */
+export function startServer(port?: number): void {
+  const server = new OpenClawServer();
+  server.start(port || PORT);
+}
+
+// Auto-start se executado diretamente
+if (require.main === module) {
+  const server = new OpenClawServer();
+  server.start(PORT);
+}

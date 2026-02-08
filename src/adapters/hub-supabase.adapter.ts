@@ -18,7 +18,7 @@ import {
   HubStepResult,
   HubMetrics,
   ValidationResult,
-} from '../contracts/hub.contract';
+} from '../core/contracts/hub.contract';
 import { getSkillRegistryAdapter, SkillRegistryAdapter } from './skill.adapter';
 
 // ════════════════════════════════════════════════════════════════════════════

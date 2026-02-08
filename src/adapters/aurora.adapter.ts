@@ -26,8 +26,8 @@ import {
   DEFAULT_THRESHOLDS,
   riskScoreToLevel,
   levelToDecision,
-} from '../contracts/aurora.contract';
-import { generateId, RiskLevel, TrafficLight } from '../contracts/types';
+} from '../core/contracts/aurora.contract';
+import { generateId, RiskLevel, TrafficLight } from '../core/contracts/types';
 
 // Import do Aurora Monitor existente
 import {

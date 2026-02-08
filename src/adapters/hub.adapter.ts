@@ -18,12 +18,12 @@ import {
   HubEventHandler,
   HubStepResult,
   HubMetrics,
-} from '../contracts/hub.contract';
-import { generateId } from '../contracts/types';
+} from '../core/contracts/hub.contract';
+import { generateId } from '../core/contracts/types';
 
 // Import do Hub Enterprise existente
-import { HubEnterpriseOrchestrator } from '../skills/hub-enterprise/hub-enterprise-orchestrator';
-import { SkillOutput } from '../skills/skill-base';
+import { HubEnterpriseOrchestrator } from '../hubs/enterprise/hub-enterprise-orchestrator';
+import { SkillOutput } from '../skills/base';
 
 // ════════════════════════════════════════════════════════════════════════════
 // MANIFESTS DOS HUBS EXISTENTES

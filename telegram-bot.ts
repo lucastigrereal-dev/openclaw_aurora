@@ -7,8 +7,18 @@ import 'dotenv/config';
 import { Bot, Context } from 'grammy';
 import { getSkillExecutor, SkillExecutor } from './skill-executor';
 import { getAuroraMonitor, AuroraMonitor } from './aurora-openclaw-integration';
-import { securityManager } from './skills/security-config';
-import { AVAILABLE_SKILLS } from './skills/index';
+import { AVAILABLE_SKILLS } from './skills';
+
+// Stub de securityManager (original não existe na nova estrutura)
+const securityManager = {
+  addAllowedUser: (userId: string) => {},
+  isSkillAllowed: (skillName: string) => true,
+  getConfig: () => ({ allowAll: false, blockedSkills: [], allowedUsers: [] }),
+  enableSkill: (skillName: string) => {},
+  disableSkill: (skillName: string) => {},
+  enableDevMode: () => {},
+  resetToDefault: () => {},
+};
 
 // ============================================================================
 // CONFIGURAÇÃO

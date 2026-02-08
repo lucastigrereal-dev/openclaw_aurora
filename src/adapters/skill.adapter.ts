@@ -20,9 +20,9 @@ import {
   SkillStatus,
   SkillError,
   SkillMetrics,
-} from '../contracts/skill.contract';
-import { generateId } from '../contracts/types';
-import { Skill, SkillOutput, getSkillRegistry, SkillRegistry } from '../skills/skill-base';
+} from '../core/contracts/skill.contract';
+import { generateId } from '../core/contracts/types';
+import { Skill, SkillOutput, getSkillRegistry, SkillRegistry } from '../skills/base';
 
 // ════════════════════════════════════════════════════════════════════════════
 // SKILL ADAPTER

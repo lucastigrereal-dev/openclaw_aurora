@@ -31,7 +31,7 @@ import {
   OperatorEvent,
   OperatorEventHandler,
   IntentType,
-} from '../contracts/operator.contract';
+} from '../core/contracts/operator.contract';
 import {
   generateId,
   ExecutionLimits,
@@ -39,8 +39,8 @@ import {
   EMPTY_RESOURCES,
   RiskLevel,
   Permission,
-} from '../contracts/types';
-import { AuthorizationRequest } from '../contracts/aurora.contract';
+} from '../core/contracts/types';
+import { AuthorizationRequest } from '../core/contracts/aurora.contract';
 import { SkillRegistryAdapter, getSkillRegistryAdapter } from './skill.adapter';
 import { AuroraAdapter, getAuroraAdapter } from './aurora.adapter';
 import { HubEnterpriseAdapter, getHubEnterpriseAdapter } from './hub.adapter';

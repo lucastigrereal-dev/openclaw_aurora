@@ -21,12 +21,12 @@ import { HubEnterpriseAdapter, getHubEnterpriseAdapter } from './hub.adapter';
 import { HubSupabaseAdapter, getHubSupabaseAdapter } from './hub-supabase.adapter';
 import { HubSocialAdapter, getHubSocialAdapter } from './hub-social.adapter';
 import { OperatorAdapter, getOperatorAdapter } from './operator.adapter';
-import { generateId } from '../contracts/types';
+import { generateId } from '../core/contracts/types';
 import { HUB_REGISTRY, TOTAL_SKILLS_AVAILABLE } from './index';
 
 // Import skills existentes para registrar
 import { AIClaudeSkill } from '../skills/ai-claude';
-import { getSkillRegistry } from '../skills/skill-base';
+import { getSkillRegistry } from '../skills/base';
 
 // ════════════════════════════════════════════════════════════════════════════
 // HELPERS DE TESTE
