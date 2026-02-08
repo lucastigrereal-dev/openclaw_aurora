@@ -1,44 +1,94 @@
-# 🎯 SCRIPT PARA CLAUDE OPUS DESKTOP
+# 🎯 SCRIPT COMPLETO PARA CLAUDE OPUS DESKTOP
 
-**Cole este texto inteiro no Claude Opus Desktop (que tem acesso ao seu PC)**
-
----
-
-## CONTEXTO PARA O OPUS
-
-Olá Opus! O Lucas precisa da sua ajuda para corrigir o repositório OpenClaw Aurora.
-
-### O Que Aconteceu
-1. O GPT reorganizou o projeto mas **DELETOU skills** (de 59 para 11)
-2. Existem **2 versões desincronizadas**:
-   - Windows local: commit 444be53 (GPT, 11 skills) ❌
-   - GitHub remoto: commit 8aeac77 (59 skills) ✅
-3. O bot Telegram está como @Prometheus mas deveria ser @Krhon
-
-### O Que Precisa Ser Feito
-1. **REVERTER** para a versão do GitHub (59 skills)
-2. **REORGANIZAR** a estrutura (SEM deletar nada)
-3. **CONFIGURAR** o bot correto (Krhon)
+**Cole este texto inteiro no Claude Opus Desktop (que tem acesso ao PC do Lucas)**
 
 ---
 
-## PASSO 1: DIAGNÓSTICO
+## 📍 CONTEXTO COMPLETO
 
-Execute estes comandos para entender a situação atual:
+### Quem é o Lucas
+- Usuário: Lucas (lucastigrereal-dev no GitHub)
+- PC: Windows com WSL
+- Caminho do projeto: `C:\Users\lucas\openclaw_aurora` (Windows) ou `/mnt/c/Users/lucas/openclaw_aurora` (WSL)
+
+### O Que é o OpenClaw Aurora
+- Sistema de automação com 59 skills
+- Bot Telegram para executar comandos
+- Dashboard visual (Cockpit)
+- Monitor de segurança (Aurora)
+
+### Repositórios e URLs
+```
+GitHub:     https://github.com/lucastigrereal-dev/openclaw_aurora
+Dashboard:  https://openclaw-aurora.vercel.app (Vercel)
+Backend:    https://openclawaurora-production.up.railway.app (Railway - OFFLINE)
+Bot:        @Krhon_bot (Telegram) - NÃO @Prometheus!
+```
+
+### O Problema Atual
+1. O GPT reorganizou mas **DELETOU** skills (de 59 para 11)
+2. **2 versões desincronizadas**:
+   - Windows local: commit 444be53 (GPT, 11 skills) ❌ ERRADO
+   - GitHub remoto: commit 8aeac77 (59 skills) ✅ CORRETO
+3. Bot errado configurado (Prometheus ao invés de Krhon)
+4. Railway está OFFLINE
+
+### Arquitetura Desejada (Conversa com Opus anterior)
+```
+- Aurora = MONITOR (observa, não executa)
+- Operator Core = EXECUTOR (executa skills)
+- Core Skills = Fundação (AI, exec, file, web, browser, comm, util)
+- Hubs = Domínios específicos (social-media, enterprise, marketing)
+- Apps = Interfaces (Cockpit Dashboard)
+```
+
+---
+
+## 🗂️ CAMINHOS IMPORTANTES
 
 ```bash
-cd C:\Users\lucas\openclaw_aurora
-# ou no WSL:
+# Projeto principal
+WINDOWS: C:\Users\lucas\openclaw_aurora
+WSL:     /mnt/c/Users/lucas/openclaw_aurora
+
+# Arquivos críticos
+.env                          # Tokens e configs (CRIAR SE NÃO EXISTIR)
+package.json                  # Scripts npm
+tsconfig.json                 # Config TypeScript
+telegram-bot.ts               # Bot principal
+skill-executor-v2.ts          # Executor de skills
+aurora-monitor-ts/            # Monitor Aurora
+dashboard/                    # Dashboard React (Cockpit)
+skills/                       # Todas as 59 skills
+
+# Deploy
+Vercel:   dashboard/          # Deploy automático
+Railway:  raiz do projeto     # Backend + Bot
+```
+
+---
+
+## 🔧 PASSO 1: DIAGNÓSTICO INICIAL
+
+```bash
+# Entrar no projeto (WSL)
 cd /mnt/c/Users/lucas/openclaw_aurora
+
+# OU no PowerShell
+cd C:\Users\lucas\openclaw_aurora
 
 # Ver commit atual
 git log --oneline -1
+# Se mostrar 444be53 = versão GPT (errada)
+# Se mostrar 8aeac77 = versão correta
 
-# Ver quantas skills existem
-find . -name "*.ts" -path "*/skills/*" | wc -l
+# Contar skills
+ls skills/*.ts | wc -l
+# Deve ter 59, não 11!
 
 # Ver remote
 git remote -v
+# Deve mostrar: github.com/lucastigrereal-dev/openclaw_aurora
 
 # Ver status
 git status
@@ -46,17 +96,13 @@ git status
 
 ---
 
-## PASSO 2: BACKUP DO TRABALHO DO GPT
-
-Antes de reverter, salve o que o GPT fez (pode ser útil depois):
+## 💾 PASSO 2: BACKUP ANTES DE TUDO
 
 ```bash
-# Criar branch de backup
-git checkout -b backup-gpt-refactor
-
-# Commitar qualquer mudança pendente
+# Criar branch de backup do trabalho do GPT
+git checkout -b backup-gpt-refactor-$(date +%Y%m%d)
 git add -A
-git commit -m "backup: GPT refactor with 11 skills"
+git commit -m "backup: GPT refactor before reverting"
 
 # Voltar para main
 git checkout main
@@ -64,246 +110,286 @@ git checkout main
 
 ---
 
-## PASSO 3: REVERTER PARA VERSÃO DO GITHUB (59 SKILLS)
+## ⏪ PASSO 3: REVERTER PARA 59 SKILLS
 
 ```bash
-# Buscar versão do GitHub
-git fetch origin
+# Buscar versão correta do GitHub
+git fetch origin main
 
-# Resetar para versão do GitHub
+# Resetar para versão do GitHub (59 skills)
 git reset --hard origin/main
 
-# Verificar
+# Confirmar
 git log --oneline -1
-# Deve mostrar: 8aeac77 ou similar
+# Deve mostrar: 8aeac77 fix: Centralizar 'A' no logo Aurora do Cockpit
+
+# Contar skills novamente
+ls skills/*.ts | wc -l
+# Agora deve mostrar ~46 arquivos (59 skills registradas)
 ```
 
 ---
 
-## PASSO 4: REORGANIZAR ESTRUTURA (SEM DELETAR)
+## 📁 PASSO 4: REORGANIZAR ESTRUTURA
 
-Agora reorganize seguindo esta arquitetura:
-
-### Estrutura Desejada
-
-```
-openclaw_aurora/
-├── core/
-│   ├── operator-runtime/      ← Executor (intent-router, guardrail, executor)
-│   │   ├── intent-router.ts
-│   │   ├── skill-executor-v2.ts
-│   │   ├── telegram-bot.ts
-│   │   └── state-manager.ts
-│   │
-│   └── core-skills/           ← Skills fundamentais
-│       ├── ai/
-│       │   ├── ai-claude.ts
-│       │   ├── ai-gpt.ts
-│       │   └── ai-ollama.ts
-│       ├── exec/
-│       │   ├── exec-bash.ts
-│       │   └── exec-extended.ts
-│       ├── file/
-│       │   ├── file-ops.ts
-│       │   └── file-ops-advanced.ts
-│       ├── web/
-│       │   └── web-fetch.ts
-│       ├── browser/
-│       │   └── browser-control.ts
-│       ├── comm/
-│       │   └── comm-telegram.ts
-│       └── util/
-│           └── util-misc.ts
-│
-├── hubs/                      ← Domínios específicos
-│   ├── social-media/          ← Todos os social-hub-*.ts
-│   │   ├── planner.ts
-│   │   ├── publer.ts
-│   │   ├── caption-ai.ts
-│   │   ├── analytics.ts
-│   │   └── ... (16 arquivos)
-│   ├── enterprise/            ← Conteúdo do hub_enterprise_mvp/
-│   │   ├── personas/
-│   │   ├── router/
-│   │   └── guardioes/
-│   ├── marketing/
-│   │   └── marketing-captacao.ts
-│   ├── content/
-│   │   └── content-ia.ts
-│   └── analytics/
-│       └── analytics-roi.ts
-│
-├── aurora/                    ← Monitor (já está ok em aurora-monitor-ts/)
-│   └── (symlink ou mover aurora-monitor-ts/ para cá)
-│
-├── apps/
-│   └── cockpit-dashboard/     ← Mover dashboard/ para cá
-│
-├── .env                       ← Configurações
-├── package.json
-└── tsconfig.json
-```
-
-### Comandos para Reorganizar
+### Criar Pastas
 
 ```bash
-# Criar estrutura de pastas
+# Estrutura core
 mkdir -p core/operator-runtime
-mkdir -p core/core-skills/{ai,exec,file,web,browser,comm,util}
-mkdir -p hubs/{social-media,enterprise,marketing,content,analytics}
+mkdir -p core/core-skills/ai
+mkdir -p core/core-skills/exec
+mkdir -p core/core-skills/file
+mkdir -p core/core-skills/web
+mkdir -p core/core-skills/browser
+mkdir -p core/core-skills/comm
+mkdir -p core/core-skills/util
+
+# Estrutura hubs
+mkdir -p hubs/social-media
+mkdir -p hubs/enterprise
+mkdir -p hubs/marketing
+mkdir -p hubs/content
+mkdir -p hubs/analytics
+
+# Apps
 mkdir -p apps
+```
 
-# Mover Core Skills
-mv skills/ai-*.ts core/core-skills/ai/
-mv skills/exec-*.ts core/core-skills/exec/
-mv skills/file-*.ts core/core-skills/file/
-mv skills/web-*.ts core/core-skills/web/
-mv skills/browser-*.ts core/core-skills/browser/
-mv skills/comm-*.ts core/core-skills/comm/
-mv skills/util-*.ts core/core-skills/util/
+### Mover Arquivos
 
-# Mover Hub Social Media
+```bash
+# === CORE SKILLS ===
+# AI
+mv skills/ai-claude.ts core/core-skills/ai/
+mv skills/ai-gpt.ts core/core-skills/ai/
+mv skills/ai-ollama.ts core/core-skills/ai/
+mv skills/ai-router.ts core/core-skills/ai/
+
+# Exec
+mv skills/exec-bash.ts core/core-skills/exec/
+mv skills/exec-extended.ts core/core-skills/exec/
+
+# File
+mv skills/file-ops.ts core/core-skills/file/
+mv skills/file-ops-advanced.ts core/core-skills/file/
+
+# Web
+mv skills/web-fetch.ts core/core-skills/web/
+
+# Browser
+mv skills/browser-control.ts core/core-skills/browser/
+
+# Comm
+mv skills/comm-telegram.ts core/core-skills/comm/
+
+# Util
+mv skills/util-misc.ts core/core-skills/util/
+
+# === HUBS ===
+# Social Media (16 arquivos)
 mv skills/social-hub-*.ts hubs/social-media/
+mv skills/social-media.ts hubs/social-media/
 
-# Mover Hub Enterprise
-mv hub_enterprise_mvp/* hubs/enterprise/
+# Enterprise
+cp -r hub_enterprise_mvp/* hubs/enterprise/
 
-# Mover Hub Marketing/Content/Analytics
-mv skills/marketing-*.ts hubs/marketing/
-mv skills/content-*.ts hubs/content/
-mv skills/analytics-*.ts hubs/analytics/
-mv skills/reviews-*.ts hubs/analytics/
+# Marketing
+mv skills/marketing-captacao.ts hubs/marketing/
 
-# Mover Operator Runtime
-mv skill-executor-v2.ts core/operator-runtime/
-mv telegram-bot.ts core/operator-runtime/
+# Content
+mv skills/content-ia.ts hubs/content/
+
+# Analytics
+mv skills/analytics-roi.ts hubs/analytics/
+mv skills/reviews-reputation.ts hubs/analytics/
+
+# === OPERATOR RUNTIME ===
+cp skill-executor-v2.ts core/operator-runtime/
+cp telegram-bot.ts core/operator-runtime/
 mv skills/intent-router.ts core/operator-runtime/
 
-# Mover Dashboard
+# === APPS ===
 mv dashboard apps/cockpit-dashboard
 
-# Renomear Aurora
-mv aurora-monitor-ts aurora
+# === AURORA (já está organizado) ===
+# Manter aurora-monitor-ts/ onde está ou renomear:
+# mv aurora-monitor-ts aurora
 ```
 
 ---
 
-## PASSO 5: ATUALIZAR IMPORTS
-
-Depois de mover os arquivos, você precisa atualizar os imports em cada arquivo.
-
-### Exemplo de Atualização
-
-**Antes:**
-```typescript
-import { Skill } from './skill-base';
-import { executeSkill } from '../skill-executor-v2';
-```
-
-**Depois:**
-```typescript
-import { Skill } from '../../core/core-skills/skill-base';
-import { executeSkill } from '../../core/operator-runtime/skill-executor-v2';
-```
-
-### Script para Ajudar
+## ⚙️ PASSO 5: CONFIGURAR .ENV
 
 ```bash
-# Listar todos os arquivos que precisam de update
-grep -r "from '\./\|from \"\.\/" --include="*.ts" .
-
-# Para cada arquivo, atualizar manualmente ou usar sed
-```
-
----
-
-## PASSO 6: CONFIGURAR BOT KRHON
-
-Editar o arquivo `.env`:
-
-```bash
-# Criar ou editar .env
+# Criar arquivo .env na raiz do projeto
 cat > .env << 'EOF'
-# Telegram Bot - KRHON (não Prometheus!)
-TELEGRAM_BOT_TOKEN=SEU_TOKEN_DO_KRHON_AQUI
-TELEGRAM_CHAT_ID=SEU_CHAT_ID
+# ========================================
+# OPENCLAW AURORA - CONFIGURAÇÕES
+# ========================================
 
-# Outras configs
+# Telegram Bot - KRHON (NÃO PROMETHEUS!)
+TELEGRAM_BOT_TOKEN=COLE_O_TOKEN_DO_KRHON_AQUI
+TELEGRAM_CHAT_ID=SEU_CHAT_ID_AQUI
+
+# Ambiente
 NODE_ENV=development
 PORT=3000
+
+# Railway (para deploy)
+RAILWAY_ENVIRONMENT=production
+
+# Vercel (dashboard usa essas)
+VITE_API_URL=https://openclawaurora-production.up.railway.app
+VITE_WS_URL=wss://openclawaurora-production.up.railway.app
+
+# OpenAI/Claude (se usar)
+OPENAI_API_KEY=sua_key_aqui
+ANTHROPIC_API_KEY=sua_key_aqui
 EOF
+
+echo "⚠️  IMPORTANTE: Edite o .env e cole os tokens corretos!"
 ```
 
-**IMPORTANTE:** O Lucas precisa fornecer o token correto do bot Krhon!
+**O Lucas precisa fornecer:**
+- Token do bot @Krhon_bot (pegar com @BotFather no Telegram)
+- Chat ID dele
+- API keys se quiser usar AI skills
 
 ---
 
-## PASSO 7: ATUALIZAR PACKAGE.JSON
-
-```json
-{
-  "scripts": {
-    "dev": "ts-node core/operator-runtime/telegram-bot.ts",
-    "bot": "ts-node --transpile-only core/operator-runtime/telegram-bot.ts",
-    "opencloud": "ts-node start-opencloud.ts",
-    "cli": "ts-node cli.ts",
-    "build": "tsc",
-    "test": "npm run smoke:skills",
-    "smoke:skills": "ts-node test-skills.ts"
-  }
-}
-```
-
----
-
-## PASSO 8: CRIAR INDEX PARA CADA MÓDULO
-
-### core/core-skills/index.ts
-```typescript
-// Core Skills Index
-export * from './ai/ai-claude';
-export * from './ai/ai-gpt';
-export * from './ai/ai-ollama';
-export * from './exec/exec-bash';
-export * from './exec/exec-extended';
-export * from './file/file-ops';
-export * from './file/file-ops-advanced';
-export * from './web/web-fetch';
-export * from './browser/browser-control';
-export * from './comm/comm-telegram';
-export * from './util/util-misc';
-```
-
-### hubs/social-media/index.ts
-```typescript
-// Social Media Hub Index
-export * from './social-hub-planner';
-export * from './social-hub-publer';
-export * from './social-hub-caption-ai';
-export * from './social-hub-analytics';
-// ... adicionar todos os 16 arquivos
-```
-
----
-
-## PASSO 9: TESTAR
+## 📦 PASSO 6: INSTALAR DEPENDÊNCIAS
 
 ```bash
-# Verificar estrutura
-tree -L 3 -I node_modules
-
-# Instalar dependências
+# Instalar tudo
 npm install
 
-# Testar build
-npm run build
+# Se der erro, tentar com força
+rm -rf node_modules package-lock.json
+npm install
+```
 
-# Testar bot
+---
+
+## 🧪 PASSO 7: TESTAR LOCAL
+
+### Testar Skills
+```bash
+npm run smoke:skills
+# Deve mostrar: ✅ 59 skills registradas
+```
+
+### Testar CLI
+```bash
+npm run cli
+# Comandos: /skills, /stats, /help, /exit
+```
+
+### Testar Bot Telegram
+```bash
 npm run bot
+# Deve conectar como @Krhon_bot
+# Se der erro de token, verificar .env
+```
 
-# Se tudo funcionar, commitar
+### Testar Boot Completo
+```bash
+npm run opencloud
+# Ou se não existir:
+npm run dev
+```
+
+### Resultado Esperado
+```
+╔═══════════════════════════════════════════════════════════════╗
+║         OPENCLOUD AURORA - SISTEMA COMPLETO                   ║
+╚═══════════════════════════════════════════════════════════════╝
+
+✅ [Skills Registry] 59 skills registradas
+✅ [Aurora Monitor] Circuit Breaker, Rate Limiter, Watchdog ativos
+✅ [WebSocket] ws://localhost:18789
+✅ [Telegram Bot] Bot ativo (@Krhon_bot)
+```
+
+---
+
+## 🚂 PASSO 8: DEPLOY NO RAILWAY
+
+### Verificar Railway CLI
+```bash
+# Instalar Railway CLI se não tiver
+npm install -g @railway/cli
+
+# Login
+railway login
+
+# Verificar projeto
+railway status
+```
+
+### Configurar Variáveis no Railway
+```bash
+# Adicionar variáveis de ambiente
+railway variables set TELEGRAM_BOT_TOKEN="token_do_krhon"
+railway variables set TELEGRAM_CHAT_ID="seu_chat_id"
+railway variables set NODE_ENV="production"
+```
+
+### Deploy
+```bash
+# Fazer deploy
+railway up
+
+# Ver logs
+railway logs
+```
+
+### OU pelo Dashboard Railway
+1. Acesse: https://railway.app/dashboard
+2. Selecione projeto: openclawaurora
+3. Vá em Variables
+4. Adicione as variáveis do .env
+5. Clique em Deploy
+
+---
+
+## 🌐 PASSO 9: VERIFICAR VERCEL (DASHBOARD)
+
+O Dashboard faz deploy automático quando você faz push.
+
+```bash
+# Após commitar, verificar Vercel
+# Acesse: https://openclaw-aurora.vercel.app
+
+# Se precisar redeplorar manualmente:
+cd apps/cockpit-dashboard
+npx vercel --prod
+```
+
+---
+
+## 📤 PASSO 10: COMMIT E PUSH
+
+```bash
+# Adicionar tudo
 git add -A
-git commit -m "refactor: reorganize structure (core/hubs/aurora/apps) - 59 skills preserved"
+
+# Commit
+git commit -m "refactor: reorganize to core/hubs/aurora/apps structure
+
+- Preserved all 59 skills
+- Core skills moved to core/core-skills/
+- Hub skills moved to hubs/
+- Dashboard moved to apps/cockpit-dashboard/
+- Aurora monitor preserved
+- Bot configured for @Krhon_bot
+
+Structure:
+- core/operator-runtime/ (executor)
+- core/core-skills/ (ai, exec, file, web, browser, comm, util)
+- hubs/ (social-media, enterprise, marketing, content, analytics)
+- aurora-monitor-ts/ (monitor)
+- apps/cockpit-dashboard/ (UI)"
 
 # Push para GitHub
 git push origin main
@@ -311,43 +397,138 @@ git push origin main
 
 ---
 
-## CHECKLIST FINAL
+## ✅ CHECKLIST FINAL
 
-- [ ] Backup do trabalho do GPT criado
-- [ ] Revertido para 59 skills
-- [ ] Estrutura reorganizada (core/hubs/aurora/apps)
-- [ ] Imports atualizados
-- [ ] Bot Krhon configurado no .env
-- [ ] Package.json atualizado
-- [ ] Index files criados
-- [ ] Build funcionando
-- [ ] Bot funcionando
-- [ ] Commit e push feitos
+```
+PREPARAÇÃO
+[ ] Backup do GPT criado (branch backup-gpt-refactor-*)
+[ ] Revertido para 59 skills (git reset --hard origin/main)
 
----
+REORGANIZAÇÃO
+[ ] Pastas core/ criadas
+[ ] Pastas hubs/ criadas
+[ ] Pastas apps/ criadas
+[ ] Core skills movidos
+[ ] Hub skills movidos
+[ ] Dashboard movido
+[ ] Imports atualizados (se necessário)
 
-## SE DER ERRO
+CONFIGURAÇÃO
+[ ] .env criado com tokens corretos
+[ ] Token do @Krhon_bot configurado
+[ ] Dependências instaladas (npm install)
 
-Se algo quebrar durante a reorganização:
+TESTES LOCAL
+[ ] npm run smoke:skills → 59 skills ✅
+[ ] npm run cli → funciona ✅
+[ ] npm run bot → @Krhon_bot conectado ✅
 
-```bash
-# Voltar para versão do GitHub
-git reset --hard origin/main
+DEPLOY
+[ ] git push origin main ✅
+[ ] Railway deploy ✅ (backend online)
+[ ] Vercel auto-deploy ✅ (dashboard online)
 
-# Ou voltar para backup do GPT
-git checkout backup-gpt-refactor
+VERIFICAÇÃO FINAL
+[ ] https://openclaw-aurora.vercel.app → Dashboard OK
+[ ] Bot @Krhon_bot respondendo no Telegram
+[ ] Railway logs sem erros
 ```
 
 ---
 
-## NOTAS IMPORTANTES
+## 🆘 SE DER ERRO
 
-1. **NÃO DELETE SKILLS** - Apenas mova para pastas corretas
-2. **AURORA = MONITOR** - Não executa, apenas observa
-3. **OPERATOR = EXECUTOR** - Este que executa as skills
-4. **59 SKILLS** - Todas devem ser preservadas
-5. **BOT KRHON** - Usar o token correto
+### Reverter para GitHub
+```bash
+git reset --hard origin/main
+```
+
+### Reverter para backup GPT
+```bash
+git checkout backup-gpt-refactor-YYYYMMDD
+```
+
+### Railway não sobe
+```bash
+# Ver logs
+railway logs
+
+# Verificar variáveis
+railway variables
+
+# Redeplorar
+railway up --detach
+```
+
+### Bot não conecta
+```bash
+# Verificar token
+cat .env | grep TELEGRAM
+
+# Testar token manualmente
+curl "https://api.telegram.org/bot<TOKEN>/getMe"
+```
 
 ---
 
-**Boa sorte, Opus! O Lucas conta com você para arrumar essa bagunça! 🚀**
+## 📊 ESTRUTURA FINAL ESPERADA
+
+```
+openclaw_aurora/
+├── core/
+│   ├── operator-runtime/
+│   │   ├── intent-router.ts
+│   │   ├── skill-executor-v2.ts
+│   │   └── telegram-bot.ts
+│   └── core-skills/
+│       ├── ai/          (4 arquivos)
+│       ├── exec/        (2 arquivos)
+│       ├── file/        (2 arquivos)
+│       ├── web/         (1 arquivo)
+│       ├── browser/     (1 arquivo)
+│       ├── comm/        (1 arquivo)
+│       └── util/        (1 arquivo)
+│
+├── hubs/
+│   ├── social-media/    (17 arquivos)
+│   ├── enterprise/      (do hub_enterprise_mvp)
+│   ├── marketing/       (1 arquivo)
+│   ├── content/         (1 arquivo)
+│   └── analytics/       (2 arquivos)
+│
+├── aurora-monitor-ts/   (Monitor Aurora - já organizado)
+│   └── src/
+│       ├── protection/
+│       ├── healing/
+│       └── detectors/
+│
+├── apps/
+│   └── cockpit-dashboard/  (Dashboard React)
+│
+├── skills/              (arquivos restantes não categorizados)
+│   ├── index.ts
+│   ├── skill-base.ts
+│   └── skill-health-check.ts
+│
+├── .env                 (⚠️ NÃO COMMITAR - tem tokens!)
+├── package.json
+├── tsconfig.json
+└── start-opencloud.ts
+```
+
+---
+
+## 🎯 RESUMO EXECUTIVO
+
+```
+1. REVERTER:     git reset --hard origin/main (volta 59 skills)
+2. REORGANIZAR:  Mover arquivos para core/hubs/aurora/apps
+3. CONFIGURAR:   .env com token @Krhon_bot
+4. TESTAR:       npm run bot (local)
+5. DEPLOY:       git push + railway up
+6. VERIFICAR:    Dashboard + Bot funcionando
+```
+
+---
+
+**Opus, o Lucas precisa que você execute esses passos no PC dele. Ele tem acesso total via Windows/WSL. Boa sorte! 🚀**
