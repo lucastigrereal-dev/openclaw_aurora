@@ -18,23 +18,9 @@
   },
   "include": [
     "*.ts",
-    "skills/skill-base.ts",
-    "skills/exec-bash.ts",
-    "skills/ai-claude.ts",
-    "skills/ai-gpt.ts",
-    "skills/ai-ollama.ts",
-    "skills/file-ops.ts",
-    "skills/comm-telegram.ts",
-    "skills/web-fetch.ts",
-    "skills/util-misc.ts",
-    "skills/exec-extended.ts",
-    "skills/security-config.ts",
-    "skills/registry-v2.ts",
-    "skills/sandbox-runner.ts",
-    "skills/skill-scaffolder.ts",
-    "skills/intent-router.ts",
-    "skills/index.ts",
-    "skills/hub-enterprise/**/*.ts"
+    "skills/**/*.ts",
+    "aurora-monitor-ts/**/*.ts",
+    "src/**/*.ts"
   ],
   "exclude": [
     "node_modules",
