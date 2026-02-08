@@ -42,8 +42,8 @@ import { FileReadSkill, FileWriteSkill, FileListSkill, FileDeleteSkill, FileCrea
 // Communication Skills
 import { TelegramSendSkill } from './communication/telegram';
 
-// Web Skills (need to check what's exported)
-// import { WebFetchSkill } from './web/fetch';
+// Web Skills
+import { WebFetchSkill } from './web/fetch';
 
 /**
  * Registra todas as skills disponíveis no registry
@@ -73,7 +73,7 @@ export function registerAllSkills(registry?: SkillRegistry): SkillRegistry {
     reg.register(new TelegramSendSkill());
 
     // Web Skills
-    // reg.register(new WebFetchSkill());
+    reg.register(new WebFetchSkill());
 
     const stats = reg.getStats();
     console.log(`[Skills] Registered ${stats.total} skills successfully`);
@@ -110,7 +110,7 @@ export const AVAILABLE_SKILLS = [
   { name: 'telegram.send', category: 'COMM', description: 'Envia mensagem Telegram', dangerous: false },
 
   // WEB
-  // { name: 'web.fetch', category: 'WEB', description: 'Requisições HTTP', dangerous: false },
+  { name: 'web.fetch', category: 'WEB', description: 'Requisições HTTP', dangerous: false },
 ] as const;
 
 /**

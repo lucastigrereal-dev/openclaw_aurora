@@ -30,6 +30,10 @@ import {
 import { generateId, RiskLevel, TrafficLight } from '../core/contracts/types';
 
 // Import do Aurora Monitor existente
+// NOTA: Este import está quebrado porque '../aurora-monitor-ts/src' não existe
+// O correto seria importar de '../../aurora-openclaw-integration'
+// mas isso requer refatoração do adapter inteiro.
+// Por enquanto, este adapter fica DESABILITADO e o boot usa getAuroraMonitor() diretamente.
 import {
   OpenClawIntegration,
   createOpenClawIntegration,

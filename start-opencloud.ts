@@ -185,7 +185,7 @@ async function startTelegramBot(): Promise<void> {
     logComponent('Telegram Bot', 'starting', 'Iniciando bot em processo separado...');
 
     // Inicia bot em processo separado
-    telegramBotProcess = spawn('npx', ['ts-node', 'telegram-bot.ts'], {
+    telegramBotProcess = spawn('npx', ['ts-node', '--transpile-only', 'telegram-bot.ts'], {
       cwd: __dirname,
       stdio: 'pipe',
       shell: true,
