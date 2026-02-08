@@ -5,7 +5,7 @@
 
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { Skill, SkillInput, SkillOutput } from './skill-base';
+import { Skill, SkillInput, SkillOutput } from '../base';
 
 const execAsync = promisify(exec);
 

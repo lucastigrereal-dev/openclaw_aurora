@@ -3,7 +3,7 @@
  * web.fetch, web.scrape
  */
 
-import { Skill, SkillInput, SkillOutput } from './skill-base';
+import { Skill, SkillInput, SkillOutput } from '../base';
 
 // ============================================================================
 // WEB.FETCH

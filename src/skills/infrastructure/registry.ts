@@ -317,3 +317,8 @@ export function getSkillRegistryV2(): SkillRegistryV2 {
   }
   return registryV2Instance;
 }
+
+/**
+ * Alias de compatibilidade para código legado
+ */
+export const getSkillRegistry = getSkillRegistryV2;

@@ -13,7 +13,7 @@
  */
 
 import { EventEmitter } from 'events';
-import { Skill, SkillInput, SkillOutput } from './skill-base';
+import { Skill, SkillInput, SkillOutput } from '../base';
 import {
   SkillSpec,
   SkillStatus,

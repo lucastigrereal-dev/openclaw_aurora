@@ -1,7 +1,7 @@
 // Extended Exec Skills - PowerShell, Python, Node, Background, Sudo
 // Skills: exec.powershell, exec.python, exec.node, exec.background, exec.sudo
 
-import { Skill, SkillOutput, SkillInput } from './skill-base';
+import { Skill, SkillOutput, SkillInput } from '../base';
 import { exec, spawn, ChildProcess } from 'child_process';
 import { promisify } from 'util';
 import * as fs from 'fs';

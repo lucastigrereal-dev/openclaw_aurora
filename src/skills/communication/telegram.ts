@@ -3,7 +3,7 @@
  * Envia mensagens via Telegram Bot API
  */
 
-import { Skill, SkillInput, SkillOutput } from './skill-base';
+import { Skill, SkillInput, SkillOutput } from '../base';
 
 export class TelegramSendSkill extends Skill {
   private botToken: string;

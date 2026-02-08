@@ -3,7 +3,7 @@
  * Integração com OpenAI GPT API
  */
 
-import { Skill, SkillInput, SkillOutput } from './skill-base';
+import { Skill, SkillInput, SkillOutput } from '../base';
 
 export class AIGPTSkill extends Skill {
   private apiKey: string;

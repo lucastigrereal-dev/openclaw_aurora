@@ -148,7 +148,7 @@ export class SkillScaffolder {
  * Data: ${new Date().toISOString()}
  */
 
-import { Skill, SkillInput, SkillOutput, SkillCategory } from './skill-base';
+import { Skill, SkillInput, SkillOutput, SkillCategory } from '../base';
 
 // ============================================================================
 // TIPOS

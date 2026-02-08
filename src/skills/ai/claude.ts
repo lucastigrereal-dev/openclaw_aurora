@@ -3,7 +3,7 @@
  * Integração com Claude API (Anthropic)
  */
 
-import { Skill, SkillInput, SkillOutput } from './skill-base';
+import { Skill, SkillInput, SkillOutput } from '../base';
 
 export class AIClaudeSkill extends Skill {
   private apiKey: string;

@@ -3,7 +3,7 @@
  * Versão exponencialmente melhorada com recursos enterprise
  */
 
-import { Skill, SkillInput, SkillOutput } from './skill-base';
+import { Skill, SkillInput, SkillOutput } from '../base';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as crypto from 'crypto';

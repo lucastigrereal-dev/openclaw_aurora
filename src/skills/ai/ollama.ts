@@ -3,7 +3,7 @@
  * Integração com Ollama (LLMs locais)
  */
 
-import { Skill, SkillInput, SkillOutput } from './skill-base';
+import { Skill, SkillInput, SkillOutput } from '../base';
 
 export class AIOllamaSkill extends Skill {
   private baseUrl: string;
