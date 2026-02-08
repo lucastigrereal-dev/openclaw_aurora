@@ -19,14 +19,16 @@
   "include": [
     "*.ts",
     "skills/**/*.ts",
-    "aurora-monitor-ts/**/*.ts",
-    "src/**/*.ts"
+    "aurora-monitor-ts/**/*.ts"
   ],
   "exclude": [
     "node_modules",
     "dist",
     "dashboard-prometheus",
     "**/*.test.ts",
-    "**/__tests__/**"
+    "**/__tests__/**",
+    "**/test-*.ts",
+    "**/*-test.ts",
+    "src/**"
   ]
 }

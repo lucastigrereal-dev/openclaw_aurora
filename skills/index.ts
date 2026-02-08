@@ -68,6 +68,9 @@ import { getSkillRegistryV2, buildSpecFromAvailable } from './registry-v2';
 // NEW: Supabase Archon imports
 import { registerSupabaseArchonSkills } from './supabase-archon/supabase-archon-index';
 
+// NEW: Social Hub imports
+import { registerSocialHubSkills } from './social-hub-index';
+
 /**
  * Registra todas as skills no registry
  */
@@ -148,6 +151,10 @@ export function registerAllSkills(registry?: SkillRegistry): SkillRegistry {
   // NEW: Supabase Archon Skills
   console.log('[Skills] Registering supabase archon skills...');
   registerSupabaseArchonSkills();
+
+  // NEW: Social Hub Skills
+  console.log('[Skills] Registering social hub skills...');
+  registerSocialHubSkills();
 
   console.log(`[Skills] Registered ${reg.getStats().total} skills`);
 
