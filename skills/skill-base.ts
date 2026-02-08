@@ -116,6 +116,22 @@ export abstract class Skill extends EventEmitter {
     return this._enabled;
   }
 
+  // Helper methods para compatibilidade com skills antigas
+  protected error(msg: string, data?: any): SkillOutput {
+    return {
+      success: false,
+      data: data,
+      error: msg
+    };
+  }
+
+  protected success(data: any): SkillOutput {
+    return {
+      success: true,
+      data: data
+    };
+  }
+
   getInfo() {
     return {
       ...this.metadata,
@@ -202,3 +218,19 @@ export function getSkillRegistry(): SkillRegistry {
   }
   return registryInstance;
 }
+
+// ============================================================================
+// ALIASES PARA COMPATIBILIDADE COM SKILLS ANTIGAS
+// ============================================================================
+
+/**
+ * Alias para compatibilidade com skills antigas que usam SkillBase
+ * @deprecated Use Skill instead
+ */
+export const SkillBase = Skill;
+
+/**
+ * Alias para compatibilidade com skills antigas que usam SkillResult
+ * @deprecated Use SkillOutput instead
+ */
+export type SkillResult = SkillOutput;
