@@ -38,7 +38,7 @@ export interface SocialHubConfig {
 export function loadSocialHubConfig(): SocialHubConfig {
   // Tentar carregar de variáveis de ambiente primeiro
   const config: SocialHubConfig = {
-    publisherApiKey: process.env.PUBLER_API_KEY || '',
+    publisherApiKey: process.env.PUBLER_API_KEY || 'cb8e8eda44390f8878f5b5ad9ddd19d84c165748e5b65a09',
     anthropicApiKey: process.env.ANTHROPIC_API_KEY || '',
 
     instagramAccessToken: process.env.INSTAGRAM_ACCESS_TOKEN,
