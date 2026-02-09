@@ -5,6 +5,12 @@ export interface OpenClawMessage {
   event: string;
   data: any;
   timestamp?: number;
+  // Campos extras para chat e monitor
+  id?: string;
+  message?: string;
+  success?: boolean;
+  model?: string;
+  status?: string;
 }
 
 export interface OpenClawEvent {
@@ -178,6 +184,76 @@ export class OpenClawWebSocketService {
           metadata: {
             action: data.action,
             details: data.details,
+          },
+        };
+
+
+      // ============================================================
+      // CHAT - Respostas do Aurora AI Chat
+      // ============================================================
+      case 'chat_response':
+        return {
+          type: 'notification',
+          title: '💬 Aurora respondeu',
+          description: message.message || data?.content || '',
+          metadata: {
+            chatResponse: true,
+            id: message.id,
+            success: message.success ?? data?.success,
+            response: message.message || data?.content || '',
+            model: message.model || data?.model || 'unknown',
+          },
+        };
+
+      case 'chat_status':
+        return {
+          type: 'notification',
+          title: '🤔 Aurora processando',
+          description: message.message || data?.message || 'Pensando...',
+          metadata: {
+            chatStatus: true,
+            id: message.id,
+            status: message.status || data?.status,
+            message: message.message || data?.message,
+          },
+        };
+
+      // ============================================================
+      // MONITOR - Circuit Breaker, Watchdog, Health
+      // ============================================================
+      case 'circuit_breaker':
+        return {
+          type: 'error',
+          title: `🔌 Circuit Breaker: ${data?.name || 'unknown'}`,
+          description: `Estado: ${data?.state || data?.event || 'unknown'}`,
+          metadata: {
+            monitorEvent: 'circuit_breaker',
+            name: data?.name,
+            state: data?.state,
+            ...data,
+          },
+        };
+
+      case 'watchdog_alert':
+      case 'watchdog-alert':
+        return {
+          type: 'error',
+          title: '🐕 Watchdog Alerta',
+          description: data?.message || data?.details || 'Processo pode estar travado',
+          metadata: {
+            monitorEvent: 'watchdog',
+            ...data,
+          },
+        };
+
+      case 'system_status':
+        return {
+          type: 'system',
+          title: '📊 Status do Sistema',
+          description: `CPU: ${data?.cpu || '?'}% | RAM: ${data?.memory || '?'}%`,
+          metadata: {
+            monitorEvent: 'system_status',
+            ...data,
           },
         };
 

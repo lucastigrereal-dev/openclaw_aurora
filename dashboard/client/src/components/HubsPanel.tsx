@@ -57,7 +57,7 @@ export function HubsPanel() {
 
     const response = await getHub(hubId);
     if (response.success && response.data) {
-      setWorkflows(response.data.workflows as Workflow[]);
+      setWorkflows(response.data.workflows as unknown as Workflow[]);
       setExpandedHub(hubId);
       setSelectedWorkflow(null);
       setWorkflowParams({});
