@@ -7,6 +7,8 @@ import { WebSocketServer, WebSocket } from 'ws';
 import { createServer, IncomingMessage } from 'http';
 import { getAuroraMonitor, AuroraMonitor } from './aurora-openclaw-integration';
 import { getSkillExecutor, SkillExecutor } from './skill-executor';
+import * as fs from 'fs';
+import * as path from 'path';
 
 // ============================================================================
 // TIPOS DE MENSAGENS
@@ -45,12 +47,19 @@ interface CommandMessage {
 export class DashboardWebSocketServer {
   private wss: WebSocketServer | null = null;
   private clients: Set<WebSocket> = new Set();
+  private authenticatedClients: Set<WebSocket> = new Set();
   private monitor: AuroraMonitor;
   private executor: SkillExecutor;
+  private gatewayToken: string;
 
   constructor() {
     this.monitor = getAuroraMonitor();
     this.executor = getSkillExecutor();
+    this.gatewayToken = process.env.GATEWAY_TOKEN || '';
+
+    if (!this.gatewayToken) {
+      console.warn('[WebSocket] ⚠️  GATEWAY_TOKEN not set - authentication disabled');
+    }
   }
 
   start(port: number): void {
@@ -159,6 +168,47 @@ export class DashboardWebSocketServer {
         return;
       }
 
+      // ============================================================
+      // SERVE CONTROL UI STATIC FILES
+      // ============================================================
+      const staticDir = path.join(__dirname, '..', 'dashboard', 'dist', 'public');
+
+      // Serve index.html for root and /chat routes
+      if (req.url === '/' || req.url?.startsWith('/chat')) {
+        const indexPath = path.join(staticDir, 'index.html');
+        if (fs.existsSync(indexPath)) {
+          res.writeHead(200, { 'Content-Type': 'text/html' });
+          res.end(fs.readFileSync(indexPath));
+          return;
+        }
+      }
+
+      // Serve static assets (CSS, JS, images, etc.)
+      if (req.url) {
+        const filePath = path.join(staticDir, req.url);
+        if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+          const ext = path.extname(filePath);
+          const contentTypes: { [key: string]: string } = {
+            '.html': 'text/html',
+            '.js': 'application/javascript',
+            '.css': 'text/css',
+            '.json': 'application/json',
+            '.png': 'image/png',
+            '.jpg': 'image/jpeg',
+            '.gif': 'image/gif',
+            '.svg': 'image/svg+xml',
+            '.ico': 'image/x-icon',
+            '.woff': 'font/woff',
+            '.woff2': 'font/woff2',
+            '.ttf': 'font/ttf',
+          };
+          const contentType = contentTypes[ext] || 'application/octet-stream';
+          res.writeHead(200, { 'Content-Type': contentType });
+          res.end(fs.readFileSync(filePath));
+          return;
+        }
+      }
+
       // Default 404
       res.writeHead(404, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ success: false, error: 'Not found' }));
@@ -177,22 +227,38 @@ export class DashboardWebSocketServer {
       this.clients.add(ws);
       console.log(`[WebSocket] Client connected via path: ${req.url || '/'} (${this.clients.size} total)`);
 
-      // Envia status inicial + lista de skills
-      this.sendToClient(ws, {
-        type: 'system',
-        event: 'connected',
-        data: {
-          status: this.monitor.getSystemStatus(),
-          skills: this.executor.listSkills(),
-          message: 'OpenClaw Aurora conectado. Digite uma mensagem para conversar com a IA.',
-        },
-        timestamp: Date.now(),
-      });
+      // Se autenticação está habilitada, envia challenge
+      if (this.gatewayToken) {
+        const nonce = this.generateNonce();
+        this.sendToClient(ws, {
+          type: 'event',
+          event: 'connect.challenge',
+          payload: {
+            nonce: nonce,
+            ts: Date.now()
+          }
+        });
+      } else {
+        // Sem autenticação, aceita imediatamente
+        this.authenticatedClients.add(ws);
+        this.sendWelcome(ws);
+      }
 
       // Handler de mensagens do cliente
       ws.on('message', async (rawData) => {
         try {
           const message: WSMessage = JSON.parse(rawData.toString());
+
+          // Se não autenticado, só aceita mensagens de autenticação
+          if (this.gatewayToken && !this.authenticatedClients.has(ws)) {
+            if (message.type === 'req' && message.method === 'connect') {
+              this.handleAuth(ws, message);
+            } else {
+              ws.close(1008, 'unauthorized: gateway token missing');
+            }
+            return;
+          }
+
           await this.handleMessage(ws, message);
         } catch (error: any) {
           this.sendToClient(ws, {
@@ -205,6 +271,7 @@ export class DashboardWebSocketServer {
 
       ws.on('close', () => {
         this.clients.delete(ws);
+        this.authenticatedClients.delete(ws);
         console.log(`[WebSocket] Client disconnected (${this.clients.size} total)`);
       });
     });
@@ -273,6 +340,63 @@ export class DashboardWebSocketServer {
         timestamp: Date.now(),
       });
     }, 5000);
+  }
+
+  private generateNonce(): string {
+    return `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+  }
+
+  private handleAuth(ws: WebSocket, message: any): void {
+    const auth = message.params?.auth;
+    const token = auth?.token || auth?.password || '';
+
+    if (token === this.gatewayToken) {
+      // Token válido!
+      this.authenticatedClients.add(ws);
+      console.log('[WebSocket] ✅ Client authenticated');
+
+      // Envia resposta de sucesso
+      this.sendToClient(ws, {
+        type: 'res',
+        id: message.id,
+        ok: true,
+        payload: {
+          protocol: 3,
+          auth: {
+            role: 'operator',
+            scopes: ['operator.admin', 'operator.approvals', 'operator.pairing']
+          }
+        }
+      });
+
+      // Envia welcome
+      this.sendWelcome(ws);
+    } else {
+      // Token inválido
+      console.log('[WebSocket] ❌ Authentication failed - token mismatch');
+      this.sendToClient(ws, {
+        type: 'res',
+        id: message.id,
+        ok: false,
+        error: {
+          message: 'unauthorized: gateway token mismatch (open a tokenized dashboard URL or paste token in Control UI settings)'
+        }
+      });
+      ws.close(1008, 'unauthorized: gateway token mismatch');
+    }
+  }
+
+  private sendWelcome(ws: WebSocket): void {
+    this.sendToClient(ws, {
+      type: 'system',
+      event: 'connected',
+      data: {
+        status: this.monitor.getSystemStatus(),
+        skills: this.executor.listSkills(),
+        message: 'OpenClaw Aurora conectado. Digite uma mensagem para conversar com a IA.',
+      },
+      timestamp: Date.now(),
+    });
   }
 
   /**
