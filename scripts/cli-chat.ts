@@ -3,6 +3,7 @@
  * Permite conversar com o OpenClaw Aurora via terminal
  */
 
+import 'dotenv/config';
 import * as readline from 'readline';
 import { registerAllSkills, getSkillRegistry } from '../skills/index';
 
@@ -100,11 +101,23 @@ async function handleCommand(input: string, registry: any): Promise<boolean> {
     return true;
   }
 
-  // Texto livre (futuro: enviar para operator)
-  console.log(colors.yellow);
-  console.log('💬 Chat livre ainda não implementado.');
-  console.log('💡 Use comandos começando com / por enquanto.');
-  console.log(colors.reset);
+  // Texto livre - envia para Claude
+  console.log(colors.gray + '🤔 Pensando...' + colors.reset);
+  try {
+    const skill = registry.get('ai.claude');
+    if (!skill) {
+      console.log(colors.red + '❌ Skill ai.claude não encontrada' + colors.reset);
+      return true;
+    }
+    const result = await skill.run({ prompt: trimmed, maxTokens: 1000 });
+    if (result.success) {
+      console.log(colors.green + '\n' + result.data.content + colors.reset + '\n');
+    } else {
+      console.log(colors.red + '❌ ' + result.error + colors.reset);
+    }
+  } catch (err: any) {
+    console.log(colors.red + '❌ Erro: ' + err.message + colors.reset);
+  }
   return true;
 }
 
