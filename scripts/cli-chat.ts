@@ -4,7 +4,7 @@
  */
 
 import * as readline from 'readline';
-import { registerAllSkills, getSkillRegistry } from '../skills';
+import { registerAllSkills, getSkillRegistry } from '../skills/index';
 
 // Cores ANSI
 const colors = {
