@@ -13,7 +13,16 @@ import { AVAILABLE_SKILLS } from './skills';
 const securityManager = {
   addAllowedUser: (userId: string) => {},
   isSkillAllowed: (skillName: string) => true,
-  getConfig: () => ({ allowAll: false, blockedSkills: [], allowedUsers: [] }),
+  getConfig: () => ({
+    allowAll: false,
+    blockedSkills: [],
+    allowedUsers: [],
+    allowedSkills: [],
+    requireConfirmation: false,
+    browser: { headless: true, blockedDomains: [] },
+    autopc: { enabled: true },
+    exec: { allowSudo: false, maxTimeout: 30000 }
+  }),
   enableSkill: (skillName: string) => {},
   disableSkill: (skillName: string) => {},
   enableDevMode: () => {},
