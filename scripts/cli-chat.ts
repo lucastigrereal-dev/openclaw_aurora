@@ -1,6 +1,6 @@
 /**
- * CLI Chat - Interface de linha de comando para o Operator
- * Permite conversar com o OpenClaw Aurora via terminal
+ * CLI Chat - Interface de linha de comando para o MoltBot
+ * Conversa com o OpenClaw Aurora via terminal com memória de contexto
  */
 
 import 'dotenv/config';
@@ -18,11 +18,54 @@ const colors = {
   gray: '\x1b[90m',
 };
 
+// System prompt (same as telegram-bot.ts)
+const MOLTBOT_SYSTEM_PROMPT = `<identity>
+Você é o MoltBot (OpenClaw Aurora v2.0), um agente autônomo de automação pessoal criado pelo Lucas.
+Você NÃO é apenas um chatbot — você EXECUTA ações reais através de 56 skills especializadas.
+Você está rodando via CLI local.
+</identity>
+
+<capabilities>
+Você tem 56 skills ativas em 13 categorias:
+- EXEC: bash, powershell, python, node, background, eval
+- AI: claude (você), gpt, ollama
+- FILE: read, write, list, delete
+- BROWSER: open, click, type, screenshot, extract, pdf, wait, close
+- AUTOPC: click, move, type, press, screenshot, scroll
+- COMM: telegram.send, telegram.getUpdates
+- WEB: fetch, scrape
+- UTIL: sleep, datetime, uuid, hash, json
+- MARKETING: landing pages, leads CRM, funil de vendas, Google/Meta Ads
+- SOCIAL: post, schedule, caption IA, reels, analytics
+- CONTENT: blog SEO, image, video, email templates
+- REVIEWS: Google reviews, request, report
+- ANALYTICS: dashboard, ROI, conversion, report mensal
+Além disso: 30 skills Supabase Archon (DB enterprise) e 14 skills Social Hub no RegistryV2.
+</capabilities>
+
+<behavior>
+- Seja direto e técnico, mas acessível. Fale como engenheiro, não como atendente.
+- Responda sempre em português brasileiro.
+- Mantenha continuidade: use o contexto das mensagens anteriores da conversa.
+- Seja conciso: respostas longas só quando o usuário pedir detalhes.
+</behavior>`;
+
+// Conversation memory
+const chatHistory: Array<{ role: string; content: string }> = [];
+const MAX_HISTORY = 20;
+
+function addToHistory(role: string, content: string): void {
+  chatHistory.push({ role, content });
+  if (chatHistory.length > MAX_HISTORY) {
+    chatHistory.splice(0, chatHistory.length - MAX_HISTORY);
+  }
+}
+
 function printBanner() {
   console.log(colors.cyan + colors.bright);
   console.log('╔════════════════════════════════════════════════════╗');
-  console.log('║         OpenClaw Aurora - CLI Chat                 ║');
-  console.log('║         Conversa com o Operator Core               ║');
+  console.log('║         MoltBot Aurora v2.0 - CLI Chat             ║');
+  console.log('║         Conversa com memória de contexto            ║');
   console.log('╚════════════════════════════════════════════════════╝');
   console.log(colors.reset);
 }
@@ -32,14 +75,17 @@ function printHelp() {
   console.log('Comandos disponíveis:');
   console.log('  /skills       - Lista todas as skills registradas');
   console.log('  /stats        - Mostra estatísticas do registry');
-  console.log('  /intent <msg> - Processa uma intenção (ainda não implementado)');
+  console.log('  /clear        - Limpa memória da conversa');
   console.log('  /help         - Mostra esta ajuda');
   console.log('  /exit         - Sai do CLI');
+  console.log('');
+  console.log('Texto livre     - Conversa com o MoltBot (Claude Haiku)');
   console.log(colors.reset);
 }
 
 async function handleCommand(input: string, registry: any): Promise<boolean> {
   const trimmed = input.trim();
+  if (!trimmed) return true;
 
   if (trimmed === '/exit' || trimmed === '/quit') {
     console.log(colors.green + 'Até logo! 👋' + colors.reset);
@@ -48,6 +94,12 @@ async function handleCommand(input: string, registry: any): Promise<boolean> {
 
   if (trimmed === '/help' || trimmed === '/h') {
     printHelp();
+    return true;
+  }
+
+  if (trimmed === '/clear') {
+    chatHistory.length = 0;
+    console.log(colors.green + '🧹 Memória limpa. Nova conversa.\n' + colors.reset);
     return true;
   }
 
@@ -80,16 +132,7 @@ async function handleCommand(input: string, registry: any): Promise<boolean> {
     console.log(colors.cyan);
     console.log('\n📊 Estatísticas do Registry:');
     console.log(JSON.stringify(stats, null, 2));
-    console.log(colors.reset);
-    return true;
-  }
-
-  if (trimmed.startsWith('/intent ')) {
-    const intentText = trimmed.substring(8).trim();
-    console.log(colors.yellow);
-    console.log(`\n🤖 Processando intent: "${intentText}"`);
-    console.log('⚠️  Operator integration ainda não implementado neste CLI.');
-    console.log('💡 Use este comando quando o OperatorAdapter estiver integrado.');
+    console.log(`\n💬 Mensagens na memória: ${chatHistory.length}/${MAX_HISTORY}`);
     console.log(colors.reset);
     return true;
   }
@@ -101,7 +144,7 @@ async function handleCommand(input: string, registry: any): Promise<boolean> {
     return true;
   }
 
-  // Texto livre - envia para Claude
+  // Texto livre - envia para Claude com memória
   console.log(colors.gray + '🤔 Pensando...' + colors.reset);
   try {
     const skill = registry.get('ai.claude');
@@ -109,8 +152,18 @@ async function handleCommand(input: string, registry: any): Promise<boolean> {
       console.log(colors.red + '❌ Skill ai.claude não encontrada' + colors.reset);
       return true;
     }
-    const result = await skill.run({ prompt: trimmed, maxTokens: 1000 });
+
+    addToHistory('user', trimmed);
+
+    const result = await skill.run({
+      prompt: trimmed,
+      messages: [...chatHistory],
+      systemPrompt: MOLTBOT_SYSTEM_PROMPT,
+      maxTokens: 1000,
+    });
+
     if (result.success) {
+      addToHistory('assistant', result.data.content);
       console.log(colors.green + '\n' + result.data.content + colors.reset + '\n');
     } else {
       console.log(colors.red + '❌ ' + result.error + colors.reset);
@@ -129,12 +182,12 @@ async function main() {
   const stats = registry.getStats();
 
   console.log(colors.green + `✓ ${stats.total} skills carregadas` + colors.reset);
-  console.log(colors.gray + 'Digite /help para ver comandos disponíveis\n' + colors.reset);
+  console.log(colors.gray + 'Digite qualquer texto para conversar ou /help para comandos\n' + colors.reset);
 
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
-    prompt: colors.cyan + 'aurora> ' + colors.reset,
+    prompt: colors.cyan + 'molt> ' + colors.reset,
   });
 
   rl.prompt();

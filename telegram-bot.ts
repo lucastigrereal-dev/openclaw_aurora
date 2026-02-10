@@ -61,6 +61,77 @@ const botWatchdog = monitor.getWatchdog('telegram-bot', {
 });
 
 // ============================================================================
+// MOLTBOT IDENTITY & MEMORY
+// ============================================================================
+
+const MOLTBOT_SYSTEM_PROMPT = `<identity>
+Você é o MoltBot (OpenClaw Aurora v2.0), um agente autônomo de automação pessoal criado pelo Lucas.
+Você NÃO é apenas um chatbot — você EXECUTA ações reais através de 56 skills especializadas.
+Você opera como bot Telegram (@Prometheus_tigre_bot) e via CLI local.
+</identity>
+
+<capabilities>
+Você tem 56 skills ativas em 13 categorias:
+- EXEC: bash, powershell, python, node, background, eval
+- AI: claude (você), gpt, ollama
+- FILE: read, write, list, delete
+- BROWSER: open, click, type, screenshot, extract, pdf, wait, close
+- AUTOPC: click, move, type, press, screenshot, scroll (controle remoto do PC)
+- COMM: telegram.send, telegram.getUpdates
+- WEB: fetch, scrape
+- UTIL: sleep, datetime, uuid, hash, json
+- MARKETING: landing pages, leads CRM, funil de vendas, Google/Meta Ads
+- SOCIAL: post, schedule, caption IA, reels, analytics
+- CONTENT: blog SEO, image, video, email templates
+- REVIEWS: Google reviews, request, report
+- ANALYTICS: dashboard, ROI, conversion, report mensal
+Além disso: 30 skills Supabase Archon (DB enterprise) e 14 skills Social Hub no RegistryV2.
+Proteção: Aurora Monitor com Circuit Breaker, Rate Limiter, Watchdog e Auto-Healer.
+</capabilities>
+
+<behavior>
+- Seja direto e técnico, mas acessível. Fale como engenheiro, não como atendente.
+- Quando o usuário pedir uma tarefa, identifique qual skill usar e confirme antes de ações destrutivas.
+- Se faltar parâmetros, pergunte de forma objetiva (ex: "Qual pasta?" / "Qual URL?").
+- Reporte erros com contexto técnico real, não desculpas genéricas.
+- Se uma skill falhar, sugira alternativa ou workaround.
+- Responda sempre em português brasileiro.
+- Mantenha continuidade: use o contexto das mensagens anteriores da conversa.
+</behavior>
+
+<rules>
+- NUNCA invente capacidades que não possui.
+- SEMPRE verifique se tem a skill necessária antes de prometer execução.
+- Ações destrutivas (deletar, enviar em massa, exec.sudo) requerem confirmação.
+- Seja conciso: respostas longas só quando o usuário pedir detalhes.
+- Quando perguntarem sobre você ou o sistema, responda com precisão usando as informações acima.
+</rules>`;
+
+// Conversation memory: Map<chatId, messages[]>
+const conversationMemory = new Map<string, Array<{ role: string; content: string }>>();
+const MAX_HISTORY = 20; // Sliding window
+
+function getHistory(chatId: string): Array<{ role: string; content: string }> {
+  return conversationMemory.get(chatId) || [];
+}
+
+function addToHistory(chatId: string, role: string, content: string): void {
+  const history = getHistory(chatId);
+  history.push({ role, content });
+
+  // Sliding window: keep last MAX_HISTORY messages
+  if (history.length > MAX_HISTORY) {
+    conversationMemory.set(chatId, history.slice(-MAX_HISTORY));
+  } else {
+    conversationMemory.set(chatId, history);
+  }
+}
+
+function clearHistory(chatId: string): void {
+  conversationMemory.delete(chatId);
+}
+
+// ============================================================================
 // HELPER: Verificar se é admin
 // ============================================================================
 
@@ -213,17 +284,40 @@ bot.command('status', async (ctx) => {
 // COMANDOS DE IA
 // ============================================================================
 
-// /ask - Claude
+// /clear - Limpar memória de conversação
+bot.command('clear', async (ctx) => {
+  const chatId = ctx.chat?.id.toString() || 'default';
+  clearHistory(chatId);
+  await ctx.reply('🧹 Memória limpa. Nova conversa iniciada.');
+});
+
+// /ask - Claude (with memory)
 bot.command('ask', async (ctx) => {
   const prompt = ctx.message?.text?.replace('/ask', '').trim();
   if (!prompt) return ctx.reply('❌ Use: /ask [sua pergunta]');
 
+  const chatId = ctx.chat?.id.toString() || 'default';
+
   await ctx.reply('🤔 Pensando...');
 
-  const result = await executor.run('ai.claude', { prompt, maxTokens: 1000 });
+  // Add user message to history
+  addToHistory(chatId, 'user', prompt);
+
+  // Build messages array from history
+  const history = getHistory(chatId);
+
+  const result = await executor.run('ai.claude', {
+    prompt,
+    messages: history,
+    maxTokens: 1000,
+    systemPrompt: MOLTBOT_SYSTEM_PROMPT,
+  });
 
   if (result.success) {
     const content = result.data.content;
+    // Add assistant response to history
+    addToHistory(chatId, 'assistant', content);
+
     if (content.length > 4000) {
       const chunks = content.match(/.{1,4000}/gs) || [];
       for (const chunk of chunks) await ctx.reply(chunk);
@@ -864,16 +958,22 @@ bot.on('message:text', async (ctx) => {
     return;
   }
 
-  // Default: Claude AI response
+  // Default: Claude AI response (with memory)
+  const chatId = ctx.chat?.id.toString() || 'default';
   await ctx.reply('🤔 Analisando...');
+
+  addToHistory(chatId, 'user', text);
+  const history = getHistory(chatId);
 
   const result = await executor.run('ai.claude', {
     prompt: text,
-    systemPrompt: 'Você é o Aurora, assistente inteligente do OpenClaw. Responda em português brasileiro de forma útil e concisa.',
-    maxTokens: 500,
+    messages: history,
+    systemPrompt: MOLTBOT_SYSTEM_PROMPT,
+    maxTokens: 1000,
   });
 
   if (result.success) {
+    addToHistory(chatId, 'assistant', result.data.content);
     await ctx.reply(result.data.content);
   } else {
     await ctx.reply('❌ Desculpe, não consegui processar sua mensagem.');

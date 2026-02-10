@@ -31,7 +31,7 @@ export class AIClaudeSkill extends Skill {
       console.error('[ai.claude] API key not configured');
       return false;
     }
-    if (!input.prompt || typeof input.prompt !== 'string') {
+    if (!input.prompt && !input.messages) {
       return false;
     }
     return true;
@@ -40,6 +40,7 @@ export class AIClaudeSkill extends Skill {
   async execute(input: SkillInput): Promise<SkillOutput> {
     const {
       prompt,
+      messages: inputMessages,
       model = process.env.CLAUDE_MODEL || 'claude-3-5-haiku-20241022',
       maxTokens = 4096,
       systemPrompt,
@@ -47,7 +48,8 @@ export class AIClaudeSkill extends Skill {
     } = input;
 
     try {
-      const messages = [{ role: 'user', content: prompt }];
+      // Support both: messages array (multi-turn) or single prompt
+      const messages = inputMessages || [{ role: 'user', content: prompt }];
 
       const body: any = {
         model,
