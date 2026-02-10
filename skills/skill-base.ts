@@ -55,9 +55,9 @@ export abstract class Skill extends EventEmitter {
   public readonly config: SkillConfig;
   private _enabled: boolean = true;
 
-  constructor(metadata: SkillMetadata, config: Partial<SkillConfig> = {}) {
+  constructor(metadata?: SkillMetadata, config: Partial<SkillConfig> = {}) {
     super();
-    this.metadata = metadata;
+    this.metadata = metadata as SkillMetadata;
     this.config = {
       timeout: config.timeout ?? 30000,
       retries: config.retries ?? 3,
@@ -73,6 +73,11 @@ export abstract class Skill extends EventEmitter {
     return true;
   }
 
+  // Helper to get skill name from metadata or direct property
+  get skillName(): string {
+    return this.metadata?.name || (this as any).name || 'unknown';
+  }
+
   // Execução com wrapper de métricas
   async run(input: SkillInput): Promise<SkillOutput> {
     if (!this._enabled) {
@@ -84,16 +89,16 @@ export abstract class Skill extends EventEmitter {
     }
 
     const startTime = Date.now();
-    this.emit('start', { skill: this.metadata.name, input });
+    this.emit('start', { skill: this.skillName, input });
 
     try {
       const result = await this.execute(input);
       result.duration = Date.now() - startTime;
-      this.emit('complete', { skill: this.metadata.name, result });
+      this.emit('complete', { skill: this.skillName, result });
       return result;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      this.emit('error', { skill: this.metadata.name, error: errorMessage });
+      this.emit('error', { skill: this.skillName, error: errorMessage });
       return {
         success: false,
         error: errorMessage,
@@ -104,12 +109,12 @@ export abstract class Skill extends EventEmitter {
 
   enable(): void {
     this._enabled = true;
-    this.emit('enabled', { skill: this.metadata.name });
+    this.emit('enabled', { skill: this.skillName });
   }
 
   disable(): void {
     this._enabled = false;
-    this.emit('disabled', { skill: this.metadata.name });
+    this.emit('disabled', { skill: this.skillName });
   }
 
   isEnabled(): boolean {
@@ -149,15 +154,32 @@ export class SkillRegistry extends EventEmitter {
   private skills: Map<string, Skill> = new Map();
 
   register(skill: Skill): void {
-    this.skills.set(skill.metadata.name, skill);
+    // Support both patterns: skill.metadata.name (Skill) and skill.name (SkillBase direct props)
+    const name = skill.metadata?.name || (skill as any).name;
+    if (!name) {
+      console.warn('[Skills] Skipped: skill has no name');
+      return;
+    }
+
+    // Patch metadata from direct properties if missing
+    if (!skill.metadata) {
+      (skill as any).metadata = {
+        name: (skill as any).name,
+        description: (skill as any).description || '',
+        version: '1.0.0',
+        category: ((skill as any).category || 'UTIL').toUpperCase(),
+      };
+    }
+
+    this.skills.set(name, skill);
 
     // Propaga eventos da skill
     skill.on('start', (data) => this.emit('skill:start', data));
     skill.on('complete', (data) => this.emit('skill:complete', data));
     skill.on('error', (data) => this.emit('skill:error', data));
 
-    this.emit('skill:registered', { name: skill.metadata.name });
-    console.log(`[Skills] Registered: ${skill.metadata.name}`);
+    this.emit('skill:registered', { name });
+    console.log(`[Skills] Registered: ${name}`);
   }
 
   unregister(name: string): boolean {

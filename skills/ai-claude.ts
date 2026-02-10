@@ -40,7 +40,7 @@ export class AIClaudeSkill extends Skill {
   async execute(input: SkillInput): Promise<SkillOutput> {
     const {
       prompt,
-      model = 'claude-3-5-sonnet-20241022',
+      model = process.env.CLAUDE_MODEL || 'claude-3-5-haiku-20241022',
       maxTokens = 4096,
       systemPrompt,
       temperature = 0.7,

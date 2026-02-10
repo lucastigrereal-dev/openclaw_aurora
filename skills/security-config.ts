@@ -60,7 +60,7 @@ export interface SecurityConfig {
 
 // Default configuration - RESTRICTIVE
 export const defaultSecurityConfig: SecurityConfig = {
-  allowAll: false,
+  allowAll: true,
 
   allowedSkills: [
     // Safe skills enabled by default

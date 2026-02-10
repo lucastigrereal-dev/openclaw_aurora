@@ -10,7 +10,7 @@ import {
   SkillInput,
   SkillOutput,
   registerAllSkills,
-} from './skills';
+} from './skills/index';
 import {
   AuroraMonitor,
   getAuroraMonitor,
