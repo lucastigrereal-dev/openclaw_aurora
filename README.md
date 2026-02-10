@@ -1,357 +1,565 @@
-# Aurora Monitor
+# 🦅 OpenClaw Aurora v2.0
 
-**Sistema de Monitoramento, Embargo e Correção em Tempo Real para Prevenção de Crashes**
+**Sistema Completo de Automação com 38+ Skills, Proteção contra Falhas e Monitoramento em Tempo Real**
 
-Aurora Monitor é um framework Python completo para monitoramento de aplicações em tempo real, com capacidades de auto-healing e proteção contra falhas.
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue)](https://www.typescriptlang.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-22.x-green)](https://nodejs.org/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Status](https://img.shields.io/badge/Status-Production%20Ready-success)](https://github.com)
 
-## Características
+---
 
-- **Coleta de Métricas**: CPU, memória, disco, rede, GC, threads
-- **Detecção de Anomalias**: Algoritmos estatísticos para identificar padrões problemáticos
-- **Circuit Breaker**: Proteção contra falhas em cascata
-- **Rate Limiter**: Controle de taxa de requisições (Token Bucket)
-- **Auto-Healing**: Correção automática de problemas detectados
-- **Watchdog**: Monitoramento de processos e detecção de deadlocks
-- **Alertas**: Notificações via Slack, Email, Webhooks
-- **Dashboard**: Interface web para visualização em tempo real
-- **Logging Estruturado**: Logs em formato JSON com contexto
+## 📋 Índice
 
-## Instalação
+- [O que é?](#o-que-é)
+- [Features](#features)
+- [Início Rápido](#início-rápido)
+- [Documentação](#documentação)
+- [Skills Disponíveis](#skills-disponíveis)
+- [Arquitetura](#arquitetura)
+- [Deployment](#deployment)
+- [Contribuindo](#contribuindo)
+
+---
+
+## 🎯 O que é?
+
+**OpenClaw Aurora** é um sistema completo de automação e orquestração de tarefas com:
+
+- 🤖 **38+ Skills** prontas para usar (IA, automação, analytics, etc)
+- 🔒 **Sistema de Proteção** robusto (circuit breakers, watchdogs)
+- 📊 **Monitoramento** em tempo real com métricas
+- 📱 **Bot Telegram** completo e interativo
+- 🌐 **Dashboard Web** com WebSocket real-time
+- 💻 **CLI Interativo** para desenvolvimento
+- 🚀 **Deploy Automático** (Railway + Vercel)
+
+### Use Cases
+
+✅ Conversar com IAs (Claude, GPT, Ollama)
+✅ Automatizar tarefas do sistema
+✅ Controlar navegador (web scraping, automação)
+✅ Gerenciar arquivos e processos
+✅ Analisar métricas de marketing
+✅ Gerar conteúdo automaticamente
+✅ Executar comandos bash
+✅ Monitorar aplicações
+
+---
+
+## ✨ Features
+
+### 🤖 Inteligência Artificial
+- **Claude** (Anthropic) - Melhor para texto e código
+- **GPT** (OpenAI) - Versátil e poderoso
+- **Ollama** (Local) - Privacidade total, sem custos
+
+### 💻 Automação de Sistema
+- Executar comandos bash
+- Controlar processos
+- Gerenciar arquivos (CRUD completo)
+- Automação de tarefas
+
+### 🌐 Automação Web
+- Controle de navegador (Puppeteer)
+- Web scraping
+- Preenchimento automático de formulários
+- Screenshots e PDFs
+
+### 📊 Analytics & Marketing
+- Análise de ROI
+- Captação de leads
+- Gestão de reviews e reputação
+- Métricas em tempo real
+
+### 🔒 Segurança & Proteção
+- **Circuit Breakers** automáticos
+- **Watchdog Monitoring** 24/7
+- **Aprovação Manual** para ações perigosas
+- **Rate Limiting** configurável
+- **Sandbox Execution** para isolamento
+
+---
+
+## 🚀 Início Rápido
+
+### 1. Clone o Repositório
+```bash
+git clone https://github.com/lucastigrereal-dev/openclaw_aurora.git
+cd openclaw_aurora
+```
+
+### 2. Configure Variáveis de Ambiente
+```bash
+# Copie o template
+cp .env.example .env
+
+# Edite com suas chaves API
+# Mínimo necessário:
+TELEGRAM_BOT_TOKEN=seu_token_aqui
+TELEGRAM_CHAT_ID=seu_chat_id
+ANTHROPIC_API_KEY=sk-ant-api03-xxxxx  # Claude (opcional)
+OPENAI_API_KEY=sk-xxxxx                # GPT (opcional)
+```
+
+### 3. Instale Dependências
+```bash
+npm install
+```
+
+### 4. Inicie o Sistema
+```bash
+# Windows:
+START-AURORA.bat
+
+# Ou via npm:
+npm start
+```
+
+### 5. Teste!
+Envie uma mensagem no Telegram:
+```
+/start
+/skill ai-claude escreva um poema sobre tecnologia
+```
+
+**🎉 Sistema funcionando!**
+
+---
+
+## 📚 Documentação
+
+### 📖 Guias Disponíveis
+
+| Documento | Descrição |
+|-----------|-----------|
+| **[COMECE-AQUI.md](COMECE-AQUI.md)** | 🎯 **COMECE POR AQUI!** Visão geral e início rápido |
+| **[GUIA-RAPIDO.md](GUIA-RAPIDO.md)** | ⚡ Referência rápida para uso diário |
+| **[ARQUITETURA-COMPLETA.md](ARQUITETURA-COMPLETA.md)** | 🏗️ Estrutura completa do sistema |
+| **[FLUXOS-VISUAIS.md](FLUXOS-VISUAIS.md)** | 📊 Diagramas de todos os fluxos |
+
+### 🎓 Por Onde Começar?
+
+```
+Iniciante?
+  └─► Leia COMECE-AQUI.md
+
+Usando no dia-a-dia?
+  └─► Consulte GUIA-RAPIDO.md
+
+Desenvolvendo skills?
+  └─► Veja ARQUITETURA-COMPLETA.md
+
+Entendendo internamente?
+  └─► Estude FLUXOS-VISUAIS.md
+```
+
+---
+
+## 🎯 Skills Disponíveis
+
+### Top 15 Skills
+
+| Skill | Categoria | Descrição |
+|-------|-----------|-----------|
+| **ai-claude** | 🤖 AI | Claude/Anthropic para texto e código |
+| **ai-gpt** | 🤖 AI | OpenAI GPT para tarefas gerais |
+| **ai-ollama** | 🤖 AI | Modelos locais (Llama, Qwen, etc) |
+| **autopc-control** | 💻 Sistema | Controle total do PC |
+| **exec-bash** | 💻 Sistema | Executar comandos bash |
+| **exec-extended** | 💻 Sistema | Comandos avançados |
+| **browser-control** | 🌐 Web | Automação de navegador |
+| **file-ops** | 📁 Arquivo | Operações CRUD de arquivos |
+| **file-ops-advanced** | 📁 Arquivo | Operações avançadas |
+| **comm-telegram** | 📱 Comm | Enviar mensagens Telegram |
+| **content-ia** | ✍️ Conteúdo | Geração de conteúdo com IA |
+| **analytics-roi** | 📊 Analytics | Análise de ROI e métricas |
+| **marketing-captacao** | 📊 Marketing | Captação de leads |
+| **reviews-reputation** | 📊 Marketing | Gestão de reviews |
+| **security-config** | 🔒 Segurança | Configuração segura |
+
+### Categorias Completas
+
+- **AI & LLM**: 3 skills (Claude, GPT, Ollama)
+- **Sistema**: 3 skills (AutoPC, Bash, Extended)
+- **Web & Browser**: 2 skills
+- **Arquivos**: 2 skills
+- **Comunicação**: 1 skill
+- **Marketing & Analytics**: 3 skills
+- **Conteúdo**: 1 skill
+- **Segurança**: 1 skill
+- **Desenvolvimento**: 5 skills
+- **Inteligência**: 2 skills
+
+**Total: 38+ skills ativas!**
+
+Ver lista completa:
+```bash
+npm run skills:list
+```
+
+---
+
+## 🏗️ Arquitetura
+
+### Visão Geral
+
+```
+┌─────────────────────────────────────────────────────┐
+│              INTERFACES                             │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐         │
+│  │ Telegram │  │WebSocket │  │   CLI    │         │
+│  │   Bot    │  │Dashboard │  │  Chat    │         │
+│  └────┬─────┘  └────┬─────┘  └────┬─────┘         │
+└───────┼────────────┼─────────────┼────────────────┘
+        │            │             │
+┌───────┴────────────┴─────────────┴────────────────┐
+│              CORE ENGINE                           │
+│  ┌──────────────────────────────────────────┐     │
+│  │      Skill Executor (Motor Central)      │     │
+│  └─────────┬────────────────────────────────┘     │
+│            │                                       │
+│  ┌─────────┼──────────────┬──────────────┐        │
+│  │         │              │              │        │
+│  ▼         ▼              ▼              ▼        │
+│ Circuit   Aurora       Security      WebSocket    │
+│ Breakers  Monitor      Manager       Bridge       │
+└────────────┬──────────────────────────────────────┘
+             │
+┌────────────┴──────────────────────────────────────┐
+│              38+ SKILLS                            │
+│  AI • Sistema • Web • Arquivos • Marketing •      │
+│  Conteúdo • Segurança • Analytics • Dev           │
+└────────────────────────────────────────────────────┘
+```
+
+### Stack Tecnológica
+
+- **Runtime**: Node.js 22.x
+- **Linguagem**: TypeScript 5.6
+- **Bot**: Grammy (Telegram)
+- **WebSocket**: ws
+- **AI SDKs**: @anthropic-ai/sdk, openai
+- **HTTP**: axios
+- **Build**: tsc (TypeScript Compiler)
+- **Deploy**: Railway (backend) + Vercel (dashboard)
+
+---
+
+## 📱 Uso
+
+### Via Telegram Bot
+
+```
+# Comandos básicos
+/start                    # Iniciar bot
+/help                     # Ver ajuda
+/skills                   # Listar skills
+/status                   # Status do sistema
+
+# Executar skills
+/skill ai-claude escreva sobre IA
+/skill file-ops read /arquivo.txt
+/skill analytics-roi calcular vendas
+
+# Chat com IA
+/chat qual a capital do Brasil?
+
+# Admin
+/metrics                  # Ver métricas
+/circuit                  # Circuit breakers
+/watchdog                 # Health checks
+```
+
+### Via Dashboard Web
 
 ```bash
-# Instalação básica
-pip install aurora-monitor
+# 1. Iniciar sistema
+START-AURORA.bat
 
-# Com suporte completo (psutil para métricas detalhadas)
-pip install aurora-monitor[full]
+# 2. Acessar dashboard
+http://localhost:18789
 
-# Para desenvolvimento
-pip install aurora-monitor[dev]
+# Features:
+• Monitoramento em tempo real
+• Executar skills via UI
+• Ver métricas e logs
+• Status de circuit breakers
 ```
 
-## Uso Rápido
+### Via CLI
 
-```python
-from aurora_monitor import AuroraMonitor, MonitorConfig
+```bash
+npm run cli
 
-# Configuração
-config = MonitorConfig(
-    app_name="minha-aplicacao",
-    environment="production",
-)
-
-# Inicializa e inicia o monitor
-monitor = AuroraMonitor(config)
-monitor.start()
-
-# Registra health checks
-monitor.register_health_check("database", lambda: check_db_connection())
-monitor.register_health_check("redis", lambda: check_redis())
-
-# Cria circuit breaker para API externa
-api_cb = monitor.create_circuit_breaker("api-externa", failure_threshold=3)
-
-@api_cb
-def call_external_api():
-    return requests.get("https://api.exemplo.com/data")
-
-# Cria rate limiter
-rate_limiter = monitor.create_rate_limiter("api", requests_per_second=100)
-
-# Usa no código
-try:
-    result = call_external_api()
-except CircuitBreakerError as e:
-    # Circuito aberto, use cache ou fallback
-    result = get_cached_data()
-
-# Para o monitor ao encerrar
-monitor.stop()
+# Comandos disponíveis:
+> status
+> skills
+> execute ai-claude "hello"
+> metrics
+> exit
 ```
 
-## Componentes
+---
 
-### 1. Coletor de Métricas
+## 🔐 Segurança
 
-```python
-from aurora_monitor.collectors import MetricsCollector
+### Camadas de Proteção
 
-collector = MetricsCollector()
-metrics = collector.collect()
+1. **Autenticação**: Somente admin autorizado (Chat ID)
+2. **Aprovação Manual**: Skills perigosas requerem confirmação
+3. **Circuit Breakers**: Previnem falhas em cascata
+4. **Rate Limiting**: Evitam abuso
+5. **Sandbox**: Execução isolada
+6. **Watchdogs**: Monitoramento 24/7
 
-print(f"CPU: {metrics.cpu_percent}%")
-print(f"Memória: {metrics.memory_percent}%")
-print(f"Disco: {metrics.disk_percent}%")
+### Skills que Requerem Aprovação
+
+- `exec-bash` - Executar comandos do sistema
+- `autopc-control` - Controlar PC
+- `file-ops` (write/delete) - Modificar arquivos
+- `browser-control` - Automação de navegador
+
+---
+
+## 📊 Monitoramento
+
+### Métricas Coletadas
+
+- Total de execuções
+- Taxa de sucesso/falha
+- Tempo médio de resposta
+- P50, P95, P99 latency
+- Estados de circuit breakers
+- Heartbeats e watchdogs
+- Mensagens Telegram/WebSocket
+
+### Ver Métricas
+
+```bash
+# Via Telegram
+/metrics
+
+# Via Dashboard
+http://localhost:18789
+
+# Via CLI
+npm run cli
+> metrics
 ```
 
-### 2. Detector de Anomalias
+---
 
-```python
-from aurora_monitor.detectors import AnomalyDetector
+## 🚀 Deployment
 
-detector = AnomalyDetector()
+### Local (Desenvolvimento)
 
-# Alimenta com métricas
-for metrics in metrics_stream:
-    detector.add_sample(metrics)
-
-    anomalies = detector.detect()
-    for anomaly in anomalies:
-        print(f"Anomalia detectada: {anomaly}")
+```bash
+npm run dev           # Hot reload
+npm run build         # Compilar
+npm start             # Produção
 ```
 
-### 3. Circuit Breaker
+### Railway (Backend)
 
-```python
-from aurora_monitor.protection import CircuitBreaker
+```bash
+# Auto-deploy via GitHub push
+# Arquivo: railway.json
 
-cb = CircuitBreaker(
-    name="api-pagamento",
-    failure_threshold=5,
-    timeout=30.0,
-    fallback=lambda: {"status": "cached"}
-)
-
-@cb
-def processar_pagamento(dados):
-    return api_pagamento.processar(dados)
-
-# Ou com context manager
-with cb:
-    resultado = api_externa.consultar()
+# Ou manual:
+railway login
+railway init
+railway up
 ```
 
-### 4. Rate Limiter
+### Vercel (Dashboard)
 
-```python
-from aurora_monitor.protection import RateLimiter
-
-limiter = RateLimiter(
-    name="api-publica",
-    rate=100,  # requisições por segundo
-    burst=150,
-    per_client_rate=10,
-)
-
-@limiter
-def handle_request():
-    return process_request()
-
-# Com identificação de cliente
-if limiter.acquire(client_id="user123"):
-    process_request()
-else:
-    return "Rate limit exceeded", 429
+```bash
+cd dashboard/
+vercel --prod
 ```
 
-### 5. Auto-Healer
+### Docker
 
-```python
-from aurora_monitor.healing import AutoHealer
-
-healer = AutoHealer()
-
-# Registra cache para limpeza automática
-healer.register_cache(my_lru_cache)
-
-# Registra handler customizado
-healer.register_handler(
-    HealingActionType.CUSTOM,
-    lambda: restart_connection_pool()
-)
-
-# Callback quando healing é executado
-healer.on_heal(lambda action: print(f"Healing: {action}"))
+```bash
+docker build -t openclaw-aurora .
+docker run -p 18789:18789 openclaw-aurora
 ```
 
-### 6. Watchdog
+### PM2 (Process Manager)
 
-```python
-from aurora_monitor.healing import ProcessWatchdog
-
-watchdog = ProcessWatchdog()
-watchdog.start()
-
-# No loop principal
-while running:
-    watchdog.heartbeat()
-    do_work()
-
-# Callback para problemas
-watchdog.on_event(lambda event: logger.error(f"Watchdog: {event}"))
+```bash
+npm install -g pm2
+pm2 start ecosystem.config.cjs
+pm2 save
+pm2 startup
 ```
 
-### 7. Sistema de Alertas
+---
 
-```python
-from aurora_monitor.alerts import AlertManager, AlertLevel
+## 🧪 Desenvolvimento
 
-alerts = AlertManager()
+### Criar Nova Skill
 
-# Envia alerta
-alerts.send(
-    level=AlertLevel.WARNING,
-    title="Alto uso de memória",
-    message="Memória em 85%",
-    source="monitor.metrics"
-)
+```bash
+# Usar scaffolder
+/skill skill-scaffolder criar minha-skill
 
-# Callback para alertas
-alerts.on_alert(lambda a: send_to_pagerduty(a))
+# Ou manualmente
+cd skills/
+cp skill-base.ts minha-skill.ts
 ```
 
-### 8. Dashboard
+### Estrutura de Skill
 
-```python
-from aurora_monitor.dashboard import DashboardServer
+```typescript
+import { SkillDefinition } from './skill-base';
 
-dashboard = DashboardServer(monitor)
-dashboard.start()  # Inicia em http://localhost:8080
-```
+export const minhaSkill: SkillDefinition = {
+  name: 'minha-skill',
+  description: 'O que a skill faz',
+  category: 'ai',
 
-## Configuração
+  requiresApproval: false,
+  isDangerous: false,
 
-### Via código
+  execute: async (context) => {
+    const { params } = context;
 
-```python
-from aurora_monitor import MonitorConfig, MetricsConfig, CircuitBreakerConfig
+    // Sua lógica aqui
+    const result = await minhaFuncao(params);
 
-config = MonitorConfig(
-    app_name="minha-app",
-    environment="production",
-    metrics=MetricsConfig(
-        cpu_threshold=80.0,
-        memory_threshold=85.0,
-        collection_interval=5.0,
-    ),
-    circuit_breaker=CircuitBreakerConfig(
-        failure_threshold=5,
-        timeout=30.0,
-    ),
-)
-```
-
-### Via arquivo JSON
-
-```json
-{
-  "app_name": "minha-app",
-  "environment": "production",
-  "metrics": {
-    "cpu_threshold": 80.0,
-    "memory_threshold": 85.0
-  },
-  "alerts": {
-    "slack_enabled": true,
-    "slack_webhook_url": "https://hooks.slack.com/..."
+    return {
+      success: true,
+      data: result
+    };
   }
-}
+};
 ```
 
-```python
-config = MonitorConfig.from_file("config.json")
-```
-
-### Via variáveis de ambiente
+### Testar
 
 ```bash
-export AURORA_APP_NAME=minha-app
-export AURORA_CPU_THRESHOLD=80
-export AURORA_SLACK_WEBHOOK=https://hooks.slack.com/...
+npm test                  # Todas as skills
+npm run smoke             # Smoke test
+npm run smoke:skills      # Contar skills
 ```
 
-```python
-config = MonitorConfig.from_env()
+---
+
+## 🛠️ Troubleshooting
+
+### Sistema não inicia
+
+```bash
+npm install               # Reinstalar dependências
+npm run build             # Recompilar
+rm -rf dist && npm start  # Limpar e iniciar
 ```
 
-## Integração com Frameworks
+### Telegram não responde
 
-### Flask
+```bash
+# Verificar token
+echo $TELEGRAM_BOT_TOKEN
 
-```python
-from flask import Flask
-from aurora_monitor import AuroraMonitor
+# Verificar internet
+ping api.telegram.org
 
-app = Flask(__name__)
-monitor = AuroraMonitor()
-
-@app.before_first_request
-def start_monitor():
-    monitor.start()
-
-@app.teardown_appcontext
-def stop_monitor(error):
-    monitor.stop()
-
-@app.route("/health")
-def health():
-    results = monitor.run_health_checks()
-    return {"healthy": all(results.values()), "checks": results}
+# Reiniciar
+Ctrl+C
+START-AURORA.bat
 ```
 
-### FastAPI
+### Porta em uso
 
-```python
-from fastapi import FastAPI
-from contextlib import asynccontextmanager
-from aurora_monitor import AuroraMonitor
+```bash
+# Mudar porta no .env
+AURORA_PORT=18790
 
-monitor = AuroraMonitor()
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    monitor.start()
-    yield
-    monitor.stop()
-
-app = FastAPI(lifespan=lifespan)
-
-@app.get("/health")
-def health():
-    return monitor.run_health_checks()
+# Ou matar processo
+netstat -ano | findstr :18789
+taskkill /PID <pid> /F
 ```
 
-## Métricas Expostas
+---
 
-O Aurora Monitor coleta automaticamente:
+## 🤝 Contribuindo
 
-| Métrica | Descrição |
-|---------|-----------|
-| `cpu_percent` | Uso de CPU em porcentagem |
-| `memory_percent` | Uso de memória em porcentagem |
-| `disk_percent` | Uso de disco em porcentagem |
-| `network_bytes_sent` | Bytes enviados pela rede |
-| `network_bytes_recv` | Bytes recebidos pela rede |
-| `process_threads` | Número de threads do processo |
-| `gc_collections` | Número de coletas do GC |
+Contribuições são bem-vindas!
 
-## Arquitetura
+1. Fork o projeto
+2. Crie sua feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        Aurora Monitor                           │
-├─────────────────────────────────────────────────────────────────┤
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
-│  │   Metrics    │  │   Anomaly    │  │    Alert     │          │
-│  │  Collector   │──▶│  Detector    │──▶│   Manager    │          │
-│  └──────────────┘  └──────────────┘  └──────────────┘          │
-│         │                 │                  │                  │
-│         ▼                 ▼                  ▼                  │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
-│  │  Dashboard   │  │ Auto-Healer  │  │   Watchdog   │          │
-│  └──────────────┘  └──────────────┘  └──────────────┘          │
-├─────────────────────────────────────────────────────────────────┤
-│  ┌──────────────┐  ┌──────────────┐                            │
-│  │   Circuit    │  │    Rate      │   Protection Layer          │
-│  │   Breaker    │  │   Limiter    │                            │
-│  └──────────────┘  └──────────────┘                            │
-└─────────────────────────────────────────────────────────────────┘
-```
+---
 
-## Licença
+## 📄 Licença
 
-MIT License - veja [LICENSE](LICENSE) para detalhes.
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
 
-## Contribuindo
+---
 
-Contribuições são bem-vindas! Por favor, leia [CONTRIBUTING.md](CONTRIBUTING.md) para detalhes.
+## 👤 Autor
+
+**Lucas Tigre**
+
+- GitHub: [@lucastigrereal-dev](https://github.com/lucastigrereal-dev)
+- Telegram: [@seu_usuario](https://t.me/seu_usuario)
+
+---
+
+## 🌟 Roadmap
+
+### ✅ v2.0 (Atual)
+- 38+ skills funcionais
+- Circuit breakers
+- Watchdog system
+- Telegram bot completo
+- WebSocket server
+- Documentação completa
+
+### 🚧 v2.1 (Em breve)
+- Dashboard React avançado
+- Multi-user support
+- Database integration (PostgreSQL)
+- Advanced analytics
+
+### 📋 v3.0 (Planejado)
+- Skill marketplace
+- Web UI para criar skills
+- WhatsApp integration
+- Discord integration
+- Auto-scaling
+- Distributed execution
+
+---
+
+## ⭐ Apoie o Projeto
+
+Se este projeto te ajudou, considere:
+
+- ⭐ Dar uma estrela no GitHub
+- 🐛 Reportar bugs
+- 💡 Sugerir features
+- 🤝 Contribuir com código
+
+---
+
+## 📞 Suporte
+
+- **Documentação**: Veja os arquivos `.md` na raiz do projeto
+- **Issues**: [GitHub Issues](https://github.com/lucastigrereal-dev/openclaw_aurora/issues)
+- **Telegram**: Entre em contato via bot
+
+---
+
+**🚀 OpenClaw Aurora - Automação Inteligente ao seu alcance!**
+
+---
+
+**Versão**: 2.0.0
+**Última atualização**: 2026-02-10
+**Status**: ✅ Production Ready
