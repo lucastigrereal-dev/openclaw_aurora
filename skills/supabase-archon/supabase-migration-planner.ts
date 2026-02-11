@@ -399,7 +399,7 @@ export class SupabaseMigrationPlanner extends Skill {
           order: order++,
           type: 'alter',
           sql,
-          rollbackSql: this.generateAlterColumnSQL(change.table, change.targetColumn, change.currentColumn),
+          rollbackSql: this.generateAlterColumnSQL(change.table, change.targetColumn, change.currentColumn) ?? undefined,
           riskLevel: 'high', // Column modifications are risky
           estimatedTime: this.estimateAlterTime(change.table),
           dependencies: [change.table],

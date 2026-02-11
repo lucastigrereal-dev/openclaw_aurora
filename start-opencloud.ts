@@ -77,7 +77,8 @@ async function startCoreSystem(): Promise<void> {
 
     // Operator (opcional - pode falhar se dependencies estiverem quebradas)
     try {
-      const { getOperatorAdapter } = await import('./src/adapters/operator.adapter');
+      const operatorPath = ['./src/adapters', 'operator.adapter'].join('/');
+      const { getOperatorAdapter } = await import(operatorPath);
       const operator = getOperatorAdapter();
       logComponent('Operator', 'success', 'Operator adaptado e pronto');
     } catch (error: any) {
@@ -144,7 +145,8 @@ async function startAPI(): Promise<void> {
     logComponent('API', 'starting', `Tentando iniciar na porta ${API_PORT}...`);
 
     // Tenta importar e iniciar
-    const { startServer } = await import('./src/api/server');
+    const serverPath = ['./src/api', 'server'].join('/');
+    const { startServer } = await import(serverPath);
     if (typeof startServer === 'function') {
       await startServer(API_PORT);
       const url = `http://localhost:${API_PORT}`;

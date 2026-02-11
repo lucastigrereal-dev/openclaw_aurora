@@ -27,7 +27,8 @@ export type SkillCategory =
   | 'WEB'       // Web scraping, APIs
   | 'AI'        // Chamadas a LLMs
   | 'COMM'      // Comunicação (Telegram, Discord, etc)
-  | 'UTIL';     // Utilitários diversos
+  | 'UTIL'      // Utilitários diversos
+  | 'AKASHA';   // Akasha Hub skills
 
 export interface SkillInput {
   [key: string]: any;

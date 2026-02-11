@@ -18,7 +18,8 @@ export * from './util-misc';
 
 // NEW: Extended skills (executor capabilities)
 export * from './exec-extended';
-export * from './browser-control';
+// browser-control excluded: requires puppeteer + DOM types
+// export * from './browser-control';
 export * from './autopc-control';
 export * from './security-config';
 
@@ -54,7 +55,9 @@ import { UtilSleepSkill, UtilDatetimeSkill, UtilUUIDSkill, UtilHashSkill, UtilJS
 
 // NEW: Extended skill imports
 import { execExtendedSkills } from './exec-extended';
-import { browserSkills } from './browser-control';
+// browser-control excluded: requires puppeteer + DOM types
+// import { browserSkills } from './browser-control';
+const browserSkills: any[] = [];
 import { autopcSkills } from './autopc-control';
 import { securityManager, isSkillAllowed } from './security-config';
 
@@ -328,6 +331,7 @@ export const AVAILABLE_SKILLS = [
   { name: 'akasha.query', category: 'AKASHA', description: 'Busca hibrida keyword + semantica', dangerous: false },
   { name: 'akasha.oracle', category: 'AKASHA', description: 'RAG Q&A anti-alucinacao', dangerous: false },
   { name: 'akasha.lock', category: 'AKASHA', description: 'Progress Lock Anti-TDAH', dangerous: false },
+  { name: 'akasha.monitor', category: 'AKASHA', description: 'Painel de controle — status, relatorios, comandos em tempo real', dangerous: false },
 ] as const;
 
 /**

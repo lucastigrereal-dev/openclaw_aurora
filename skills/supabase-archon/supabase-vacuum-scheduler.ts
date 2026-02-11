@@ -186,8 +186,8 @@ export class SupabaseVacuumScheduler extends Skill {
       });
 
       return {
-        success: true,
         ...result,
+        success: true,
         duration,
       };
     } catch (error: any) {

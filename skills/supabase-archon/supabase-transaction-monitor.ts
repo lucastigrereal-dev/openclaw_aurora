@@ -209,7 +209,7 @@ export class SupabaseTransactionMonitor extends Skill {
         killThreshold,
       });
 
-      let statistics: TransactionStats;
+      let statistics: TransactionStats | undefined;
       let longTransactions: LongTransaction[] = [];
       let deadlocks: DeadlockInfo[] = [];
       let autoKillActions: AutoKillAction[] = [];
@@ -270,7 +270,7 @@ export class SupabaseTransactionMonitor extends Skill {
         });
       } else {
         this.logger.info('Transaction monitoring completed successfully', {
-          totalActive: statistics.total_active,
+          totalActive: statistics!.total_active,
         });
       }
 

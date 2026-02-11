@@ -265,7 +265,7 @@ export class SupabaseLockMonitor extends Skill {
       this.lockHistory.set(snapshot.timestamp, snapshot);
       // Limitar histórico a últimas 100 entradas
       if (this.lockHistory.size > 100) {
-        const first = this.lockHistory.keys().next().value;
+        const first = this.lockHistory.keys().next().value!;
         this.lockHistory.delete(first);
       }
 

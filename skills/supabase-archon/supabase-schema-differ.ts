@@ -692,7 +692,7 @@ export class SupabaseSchemaDiffer extends Skill {
    */
   private buildSummary(
     differences: SchemaDifference[]
-  ): SchemaDifferResult['data']['summary'] {
+  ): NonNullable<SchemaDifferResult['data']>['summary'] {
     const byType: Record<string, number> = {};
     const byAction: Record<string, number> = {};
 

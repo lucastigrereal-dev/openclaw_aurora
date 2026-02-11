@@ -248,6 +248,44 @@ export class AkashaLockSkill extends Skill {
 }
 
 // ============================================
+// SKILL: akasha.monitor
+// ============================================
+export class AkashaMonitorSkill extends Skill {
+  constructor() {
+    super({
+      name: 'akasha.monitor',
+      description: 'Painel de controle em tempo real — status, relatorios, comandos do sistema inteiro',
+      version: '1.0.0',
+      category: 'AKASHA',
+      tags: ['akasha', 'monitor', 'dashboard', 'status', 'report', 'control'],
+    }, {
+      timeout: 60000, // 1 min
+      retries: 2,
+    });
+  }
+
+  validate(input: SkillInput): boolean {
+    return true;
+  }
+
+  async execute(input: SkillInput): Promise<SkillOutput> {
+    const command = input.command || input.action || 'status';
+    const args: string[] = [command];
+
+    if (input.limit) args.push('--limit', String(input.limit));
+    if (input.statusFilter) args.push('--status-filter', input.statusFilter);
+    if (input.mimeFilter) args.push('--mime-filter', input.mimeFilter);
+    if (input.niche) args.push('--niche', input.niche);
+    if (input.hours) args.push('--hours', String(input.hours));
+    if (input.json || input.format === 'json') args.push('--json');
+    if (input.compact) args.push('--compact');
+
+    const scriptPath = path.join(AKASHA_BASE, 'monitor', 'monitor.py');
+    return runPython(scriptPath, args, this.config.timeout);
+  }
+}
+
+// ============================================
 // EXPORTS: All Akasha skills as array
 // ============================================
 export const akashaSkills = [
@@ -256,4 +294,5 @@ export const akashaSkills = [
   new AkashaQuerySkill(),
   new AkashaOracleSkill(),
   new AkashaLockSkill(),
+  new AkashaMonitorSkill(),
 ];

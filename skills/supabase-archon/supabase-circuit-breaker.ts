@@ -193,7 +193,7 @@ class CircuitBreakerManager {
           timestamp: new Date().toISOString(),
         };
 
-        this.logger.error('Circuit OPENED', { endpoint, ...alert });
+        this.logger.error('Circuit OPENED', { ...alert });
       }
     }
 
