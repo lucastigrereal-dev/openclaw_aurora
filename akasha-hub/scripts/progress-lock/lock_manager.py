@@ -6,6 +6,13 @@ Forca foco em uma tarefa por vez. Nao deixa trocar ate completar.
 import os
 import json
 from datetime import datetime
+
+from dotenv import load_dotenv
+# Load .env from project root (3 levels up)
+_env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', '.env')
+if os.path.exists(_env_path):
+    load_dotenv(_env_path)
+
 from supabase import create_client
 
 

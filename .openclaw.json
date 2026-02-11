@@ -1,0 +1,232 @@
+{
+  "name": "openclaw_aurora",
+  "description": "OpenClaw Aurora - Sistema SDR integrado com Kommo CRM",
+  "version": "1.0.0",
+
+  "hooks": {
+    "enabled": true,
+    "path": "/hooks",
+    "token": "kRkMC0tsz2vjNzHVLFIuzH_FJGOGOaEqNsRH2relqNs",
+    "transformsDir": "~/.openclaw/hooks",
+    "logsDir": "~/.openclaw/hooks/logs",
+
+    "mappings": [
+      {
+        "id": "kommo-lead-created",
+        "match": {
+          "path": "kommo",
+          "payload.leads.add": { "$exists": true }
+        },
+        "action": "agent",
+        "wakeMode": "now",
+        "name": "Kommo: Novo Lead",
+        "sessionKey": "hook:kommo:lead:{{leads.add[0].id}}",
+        "messageTemplate": "Novo lead criado no Kommo. Processar e registrar no Supabase.",
+        "deliver": false,
+        "model": "anthropic/claude-haiku-4-5-20251001",
+        "thinking": "low",
+        "timeoutSeconds": 30,
+        "transform": {
+          "module": "./transforms/kommo-transform.js",
+          "export": "transformKommo"
+        },
+        "metadata": {
+          "evento": "lead_created",
+          "prioridade": "alta"
+        }
+      },
+
+      {
+        "id": "kommo-lead-updated",
+        "match": {
+          "path": "kommo",
+          "payload.leads.update": { "$exists": true }
+        },
+        "action": "agent",
+        "wakeMode": "now",
+        "name": "Kommo: Lead Atualizado",
+        "sessionKey": "hook:kommo:lead:{{leads.update[0].id}}",
+        "messageTemplate": "Lead atualizado no Kommo. Recalcular score e atualizar Supabase.",
+        "deliver": false,
+        "model": "anthropic/claude-haiku-4-5-20251001",
+        "thinking": "low",
+        "timeoutSeconds": 30,
+        "transform": {
+          "module": "./transforms/kommo-transform.js",
+          "export": "transformKommo"
+        },
+        "metadata": {
+          "evento": "lead_updated",
+          "prioridade": "media"
+        }
+      },
+
+      {
+        "id": "kommo-lead-status-changed",
+        "match": {
+          "path": "kommo",
+          "payload.leads.status": { "$exists": true }
+        },
+        "action": "agent",
+        "wakeMode": "now",
+        "name": "Kommo: Mudança de Estágio",
+        "sessionKey": "hook:kommo:lead:{{leads.status[0].id}}",
+        "messageTemplate": "Lead mudou de estágio no Kommo. Executar workflow correspondente.",
+        "deliver": false,
+        "model": "anthropic/claude-haiku-4-5-20251001",
+        "thinking": "low",
+        "timeoutSeconds": 30,
+        "transform": {
+          "module": "./transforms/kommo-transform.js",
+          "export": "transformKommo"
+        },
+        "metadata": {
+          "evento": "lead_status_changed",
+          "prioridade": "alta"
+        }
+      },
+
+      {
+        "id": "kommo-note-added",
+        "match": {
+          "path": "kommo",
+          "payload.notes.add": { "$exists": true }
+        },
+        "action": "agent",
+        "wakeMode": "now",
+        "name": "Kommo: Nova Nota",
+        "sessionKey": "hook:kommo:note:{{notes.add[0].element_id}}:{{notes.add[0].id}}",
+        "messageTemplate": "Nova nota/mensagem no lead. Classificar intent e decidir ação.",
+        "deliver": false,
+        "model": "anthropic/claude-haiku-4-5-20251001",
+        "thinking": "low",
+        "timeoutSeconds": 30,
+        "transform": {
+          "module": "./transforms/kommo-transform.js",
+          "export": "transformKommo"
+        },
+        "metadata": {
+          "evento": "note_added",
+          "prioridade": "alta"
+        }
+      },
+
+      {
+        "id": "kommo-contact-created",
+        "match": {
+          "path": "kommo",
+          "payload.contacts.add": { "$exists": true }
+        },
+        "action": "agent",
+        "wakeMode": "now",
+        "name": "Kommo: Novo Contato",
+        "sessionKey": "hook:kommo:contact:{{contacts.add[0].id}}",
+        "messageTemplate": "Novo contato criado no Kommo. Enriquecer dados.",
+        "deliver": false,
+        "model": "anthropic/claude-haiku-4-5-20251001",
+        "thinking": "low",
+        "timeoutSeconds": 30,
+        "transform": {
+          "module": "./transforms/kommo-transform.js",
+          "export": "transformKommo"
+        },
+        "metadata": {
+          "evento": "contact_created",
+          "prioridade": "baixa"
+        }
+      },
+
+      {
+        "id": "kommo-contact-updated",
+        "match": {
+          "path": "kommo",
+          "payload.contacts.update": { "$exists": true }
+        },
+        "action": "agent",
+        "wakeMode": "now",
+        "name": "Kommo: Contato Atualizado",
+        "sessionKey": "hook:kommo:contact:{{contacts.update[0].id}}",
+        "messageTemplate": "Contato atualizado no Kommo. Sincronizar dados.",
+        "deliver": false,
+        "model": "anthropic/claude-haiku-4-5-20251001",
+        "thinking": "low",
+        "timeoutSeconds": 30,
+        "transform": {
+          "module": "./transforms/kommo-transform.js",
+          "export": "transformKommo"
+        },
+        "metadata": {
+          "evento": "contact_updated",
+          "prioridade": "baixa"
+        }
+      },
+
+      {
+        "id": "kommo-fallback",
+        "match": {
+          "path": "kommo"
+        },
+        "action": "log",
+        "name": "Kommo: Evento Desconhecido",
+        "logLevel": "warn",
+        "logMessage": "Webhook Kommo recebido mas não correspondeu a nenhum mapping específico.",
+        "metadata": {
+          "evento": "unknown",
+          "prioridade": "baixa"
+        }
+      }
+    ]
+  },
+
+  "agents": {
+    "sdr-kommo": {
+      "name": "SDR Agent - Instituto Rodovanski",
+      "description": "Agente SDR para qualificação de leads do Kommo CRM",
+      "soulPath": "./agents/sdr-kommo/SOUL.md",
+      "model": "anthropic/claude-haiku-4-5-20251001",
+      "thinking": "low",
+      "tools": [
+        "supabase",
+        "kommo-api"
+      ],
+      "env": {
+        "SUPABASE_URL": "${SUPABASE_URL}",
+        "SUPABASE_SERVICE_KEY": "${SUPABASE_SERVICE_KEY}",
+        "KOMMO_DOMAIN": "${KOMMO_DOMAIN}",
+        "KOMMO_ACCESS_TOKEN": "${KOMMO_ACCESS_TOKEN}",
+        "SDR_HORARIO_INICIO": "${SDR_HORARIO_INICIO}",
+        "SDR_HORARIO_FIM": "${SDR_HORARIO_FIM}",
+        "SDR_TIMEZONE": "${SDR_TIMEZONE}"
+      },
+      "maxTurns": 5,
+      "timeoutSeconds": 60
+    }
+  },
+
+  "gateway": {
+    "port": 18789,
+    "host": "0.0.0.0",
+    "cors": {
+      "enabled": true,
+      "origins": ["*"]
+    },
+    "rateLimit": {
+      "enabled": true,
+      "max": 100,
+      "windowMs": 900000
+    }
+  },
+
+  "logging": {
+    "level": "info",
+    "outputs": [
+      {
+        "type": "file",
+        "path": "~/.openclaw/logs/gateway.log"
+      },
+      {
+        "type": "console"
+      }
+    ]
+  }
+}

@@ -7,6 +7,13 @@ Anti-alucinacao: so responde com base nos documentos encontrados.
 import os
 import json
 from datetime import datetime
+
+from dotenv import load_dotenv
+# Load .env from project root (3 levels up)
+_env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', '.env')
+if os.path.exists(_env_path):
+    load_dotenv(_env_path)
+
 from openai import OpenAI
 
 # Import do query engine (mesmo diretorio)
@@ -53,7 +60,7 @@ FORMATO DA RESPOSTA:
             return self.MODELS[complexity]
         return self.MODELS[self.default_model]
 
-    def _build_context(self, search_results: list, max_chars: int = 8000) -> str:
+    def _build_context(self, search_results: list, max_chars: int = 16000) -> str:
         """Constroi contexto dos documentos encontrados."""
         if not search_results:
             return "NENHUM DOCUMENTO RELEVANTE ENCONTRADO."

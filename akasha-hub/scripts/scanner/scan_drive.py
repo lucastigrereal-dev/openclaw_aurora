@@ -13,6 +13,12 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Optional
 
+from dotenv import load_dotenv
+# Load .env from project root (3 levels up)
+_env_path = Path(__file__).resolve().parents[3] / '.env'
+if _env_path.exists():
+    load_dotenv(_env_path)
+
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
@@ -93,6 +99,92 @@ class DriveScanner:
         """Map MIME type to file_type"""
         return MIME_MAP.get(mime_type, 'other')
 
+    def scan_shared_with_me(self, batch_size: int = 50, recursive: bool = True,
+                           dry_run: bool = False) -> Dict:
+        """Scan 'Shared with me' files and folders."""
+        print(f"\n📂 Scanning 'Shared with me'")
+        print(f"   Recursive: {recursive} | Batch: {batch_size} | Dry run: {dry_run}\n")
+
+        all_files = []
+        page_token = None
+
+        while True:
+            response = self.service.files().list(
+                q="sharedWithMe = true and trashed = false",
+                pageSize=batch_size,
+                pageToken=page_token,
+                fields="nextPageToken, files(id, name, mimeType, size, md5Checksum, modifiedTime, parents)",
+                includeItemsFromAllDrives=True,
+                supportsAllDrives=True,
+            ).execute()
+
+            files = response.get('files', [])
+
+            for file in files:
+                self.stats["scanned"] += 1
+
+                if file['id'] in self.checkpoint.get("scanned_ids", []):
+                    self.stats["duplicates"] += 1
+                    continue
+
+                # Recurse into shared folders
+                if file['mimeType'] == 'application/vnd.google-apps.folder':
+                    print(f"   📁 Shared folder: {file['name']}")
+                    if recursive:
+                        sub_result = self.scan_folder(file['id'], recursive, batch_size, dry_run)
+                        all_files.extend(sub_result.get("files", []))
+                    continue
+
+                file_type = self._classify_mime(file['mimeType'])
+                name = file['name']
+                ext = name.rsplit('.', 1)[-1].lower() if '.' in name else ''
+
+                file_record = {
+                    "file_name": name,
+                    "file_path": f"gdrive://{file['id']}/{name}",
+                    "file_ext": ext,
+                    "mime_type": file['mimeType'],
+                    "file_size_bytes": int(file.get('size', 0)),
+                    "file_hash": file.get('md5Checksum'),
+                    "file_modified_at": file.get('modifiedTime'),
+                    "gdrive_id": file['id'],
+                    "gdrive_parent_id": (file.get('parents') or ['shared'])[0],
+                    "status": "cataloged"
+                }
+
+                all_files.append(file_record)
+                self.stats["new"] += 1
+                self.checkpoint.setdefault("scanned_ids", []).append(file['id'])
+
+                size_mb = int(file.get('size', 0)) / 1024 / 1024
+                print(f"   📄 {name} ({file_type}, {size_mb:.1f}MB)")
+
+            page_token = response.get('nextPageToken')
+            if not page_token:
+                break
+
+        # Batch insert
+        if all_files and not dry_run:
+            for i in range(0, len(all_files), 100):
+                batch = all_files[i:i+100]
+                try:
+                    self.supabase.table("files").upsert(
+                        batch, on_conflict="gdrive_id"
+                    ).execute()
+                except Exception as e:
+                    print(f"   ❌ Batch insert error: {e}")
+                    self.stats["errors"] += 1
+
+        self._save_checkpoint()
+
+        print(f"\n📊 SHARED SCAN SUMMARY")
+        print(f"   Scanned: {self.stats['scanned']}")
+        print(f"   New: {self.stats['new']}")
+        print(f"   Duplicates: {self.stats['duplicates']}")
+        print(f"   Errors: {self.stats['errors']}")
+
+        return {"files": all_files, "stats": self.stats}
+
     def scan_folder(self, folder_id: str = "root", recursive: bool = True,
                     batch_size: int = 50, dry_run: bool = False) -> Dict:
         """
@@ -111,7 +203,9 @@ class DriveScanner:
                 q=query,
                 pageSize=batch_size,
                 pageToken=page_token,
-                fields="nextPageToken, files(id, name, mimeType, size, md5Checksum, modifiedTime, parents)"
+                fields="nextPageToken, files(id, name, mimeType, size, md5Checksum, modifiedTime, parents)",
+                includeItemsFromAllDrives=True,
+                supportsAllDrives=True,
             ).execute()
 
             files = response.get('files', [])
@@ -133,15 +227,20 @@ class DriveScanner:
 
                 file_type = self._classify_mime(file['mimeType'])
 
+                # Extract file extension
+                name = file['name']
+                ext = name.rsplit('.', 1)[-1].lower() if '.' in name else ''
+
                 file_record = {
-                    "filename": file['name'],
-                    "file_path": f"gdrive://{file['id']}/{file['name']}",
-                    "file_size": int(file.get('size', 0)),
-                    "file_type": file_type,
+                    "file_name": name,
+                    "file_path": f"gdrive://{file['id']}/{name}",
+                    "file_ext": ext,
+                    "mime_type": file['mimeType'],
+                    "file_size_bytes": int(file.get('size', 0)),
                     "file_hash": file.get('md5Checksum'),
-                    "modified_date": file.get('modifiedTime'),
-                    "drive_file_id": file['id'],
-                    "drive_parent_id": folder_id,
+                    "file_modified_at": file.get('modifiedTime'),
+                    "gdrive_id": file['id'],
+                    "gdrive_parent_id": folder_id,
                     "status": "cataloged"
                 }
 
@@ -164,7 +263,7 @@ class DriveScanner:
                 try:
                     self.supabase.table("files").upsert(
                         batch,
-                        on_conflict="file_path"
+                        on_conflict="gdrive_id"
                     ).execute()
                 except Exception as e:
                     print(f"   ❌ Batch insert error: {e}")
@@ -193,7 +292,7 @@ class DriveScanner:
 
         print("\n📁 Por tipo:")
         for ftype in ['pdf', 'video', 'audio', 'text', 'image', 'document', 'other']:
-            count = self.supabase.table("files").select("id", count="exact").eq("file_type", ftype).execute()
+            count = self.supabase.table("files").select("id", count="exact").eq("mime_type", ftype).execute()
             if count.count > 0:
                 print(f"   {ftype}: {count.count}")
 
@@ -207,6 +306,7 @@ def main():
     parser.add_argument("--dry-run", action="store_true", help="Preview only")
     parser.add_argument("--stats", action="store_true", help="Show catalog stats")
     parser.add_argument("--no-recursive", action="store_true", help="Don't scan subfolders")
+    parser.add_argument("--shared", action="store_true", help="Scan 'Shared with me' files")
 
     args = parser.parse_args()
 
@@ -216,12 +316,19 @@ def main():
         scanner.show_stats()
         return
 
-    scanner.scan_folder(
-        folder_id=args.folder_id,
-        recursive=not args.no_recursive,
-        batch_size=args.batch_size,
-        dry_run=args.dry_run
-    )
+    if args.shared:
+        scanner.scan_shared_with_me(
+            batch_size=args.batch_size,
+            recursive=not args.no_recursive,
+            dry_run=args.dry_run
+        )
+    else:
+        scanner.scan_folder(
+            folder_id=args.folder_id,
+            recursive=not args.no_recursive,
+            batch_size=args.batch_size,
+            dry_run=args.dry_run
+        )
 
 
 if __name__ == "__main__":

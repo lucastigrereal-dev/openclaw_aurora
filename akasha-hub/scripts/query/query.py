@@ -1,10 +1,21 @@
 #!/usr/bin/env python3
 """
 Akasha Query Engine
-Busca hibrida: keyword (trigram) + semantica (pgvector) + fusao RRF.
+Busca hibrida: keyword (ILIKE) + semantica (pgvector) + fusao RRF.
+
+Schema real:
+  files: id, file_name, file_ext, mime_type, file_size_bytes, niche, ...
+  file_content: id, file_id, content_type, content, word_count, extraction_method, ...
+  file_embeddings: id, file_id, chunk_index, chunk_text, embedding, model, ...
 """
 import os
 import json
+
+from dotenv import load_dotenv
+_env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', '.env')
+if os.path.exists(_env_path):
+    load_dotenv(_env_path)
+
 from openai import OpenAI
 from supabase import create_client
 
@@ -33,34 +44,34 @@ class AkashaQuery:
         return response.data[0].embedding
 
     def search_keyword(self, query: str, limit: int = 20) -> list:
-        """Busca por keyword usando ILIKE."""
+        """Busca por keyword usando ILIKE no file_content.content."""
         content_results = self.supabase.table("file_content").select(
-            "file_id, content_text, content_summary, metadata"
-        ).ilike("content_text", f"%{query}%").limit(limit).execute()
+            "file_id, content, content_type"
+        ).ilike("content", f"%{query}%").limit(limit).execute()
 
         results = []
         for r in (content_results.data or []):
             # Get file info
             file_info = self.supabase.table("files").select(
-                "filename, file_type, file_size"
+                "file_name, mime_type, file_size_bytes, niche"
             ).eq("id", r["file_id"]).limit(1).execute()
 
             fname = file_info.data[0] if file_info.data else {}
 
             results.append({
                 "file_id": r["file_id"],
-                "filename": fname.get("filename", "unknown"),
-                "file_type": fname.get("file_type", "unknown"),
-                "snippet": self._extract_snippet(r.get("content_text", ""), query),
+                "filename": fname.get("file_name", "unknown"),
+                "file_type": fname.get("mime_type", "unknown"),
+                "niche": fname.get("niche", ""),
+                "snippet": self._extract_snippet(r.get("content", ""), query),
                 "score": 0.5,
                 "match_type": "keyword",
-                "metadata": r.get("metadata", {}),
             })
 
         return results
 
     def search_semantic(self, query: str, limit: int = 20, threshold: float = 0.3) -> list:
-        """Busca semantica via pgvector."""
+        """Busca semantica via pgvector (file_embeddings)."""
         query_embedding = self._get_embedding(query)
 
         results = self.supabase.rpc("search_embeddings", {
@@ -74,12 +85,11 @@ class AkashaQuery:
 
         return [{
             "file_id": r.get("file_id"),
-            "filename": r.get("filename", "unknown"),
-            "file_type": r.get("file_type", "unknown"),
-            "snippet": (r.get("chunk_text", "") or "")[:300],
+            "filename": r.get("file_name", "unknown"),
+            "file_type": r.get("mime_type", "unknown"),
+            "snippet": (r.get("chunk_text", "") or "")[:2000],
             "score": round(r.get("similarity", 0), 4),
             "match_type": "semantic",
-            "metadata": r.get("metadata", {}),
         } for r in results.data]
 
     def search_hybrid(self, query: str, limit: int = 10,
@@ -122,7 +132,7 @@ class AkashaQuery:
 
         return final
 
-    def _extract_snippet(self, content: str, query: str, context: int = 150) -> str:
+    def _extract_snippet(self, content: str, query: str, context: int = 500) -> str:
         """Extrai snippet ao redor da primeira ocorrencia da query."""
         if not content:
             return ""
@@ -161,7 +171,7 @@ class AkashaQuery:
         if not results:
             return "Nenhum resultado encontrado."
 
-        lines = [f"🔍 {len(results)} resultados encontrados\n{'─' * 50}"]
+        lines = [f"{len(results)} resultados encontrados\n{'─' * 50}"]
 
         for i, r in enumerate(results, 1):
             score = r.get("rrf_score") or r.get("score", 0)
@@ -169,24 +179,15 @@ class AkashaQuery:
             filename = r.get("filename", "unknown")
             file_type = r.get("file_type", "?")
 
-            lines.append(f"\n{i}. 📄 {filename} [{file_type}]")
+            lines.append(f"\n{i}. {filename} [{file_type}]")
             lines.append(f"   Score: {score:.4f} | Match: {match_type}")
 
             if verbose and r.get("snippet"):
                 snippet = r["snippet"][:200].replace("\n", " ")
                 lines.append(f"   Preview: {snippet}")
 
-            meta = r.get("metadata", {})
-            if isinstance(meta, str):
-                try:
-                    meta = json.loads(meta)
-                except (json.JSONDecodeError, TypeError):
-                    meta = {}
-
-            if meta.get("primary_niche"):
-                tier = meta.get("priority_tier", "")
-                niche = meta.get("primary_niche", "")
-                lines.append(f"   {tier} | Niche: {niche}")
+            if r.get("niche"):
+                lines.append(f"   Niche: {r['niche']}")
 
         return "\n".join(lines)
 

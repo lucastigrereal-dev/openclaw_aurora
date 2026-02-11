@@ -1,0 +1,157 @@
+================================
+🚀 INTEGRAÇÃO KOMMO → AURORA
+================================
+
+STATUS: ✅ IMPLEMENTAÇÃO COMPLETA
+Aguardando: Você configurar credenciais OAuth + Supabase
+
+================================
+📂 ARQUIVOS CRIADOS (12 TOTAL)
+================================
+
+✅ Configuração:
+   - .openclaw.json
+   - .env.kommo (PREENCHER credenciais)
+   - .env.kommo.example
+
+✅ Transform & Hooks:
+   - ~/.openclaw/hooks/transforms/kommo-transform.js
+
+✅ Agent:
+   - agents/sdr-kommo/SOUL.md
+
+✅ Database:
+   - supabase/migrations/20260211_kommo_integration.sql
+
+✅ Scripts:
+   - scripts/test-kommo-webhook.sh
+   - scripts/get-kommo-pipeline-ids.js
+
+✅ Documentação:
+   - README_KOMMO_INTEGRATION.md (LEIA PRIMEIRO)
+   - docs/GUIA_OAUTH_KOMMO.md
+   - docs/CHECKLIST_INTEGRACAO_KOMMO.md
+   - COMECE_AQUI_KOMMO.txt (este arquivo)
+
+================================
+⚡ PRÓXIMOS PASSOS (3 AÇÕES)
+================================
+
+1️⃣ CONFIGURAR OAUTH NO KOMMO (~10 min)
+
+   Abrir: docs/GUIA_OAUTH_KOMMO.md
+
+   Resumo:
+   - Acessar: https://rodovanski.kommo.com → Integrações
+   - Criar app: "OpenClaw Aurora SDR"
+   - Anotar: CLIENT_ID, CLIENT_SECRET, ACCESS_TOKEN, REFRESH_TOKEN
+   - Preencher no arquivo: .env.kommo
+
+---
+
+2️⃣ EXTRAIR PIPELINE IDS (~2 min)
+
+   Comando:
+   $ node scripts/get-kommo-pipeline-ids.js
+
+   Isso vai gerar: .env.kommo.pipeline_ids
+   Copiar variáveis para: .env.kommo
+
+---
+
+3️⃣ CONFIGURAR SUPABASE (~5 min)
+
+   - Criar projeto: https://supabase.com
+   - Anotar: SUPABASE_URL e SUPABASE_SERVICE_KEY
+   - Rodar migration: supabase/migrations/20260211_kommo_integration.sql
+     (via SQL Editor no Dashboard ou via CLI)
+   - Preencher no arquivo: .env.kommo
+
+================================
+✅ DEPOIS DE CONFIGURAR
+================================
+
+Testar localmente:
+
+$ source .env.kommo
+$ openclaw gateway start
+$ ./scripts/test-kommo-webhook.sh
+
+Ver logs:
+$ tail -f ~/.openclaw/logs/gateway.log
+
+Verificar Supabase:
+SELECT * FROM kommo_eventos ORDER BY created_at DESC LIMIT 10;
+
+================================
+📖 DOCUMENTAÇÃO COMPLETA
+================================
+
+README PRINCIPAL:
+→ README_KOMMO_INTEGRATION.md
+
+GUIA OAUTH (passo-a-passo):
+→ docs/GUIA_OAUTH_KOMMO.md
+
+CHECKLIST COMPLETO:
+→ docs/CHECKLIST_INTEGRACAO_KOMMO.md
+
+================================
+💡 DICA RÁPIDA
+================================
+
+Se tiver só 5 minutos agora:
+1. Ler: README_KOMMO_INTEGRATION.md
+2. Seguir Quick Start (5 passos)
+
+Se tiver mais tempo:
+1. Seguir: docs/CHECKLIST_INTEGRACAO_KOMMO.md
+   (4 fases completas)
+
+================================
+🎯 O QUE VAI ACONTECER
+================================
+
+Depois de configurar tudo:
+
+1. Lead criado no Kommo
+   ↓
+2. Kommo envia webhook → Aurora
+   ↓
+3. Aurora processa (Haiku 4.5)
+   ├─ Calcula score (0-100)
+   ├─ Classifica urgência
+   └─ Detecta escalação
+   ↓
+4. Salva tudo no Supabase
+   ├─ kommo_leads
+   ├─ kommo_eventos
+   └─ kommo_interacoes
+
+Custo: ~$2-3/mês (15 leads/dia)
+Modelo: claude-haiku-4-5 (econômico + rápido)
+
+================================
+🐛 PROBLEMAS?
+================================
+
+Verificar:
+1. Logs: tail -f ~/.openclaw/logs/gateway.log
+2. Checklist: docs/CHECKLIST_INTEGRACAO_KOMMO.md
+3. Troubleshooting: README_KOMMO_INTEGRATION.md → seção "🐛"
+
+================================
+📞 RESUMO FINAL
+================================
+
+✅ Código: 100% implementado
+⏳ Faltam: Credenciais (Kommo OAuth + Supabase)
+
+Tempo estimado para configurar: ~20 minutos
+Tempo estimado para testar: ~10 minutos
+
+Total até deploy produção: ~1 hora
+
+================================
+FIM - BOM TRABALHO! 🎉
+================================
