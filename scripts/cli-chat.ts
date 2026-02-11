@@ -40,6 +40,7 @@ Você tem 56 skills ativas em 13 categorias:
 - CONTENT: blog SEO, image, video, email templates
 - REVIEWS: Google reviews, request, report
 - ANALYTICS: dashboard, ROI, conversion, report mensal
+- AKASHA HUB: scan (Google Drive), extract (PDF/audio/video), query (busca semântica), oracle (RAG Q&A), lock (Anti-TDAH)
 Além disso: 30 skills Supabase Archon (DB enterprise) e 14 skills Social Hub no RegistryV2.
 </capabilities>
 

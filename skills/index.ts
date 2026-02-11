@@ -35,6 +35,9 @@ export * from './sandbox-runner';
 export * from './skill-scaffolder';
 export * from './intent-router';
 
+// NEW: Akasha Hub skills
+export * from './akasha-hub';
+
 // NEW: Supabase Archon skills
 export * from './supabase-archon/supabase-archon-index';
 
@@ -64,6 +67,9 @@ import { analyticsSkills } from './analytics-roi';
 
 // EVOLUTION: Phase 2 imports
 import { getSkillRegistryV2, buildSpecFromAvailable } from './registry-v2';
+
+// NEW: Akasha Hub imports
+import { akashaSkills } from './akasha-hub';
 
 // NEW: Supabase Archon imports
 import { registerSupabaseArchonSkills } from './supabase-archon/supabase-archon-index';
@@ -146,6 +152,12 @@ export function registerAllSkills(registry?: SkillRegistry): SkillRegistry {
     } else {
       console.log(`[Skills] Skipped (blocked): ${skill.name}`);
     }
+  });
+
+  // NEW: Akasha Hub Skills
+  console.log('[Skills] Registering akasha hub skills...');
+  akashaSkills.forEach(skill => {
+    reg.register(skill as any);
   });
 
   // NEW: Supabase Archon Skills
@@ -309,6 +321,13 @@ export const AVAILABLE_SKILLS = [
   { name: 'analytics.roi', category: 'ANALYTICS', description: 'Calcula ROI por canal', dangerous: false },
   { name: 'analytics.conversion', category: 'ANALYTICS', description: 'Taxa de conversao', dangerous: false },
   { name: 'analytics.report', category: 'ANALYTICS', description: 'Relatorio mensal', dangerous: false },
+
+  // AKASHA HUB
+  { name: 'akasha.scan', category: 'AKASHA', description: 'Escaneia Google Drive e cataloga no Supabase', dangerous: false },
+  { name: 'akasha.extract', category: 'AKASHA', description: 'Extrai texto e classifica conteudo', dangerous: false },
+  { name: 'akasha.query', category: 'AKASHA', description: 'Busca hibrida keyword + semantica', dangerous: false },
+  { name: 'akasha.oracle', category: 'AKASHA', description: 'RAG Q&A anti-alucinacao', dangerous: false },
+  { name: 'akasha.lock', category: 'AKASHA', description: 'Progress Lock Anti-TDAH', dangerous: false },
 ] as const;
 
 /**
