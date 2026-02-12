@@ -8,26 +8,70 @@ import { Bot, Context } from 'grammy';
 import { getSkillExecutor, SkillExecutor } from './skill-executor';
 import { getAuroraMonitor, AuroraMonitor } from './aurora-openclaw-integration';
 import { AVAILABLE_SKILLS } from './skills';
+import { SecurityManager } from './skills/security-config';
 
-// Stub de securityManager (original não existe na nova estrutura)
-const securityManager = {
-  addAllowedUser: (userId: string) => {},
-  isSkillAllowed: (skillName: string) => true,
-  getConfig: () => ({
-    allowAll: false,
-    blockedSkills: [],
-    allowedUsers: [],
-    allowedSkills: [],
-    requireConfirmation: false,
-    browser: { headless: true, blockedDomains: [] },
-    autopc: { enabled: true },
-    exec: { allowSudo: false, maxTimeout: 30000 }
-  }),
-  enableSkill: (skillName: string) => {},
-  disableSkill: (skillName: string) => {},
-  enableDevMode: () => {},
-  resetToDefault: () => {},
-};
+// ============================================================================
+// SECURITY MANAGER - Real Implementation
+// ============================================================================
+const securityManager = new SecurityManager({
+  allowAll: false, // Modo seguro: apenas skills permitidas
+  requireConfirmation: true, // Habilitar confirmação para skills perigosas
+
+  allowedSkills: [
+    // EXEC (controlado)
+    'exec.bash', 'exec.powershell', 'exec.python', 'exec.node',
+
+    // AI
+    'ai.claude', 'ai.gpt', 'ai.ollama',
+
+    // FILE (seguro)
+    'file.read', 'file.write', 'file.list', 'file.delete', 'file.edit',
+
+    // COMM
+    'comm.telegram.send', 'comm.telegram.getUpdates',
+
+    // WEB
+    'web.fetch', 'web.scrape', 'web.search',
+
+    // UTIL
+    'util.sleep', 'util.datetime', 'util.uuid', 'util.hash', 'util.json',
+
+    // MARKETING
+    'marketing.landing', 'marketing.leads', 'marketing.funnel',
+
+    // SOCIAL HUB (16 skills)
+    'social-hub-orchestrator', 'social-hub-caption-ai', 'social-hub-hashtag-ai',
+    'social-hub-publer', 'social-hub-planner', 'social-hub-inventory',
+    'social-hub-analytics', 'social-hub-approval-workflow',
+    'social-hub-profile-manager', 'social-hub-content-optimizer',
+    'social-hub-quota-enforcer', 'social-hub-recycler',
+    'social-hub-trend-detector', 'social-hub-competitor-monitor',
+    'social-hub-caption-variations', 'social-hub-performance-predictor',
+
+    // AKASHA HUB (5 skills)
+    'akasha.scan', 'akasha.extract', 'akasha.query', 'akasha.oracle', 'akasha.embed',
+  ],
+
+  blockedSkills: [
+    // Skills perigosas bloqueadas
+    'exec.sudo',
+    'autopc.click', 'autopc.move', 'autopc.type', 'autopc.press',
+    'browser.open', 'browser.click',
+  ],
+
+  exec: {
+    allowSudo: false,
+    maxTimeout: 60000, // 60 segundos max
+    blockedCommands: [],
+    allowedCommands: null,
+  },
+
+  autopc: {
+    enabled: false, // Desabilitado por segurança
+    allowedWindows: null,
+    blockedWindows: [],
+  },
+});
 
 // ============================================================================
 // CONFIGURAÇÃO

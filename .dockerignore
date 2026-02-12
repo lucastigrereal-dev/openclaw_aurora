@@ -1,0 +1,95 @@
+# ==============================================================================
+# .dockerignore - Arquivos ignorados no build do Docker
+# ==============================================================================
+
+# Node
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Dashboard (se for buildado separadamente)
+dashboard/node_modules
+dashboard/dist
+dashboard/.next
+
+# TypeScript
+*.ts
+!*.d.ts
+tsconfig.json
+tsconfig.*.json
+
+# Source maps
+*.map
+
+# Tests
+tests/
+*.test.ts
+*.test.js
+*.spec.ts
+*.spec.js
+__tests__/
+coverage/
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.circleci/
+
+# Documentação
+*.md
+!README.md
+docs/
+*.txt
+
+# Desenvolvimento
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+
+# Logs
+logs/
+*.log
+
+# Ambiente
+.env.local
+.env.development
+.env.test
+
+# Temp files
+tmp/
+temp/
+*.tmp
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Backups
+*.bak
+*.backup
+*~
+
+# Archives
+*.zip
+*.tar.gz
+*.rar
+
+# Python (se houver scripts auxiliares)
+__pycache__/
+*.py[cod]
+*.pyo
+venv/
+.venv/
+
+# Diretórios de data/cache (não devem ir pro container)
+.cache/
+aurora_monitor/
+scripts/
