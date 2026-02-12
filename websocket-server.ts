@@ -62,7 +62,7 @@ export class DashboardWebSocketServer {
     }
   }
 
-  start(port: number): void {
+  start(port: number, retries: number = 3): void {
     // Cria servidor HTTP para suportar paths
     const server = createServer((req, res) => {
       // Enable CORS
@@ -217,8 +217,25 @@ export class DashboardWebSocketServer {
     // WebSocket aceita conexões em / ou /api/v1/ws
     this.wss = new WebSocketServer({ server });
 
+    // Tratamento de erro de porta em uso
+    server.on('error', (error: NodeJS.ErrnoException) => {
+      if (error.code === 'EADDRINUSE') {
+        console.error(`[WebSocket] ❌ Porta ${port} em uso!`);
+        if (retries > 0) {
+          const newPort = port + 1;
+          console.log(`[WebSocket] 🔄 Tentando porta ${newPort}... (${retries} tentativas restantes)`);
+          setTimeout(() => this.start(newPort, retries - 1), 1000);
+        } else {
+          console.error('[WebSocket] ❌ Todas as tentativas falharam. Verifique se há outro processo usando a porta.');
+          console.error('[WebSocket] 💡 Execute: fuser -k 18789/tcp && fuser -k 18790/tcp');
+        }
+      } else {
+        console.error(`[WebSocket] ❌ Erro no servidor: ${error.message}`);
+      }
+    });
+
     server.listen(port, () => {
-      console.log(`[WebSocket] Server started on port ${port}`);
+      console.log(`[WebSocket] ✅ Server started on port ${port}`);
       console.log(`[WebSocket] Accepts: ws://localhost:${port} or ws://localhost:${port}/api/v1/ws`);
       console.log(`[WebSocket] Chat and commands enabled`);
     });
