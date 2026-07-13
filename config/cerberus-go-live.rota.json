@@ -1,0 +1,138 @@
+{
+  "id": "rota-das-aguas-go-live-v1",
+  "name": "Rota das Águas — Portal + CRM + Leads",
+  "version": "1.0.0",
+  "tracks": [
+    {
+      "id": "portal",
+      "title": "Portal Rota das Águas",
+      "steps": [
+        {
+          "id": "portal.audit",
+          "title": "Auditar build, testes e estado do portal",
+          "skill": "exec.powershell",
+          "input": {
+            "command": "if (-not $env:ROTA_PORTAL_REPO) { throw 'ROTA_PORTAL_REPO não configurado' }; Set-Location $env:ROTA_PORTAL_REPO; git status --short; pnpm install --ignore-workspace --no-frozen-lockfile; pnpm run audit",
+            "timeout": 1800000
+          },
+          "maxAttempts": 1,
+          "evidenceKeys": ["stdout"]
+        },
+        {
+          "id": "portal.deploy",
+          "title": "Publicar portal no provedor aprovado",
+          "skill": "exec.powershell",
+          "input": {
+            "command": "if (-not $env:ROTA_PORTAL_REPO) { throw 'ROTA_PORTAL_REPO não configurado' }; if (-not $env:ROTA_PORTAL_DEPLOY_COMMAND) { throw 'ROTA_PORTAL_DEPLOY_COMMAND não configurado' }; Set-Location $env:ROTA_PORTAL_REPO; Invoke-Expression $env:ROTA_PORTAL_DEPLOY_COMMAND",
+            "timeout": 1800000
+          },
+          "dependsOn": ["portal.audit"],
+          "requiresApproval": true,
+          "maxAttempts": 1,
+          "evidenceKeys": ["stdout"]
+        },
+        {
+          "id": "portal.verify",
+          "title": "Validar URL pública e resposta HTTP",
+          "skill": "exec.powershell",
+          "input": {
+            "command": "if (-not $env:ROTA_PORTAL_PUBLIC_URL) { throw 'ROTA_PORTAL_PUBLIC_URL não configurado' }; $response = Invoke-WebRequest -UseBasicParsing -Uri $env:ROTA_PORTAL_PUBLIC_URL -TimeoutSec 60; if ($response.StatusCode -ne 200) { throw ('Portal retornou HTTP ' + $response.StatusCode) }; @{ url = $env:ROTA_PORTAL_PUBLIC_URL; status = $response.StatusCode } | ConvertTo-Json -Compress",
+            "timeout": 120000
+          },
+          "dependsOn": ["portal.deploy"],
+          "maxAttempts": 2,
+          "evidenceKeys": ["stdout"]
+        }
+      ]
+    },
+    {
+      "id": "crm",
+      "title": "CRM Tigre",
+      "steps": [
+        {
+          "id": "crm.audit",
+          "title": "Auditar CRM, Supabase e testes locais",
+          "skill": "exec.powershell",
+          "input": {
+            "command": "if (-not $env:TIGRE_CRM_REPO) { throw 'TIGRE_CRM_REPO não configurado' }; Set-Location $env:TIGRE_CRM_REPO; npm install; npm run verify",
+            "timeout": 1800000
+          },
+          "maxAttempts": 1,
+          "evidenceKeys": ["stdout"]
+        },
+        {
+          "id": "crm.production",
+          "title": "Verificar produção do CRM",
+          "skill": "exec.powershell",
+          "input": {
+            "command": "$url = if ($env:TIGRE_CRM_PUBLIC_URL) { $env:TIGRE_CRM_PUBLIC_URL } else { 'https://tigre-digital-dash.pages.dev' }; $response = Invoke-WebRequest -UseBasicParsing -Uri $url -TimeoutSec 60; if ($response.StatusCode -ne 200) { throw ('CRM retornou HTTP ' + $response.StatusCode) }; @{ url = $url; status = $response.StatusCode } | ConvertTo-Json -Compress",
+            "timeout": 120000
+          },
+          "maxAttempts": 2,
+          "evidenceKeys": ["stdout"]
+        },
+        {
+          "id": "crm.import",
+          "title": "Importar lote validado no CRM",
+          "skill": "exec.powershell",
+          "input": {
+            "command": "if (-not $env:TIGRE_CRM_IMPORT_COMMAND) { throw 'TIGRE_CRM_IMPORT_COMMAND não configurado' }; Invoke-Expression $env:TIGRE_CRM_IMPORT_COMMAND",
+            "timeout": 900000
+          },
+          "dependsOn": ["crm.audit", "crm.production", "leads.audit"],
+          "requiresApproval": true,
+          "maxAttempts": 1,
+          "evidenceKeys": ["stdout"]
+        }
+      ]
+    },
+    {
+      "id": "leads",
+      "title": "Leads Rota das Águas",
+      "steps": [
+        {
+          "id": "leads.prepare",
+          "title": "Limpar, normalizar e deduplicar lote de Águas de São Pedro",
+          "skill": "exec.powershell",
+          "input": {
+            "command": "if (-not $env:ROTA_LEADS_PREP_COMMAND) { throw 'ROTA_LEADS_PREP_COMMAND não configurado' }; Invoke-Expression $env:ROTA_LEADS_PREP_COMMAND",
+            "timeout": 900000
+          },
+          "maxAttempts": 1,
+          "evidenceKeys": ["stdout"]
+        },
+        {
+          "id": "leads.audit",
+          "title": "Auditar CSV final e contagens",
+          "skill": "exec.powershell",
+          "input": {
+            "command": "if (-not $env:ROTA_LEADS_AUDIT_COMMAND) { throw 'ROTA_LEADS_AUDIT_COMMAND não configurado' }; Invoke-Expression $env:ROTA_LEADS_AUDIT_COMMAND",
+            "timeout": 600000
+          },
+          "dependsOn": ["leads.prepare"],
+          "maxAttempts": 1,
+          "evidenceKeys": ["stdout"]
+        }
+      ]
+    },
+    {
+      "id": "integration",
+      "title": "Integração ponta a ponta",
+      "steps": [
+        {
+          "id": "integration.e2e",
+          "title": "Executar teste lead até entrega",
+          "skill": "exec.powershell",
+          "input": {
+            "command": "if (-not $env:ROTA_GO_LIVE_E2E_COMMAND) { throw 'ROTA_GO_LIVE_E2E_COMMAND não configurado' }; Invoke-Expression $env:ROTA_GO_LIVE_E2E_COMMAND",
+            "timeout": 900000
+          },
+          "dependsOn": ["portal.verify", "crm.import"],
+          "requiresApproval": true,
+          "maxAttempts": 1,
+          "evidenceKeys": ["stdout"]
+        }
+      ]
+    }
+  ]
+}
