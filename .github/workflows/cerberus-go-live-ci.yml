@@ -1,0 +1,28 @@
+name: Cerberus GO-LIVE CI
+
+on:
+  pull_request:
+    paths:
+      - 'skills/cerberus-go-live-workflow.ts'
+      - 'cerberus-go-live.ts'
+      - 'test-cerberus-go-live.ts'
+      - 'config/cerberus-go-live.rota.json'
+      - 'package.json'
+      - '.github/workflows/cerberus-go-live-ci.yml'
+  push:
+    branches:
+      - feat/cerberus-go-live-workflow-v1
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run test:cerberus
+      - run: npm run build
