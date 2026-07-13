@@ -15,7 +15,9 @@
     "all": "ts-node start-all.ts",
     "unified": "ts-node start-unified.ts",
     "dashboard": "cd dashboard-prometheus && pnpm dev",
+    "cerberus": "ts-node --transpile-only cerberus-go-live.ts",
     "test": "ts-node test-skills.ts",
+    "test:cerberus": "ts-node --transpile-only test-cerberus-go-live.ts",
     "smoke": "ts-node scripts/smoke-boot-simple.ts",
     "smoke:skills": "ts-node --transpile-only scripts/smoke-skills-count.ts",
     "skills:list": "ts-node --transpile-only -e \"const s=require('./skills'); const r=s.registerAllSkills(); r.listAll().forEach((x)=>console.log((x.name),' - ',(x.description||'')))\""
