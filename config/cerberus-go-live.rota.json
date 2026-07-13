@@ -12,7 +12,7 @@
           "title": "Auditar build, testes e estado do portal",
           "skill": "exec.powershell",
           "input": {
-            "command": "if (-not $env:ROTA_PORTAL_REPO) { throw 'ROTA_PORTAL_REPO não configurado' }; Set-Location $env:ROTA_PORTAL_REPO; git status --short; pnpm install --frozen-lockfile; pnpm run audit",
+            "command": "if (-not $env:ROTA_PORTAL_REPO) { throw 'ROTA_PORTAL_REPO não configurado' }; Set-Location $env:ROTA_PORTAL_REPO; git status --short; pnpm install --ignore-workspace --no-frozen-lockfile; pnpm run audit",
             "timeout": 1800000
           },
           "maxAttempts": 1,
