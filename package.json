@@ -20,7 +20,8 @@
     "test:cerberus": "ts-node --transpile-only test-cerberus-go-live.ts",
     "smoke": "ts-node scripts/smoke-boot-simple.ts",
     "smoke:skills": "ts-node --transpile-only scripts/smoke-skills-count.ts",
-    "skills:list": "ts-node --transpile-only -e \"const s=require('./skills'); const r=s.registerAllSkills(); r.listAll().forEach((x)=>console.log((x.name),' - ',(x.description||'')))\""
+    "skills:list": "ts-node --transpile-only -e \"const s=require('./skills'); const r=s.registerAllSkills(); r.listAll().forEach((x)=>console.log((x.name),' - ',(x.description||'')))\"",
+    "test:security-config": "ts-node --transpile-only test-social-hub-config-security.ts"
   },
   "keywords": [
     "openclaw",
