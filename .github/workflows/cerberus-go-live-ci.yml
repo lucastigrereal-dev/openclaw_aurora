@@ -6,6 +6,8 @@ on:
       - 'skills/cerberus-go-live-workflow.ts'
       - 'cerberus-go-live.ts'
       - 'test-cerberus-go-live.ts'
+      - 'test-social-hub-config-security.ts'
+      - 'skills/social-hub-config.ts'
       - 'config/cerberus-go-live.rota.json'
       - 'package.json'
       - '.github/workflows/cerberus-go-live-ci.yml'
@@ -25,4 +27,5 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run test:cerberus
+      - run: npm run test:security-config
       - run: npm run build
